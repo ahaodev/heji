@@ -1,0 +1,9 @@
+# IDE
+.idea/
+*.iml
+
+# Generated files (if any)
+# *.pb.go
+# *_pb2.py
+# *.pb.cc
+# *.pb.h

@@ -1,6 +1,23 @@
+# Build output
 /build/*
+*.exe
+
+# Logs
 /logs/
 /cmd/logs/
-/cmd/cmd.exe
-/logs/*.log_symlink
-./idea/
+*.log
+*.log_symlink
+
+# IDE
+.idea/
+*.iml
+
+# Binaries
+/bin/
+/dist/
+
+# Vendor (if not committing dependencies)
+# vendor/
+
+# Config with secrets (use config.example.yml)
+# config.yml

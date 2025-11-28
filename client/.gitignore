@@ -1,1 +1,22 @@
+# Gradle
+.gradle/
+build/
 /build/*
+
+# Local configuration
+local.properties
+
+# Android Studio
+*.iml
+.idea/
+.navigation/
+
+# Signing
+*.jks
+# *.keystore (keep heji.keystore for release)
+
+# Logs
+*.log
+
+# Generated files
+app/schemas/
