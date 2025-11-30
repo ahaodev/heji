@@ -12,7 +12,7 @@ import com.hao.heji.data.db.Category
 import com.hao.heji.databinding.FragmentCategoryManagerBinding
 import com.hao.heji.ui.base.BaseFragment
 import com.hao.heji.ui.base.render
-import com.hao.heji.ui.category.adapter.CategoryManagerAdapter
+
 import com.lxj.xpopup.XPopup
 
 /**
@@ -41,7 +41,7 @@ class CategoryManagerFragment : BaseFragment() {
     private lateinit var adapter: CategoryManagerAdapter
     override fun layout() = binding.root
 
-    override fun initView(view: View) {
+    override fun initView(rootView: View) {
         args = CategoryManagerFragmentArgs.fromBundle(requireArguments())
         viewModel.getCategories(args.ieType)
 

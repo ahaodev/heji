@@ -1,4 +1,4 @@
-package com.hao.heji.ui.category.adapter
+package com.hao.heji.ui.category.manager
 
 import android.view.View
 import com.chad.library.adapter.base.BaseQuickAdapter
@@ -16,18 +16,18 @@ import com.hao.heji.utils.textdraw.TextDrawable
 open class CategoryManagerAdapter :
     BaseQuickAdapter<Category, BaseViewHolder>(R.layout.item_category_manager) {
 
-    override fun convert(holder: BaseViewHolder, category: Category) {
-        if (category.name.isEmpty()) return
+    override fun convert(holder: BaseViewHolder, item: Category) {
+        if (item.name.isEmpty()) return
 
         val itemBinding = ItemCategoryManagerBinding.bind(holder.itemView)
         val bgColor = context.getColor(
-            if (category.isSelected) R.color.category_ico_selected else R.color.category_ico
+            if (item.isSelected) R.color.category_ico_selected else R.color.category_ico
         )
-        val drawable = TextDrawable.builder().buildRound(category.name[0].toString(), bgColor)
+        val drawable = TextDrawable.builder().buildRound(item.name[0].toString(), bgColor)
         itemBinding.roundImageView.setImageDrawable(drawable)
-        itemBinding.tvName.text = category.name
+        itemBinding.tvName.text = item.name
         addChildClickViewIds(itemBinding.btnDelete.id)
-        val isOther = category.name == "其他"
+        val isOther = item.name == "其他"
         itemBinding.btnEdit.visibility = if (isOther) View.INVISIBLE else View.VISIBLE
         itemBinding.btnDelete.visibility = if (isOther) View.INVISIBLE else View.VISIBLE
     }
