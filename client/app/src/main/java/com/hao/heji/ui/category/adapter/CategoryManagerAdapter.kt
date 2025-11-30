@@ -16,7 +16,6 @@ import com.hao.heji.utils.textdraw.TextDrawable
 open class CategoryManagerAdapter :
     BaseQuickAdapter<Category, BaseViewHolder>(R.layout.item_category_manager) {
 
-    protected lateinit var itemBinding: ItemCategoryManagerBinding
     override fun convert(holder: BaseViewHolder, category: Category) {
         if (category.name.isEmpty()) return
 
@@ -31,5 +30,9 @@ open class CategoryManagerAdapter :
         val isOther = category.name == "其他"
         itemBinding.btnEdit.visibility = if (isOther) View.INVISIBLE else View.VISIBLE
         itemBinding.btnDelete.visibility = if (isOther) View.INVISIBLE else View.VISIBLE
+    }
+
+    protected fun getItemBinding(holder: BaseViewHolder): ItemCategoryManagerBinding {
+        return ItemCategoryManagerBinding.bind(holder.itemView)
     }
 }

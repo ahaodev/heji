@@ -49,7 +49,7 @@ class CategoryManagerFragment : BaseFragment() {
         adapter = object : CategoryManagerAdapter() {
             override fun convert(holder: BaseViewHolder, category: Category) {
                 super.convert(holder, category)
-                itemBinding.btnDelete.setOnClickListener {
+                getItemBinding(holder).btnDelete.setOnClickListener {
                     alertDeleteTip(category)
                 }
             }
