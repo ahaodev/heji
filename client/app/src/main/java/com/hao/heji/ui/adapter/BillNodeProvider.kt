@@ -1,5 +1,6 @@
 package com.hao.heji.ui.adapter
 
+import android.annotation.SuppressLint
 import android.text.TextUtils
 import android.widget.TextView
 import com.chad.library.adapter.base.entity.node.BaseNode
@@ -18,7 +19,7 @@ class DayIncomeNodeProvider : BaseNodeProvider() {
 
     override fun convert(helper: BaseViewHolder, item: BaseNode) {Moshi.Builder()
         // 数据类型需要自己强转
-        var entity: DayIncomeNode = item as DayIncomeNode
+        val entity: DayIncomeNode = item as DayIncomeNode
         helper.setText(R.id.text1, "${entity.dayIncome.month}月${entity.dayIncome.monthDay}日")
 
         if (entity.dayIncome.weekday is String) {
@@ -39,6 +40,7 @@ class DayBillsNodeProvider : BaseNodeProvider() {
     override val layoutId: Int
         get() = R.layout.item_bill_daylist
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun convert(helper: BaseViewHolder, item: BaseNode) {
         val entity = item as DayBillsNode
         val bill = entity.bill

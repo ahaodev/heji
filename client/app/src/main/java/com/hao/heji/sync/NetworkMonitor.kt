@@ -16,7 +16,6 @@ class NetworkMonitor(private val context: Context, private val listener: (Boolea
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
@@ -35,7 +34,6 @@ class NetworkMonitor(private val context: Context, private val listener: (Boolea
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun startNetworkCallback() {
         val networkRequest = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -44,7 +42,6 @@ class NetworkMonitor(private val context: Context, private val listener: (Boolea
         connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun stopNetworkCallback() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
