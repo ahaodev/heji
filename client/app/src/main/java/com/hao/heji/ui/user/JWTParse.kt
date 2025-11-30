@@ -1,5 +1,7 @@
 package com.hao.heji.ui.user
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.blankj.utilcode.util.StringUtils
 import com.hao.heji.config.LocalUser
 import com.hao.heji.moshi
@@ -11,6 +13,7 @@ object JWTParse {
     data class User(val name: String, val id: String, val token: String)
 
     //解析JWT用户信息
+    @RequiresApi(Build.VERSION_CODES.O)
     fun getUser(jwt: String): User {
         if (jwt == "") return LocalUser
         val token = resolveToken(jwt)

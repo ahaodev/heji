@@ -14,14 +14,14 @@ internal class RegisterViewModel : BaseViewModel<RegisterUiState>() {
         code: String,
         password: String
     ) {
-        var user = RegisterUser(
+        val user = RegisterUser(
             name = username,
             tel = tel,
             password = encodePassword(password),
             code = code
         )
         launch({
-            var response = userRepository.register(user)
+            val response = userRepository.register(user)
             if (response.success()) {
                 user.password = password
                 send(RegisterUiState.Success(user))

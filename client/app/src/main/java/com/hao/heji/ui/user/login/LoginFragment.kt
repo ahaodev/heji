@@ -122,7 +122,9 @@ class LoginFragment : Fragment() {
 
     private fun setTitle() {
         with(activity as LoginActivity) {
-            findViewById<Toolbar>(R.id.toolbar).title = getString(R.string.login)
+            val toolbar = findViewById<Toolbar>(R.id.toolbar)
+            toolbar.title = getString(R.string.login)
+            toolbar.navigationIcon = null
         }
     }
 

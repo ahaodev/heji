@@ -14,6 +14,7 @@ import com.hao.heji.databinding.FragmentRegisterBinding
 import com.hao.heji.requireNonEmpty
 import com.hao.heji.ui.base.render
 import com.hao.heji.ui.user.login.LoginActivity
+import androidx.navigation.findNavController
 
 
 class RegisterFragment : Fragment() {
@@ -76,10 +77,10 @@ class RegisterFragment : Fragment() {
 
 
     private fun toLogin(user: RegisterUser) {
-        var mBundle = Bundle()
+        val mBundle = Bundle()
         mBundle.putSerializable("user", user)
-        Navigation.findNavController(binding.root).popBackStack()
-        Navigation.findNavController(binding.root).navigate(R.id.nav_login, mBundle)
+        binding.root.findNavController().popBackStack()
+        binding.root.findNavController().navigate(R.id.nav_login, mBundle)
     }
 
 
@@ -90,7 +91,12 @@ class RegisterFragment : Fragment() {
 
     private fun setTitle() =
         with(activity as LoginActivity) {
-            findViewById<Toolbar>(R.id.toolbar).title = getString(R.string.register)
+            val toolbar = findViewById<Toolbar>(R.id.toolbar)
+            toolbar.title = getString(R.string.register)
+            toolbar.setNavigationIcon(R.drawable.ic_back_white_24)
+            toolbar.setNavigationOnClickListener {
+                Navigation.findNavController(binding.root).popBackStack()
+            }
             this
         }
 }
