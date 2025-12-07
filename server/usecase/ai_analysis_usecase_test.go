@@ -277,3 +277,33 @@ func TestParseAmount(t *testing.T) {
 		}
 	}
 }
+
+func TestAnalyzeSpendingTrend_ZeroFirstHalf(t *testing.T) {
+	// Test edge case where first half has zero expenses
+	monthlyExpenses := map[string]float64{
+		"2024-01": 0.0,
+		"2024-02": 0.0,
+		"2024-03": 1000.0,
+		"2024-04": 1200.0,
+	}
+
+	trend := analyzeSpendingTrend(monthlyExpenses)
+	if trend != "increasing" {
+		t.Errorf("Expected 'increasing' trend when expenses start from zero, got %s", trend)
+	}
+}
+
+func TestAnalyzeSpendingTrend_AllZero(t *testing.T) {
+	// Test edge case where all expenses are zero
+	monthlyExpenses := map[string]float64{
+		"2024-01": 0.0,
+		"2024-02": 0.0,
+		"2024-03": 0.0,
+		"2024-04": 0.0,
+	}
+
+	trend := analyzeSpendingTrend(monthlyExpenses)
+	if trend != "stable" {
+		t.Errorf("Expected 'stable' trend when all expenses are zero, got %s", trend)
+	}
+}

@@ -451,7 +451,12 @@ func parseAmount(moneyStr string) float64 {
 }
 
 func mustParseObjectID(id string) primitive.ObjectID {
-	objID, _ := primitive.ObjectIDFromHex(id)
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		// Return zero ObjectID on error rather than panicking
+		// This allows graceful degradation
+		return primitive.ObjectID{}
+	}
 	return objID
 }
 
@@ -482,11 +487,17 @@ func analyzeSpendingTrend(monthlyExpenses map[string]float64) string {
 		firstAvg := firstHalf / float64(midPoint)
 		secondAvg := secondHalf / float64(len(months)-midPoint)
 		
-		ratio := secondAvg / firstAvg
-		if ratio > 1.15 {
+		// Avoid division by zero
+		if firstAvg > 0 {
+			ratio := secondAvg / firstAvg
+			if ratio > 1.15 {
+				return "increasing"
+			} else if ratio < 0.85 {
+				return "decreasing"
+			}
+		} else if secondAvg > 0 {
+			// If first half is 0 but second half has expenses, it's increasing
 			return "increasing"
-		} else if ratio < 0.85 {
-			return "decreasing"
 		}
 	}
 
