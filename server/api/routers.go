@@ -18,6 +18,7 @@ func RegisterRoutes(conf *config.Config, db mongo.Database) {
 	NewWebSocket(db, timeout, APIv1)
 	NewUserRouter(db, timeout, APIv1)
 	NewBookRouter(db, timeout, APIv1)
+	NewAIAnalysisRouter(db, timeout, APIv1)
 }
 func NewWebSocket(db mongo.Database, timeout time.Duration, group *gin.RouterGroup) {
 	ws := repository.NewMessagesRepository(db, domain.CollMessage)
@@ -51,4 +52,15 @@ func NewBookRouter(db mongo.Database, timeout time.Duration, group *gin.RouterGr
 	group.POST("/UpdateBook", bc.UpdateBook)
 	group.POST("/SharedBook/:bid", bc.SharedBook)
 	group.POST("/JoinBook/:code", bc.JoinBook)
+}
+
+func NewAIAnalysisRouter(db mongo.Database, timeout time.Duration, group *gin.RouterGroup) {
+	ar := repository.NewAIAnalysisRepository(db, domain.CollAIPrediction)
+	ac := &controller.AIAnalysisController{
+		UseCase: usecase.NewAIAnalysisUseCase(ar),
+	}
+	group.POST("/ai/classify", ac.ClassifyBill)
+	group.GET("/ai/predict", ac.PredictExpenses)
+	group.POST("/ai/analyze", ac.AnalyzeFinancials)
+	group.GET("/ai/patterns", ac.DetectPatterns)
 }

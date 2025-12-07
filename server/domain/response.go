@@ -11,6 +11,10 @@ type Response struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
 func RespError(msg string) Response {
 	return Response{Code: FailCode, Msg: msg, Data: nil}
 }
