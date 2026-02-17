@@ -259,7 +259,8 @@ class ReportFragment : BaseFragment() {
                     ymd.day = arrays[1].toInt()
                 }
             }
-            viewModel.getReportBillInfoList(ymd.yearMonthString())
+            val dateStr = if (ymd.day > 0) ymd.yearMonthDayString() else ymd.yearMonthString()
+            viewModel.getReportBillInfoList(dateStr)
         }
 
     }
