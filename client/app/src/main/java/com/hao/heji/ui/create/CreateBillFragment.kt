@@ -361,6 +361,7 @@ class CreateBillFragment : BaseFragment() {
     fun selectedCategory(type: Int, category: Category?) {
         LogUtils.d("selectedCategory : type=$type category= $category")
         val billType = BillType.fromValue(type)
+        mBill.type = billType.value
         if (null != category) {
             mBill.category = category.name
         } else {

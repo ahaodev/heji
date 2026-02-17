@@ -34,18 +34,7 @@ class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
     fun switchModelAndBook() {
         launch({
             val bookDao = App.dataBase.bookDao()
-            if (Config.enableOfflineMode) {
-                if (bookDao.count() == 0) {
-                    createDefaultBook(bookDao)
-                } else {
-                    val books = bookDao.findBookIdsByUser(Config.user.id)
-                    books.firstOrNull()?.let { bookId ->
-                        bookDao.findBook(bookId).firstOrNull()?.let {
-                            Config.setBook(it)
-                        }
-                    }
-                }
-            } else {
+            if (!Config.enableOfflineMode) {
                 bookRepository.bookList().data?.let {
                     it.forEach { book ->
                         book.synced = Status.SYNCED
@@ -56,15 +45,28 @@ class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
                             bookDao.insert(book)
                     }
                 }
-                val books = bookDao.findBookIdsByUser(Config.user.id)
-                if (books.isEmpty()) {
-                    createDefaultBook(bookDao)
-                } else {
-                    books.firstOrNull()?.let { bookId ->
-                        bookDao.findBook(bookId).firstOrNull()?.let {
-                            Config.setBook(it)
-                        }
-                    }
+            }
+
+            val books = bookDao.findBookIdsByUser(Config.user.id)
+            if (books.isEmpty()) {
+                createDefaultBook(bookDao)
+                return@launch
+            }
+
+            // 优先使用上次保存的账本（如果仍存在）
+            val savedBook = Config.bookOrNull
+            if (savedBook != null && books.contains(savedBook.id)) {
+                // 从数据库重新加载以确保数据最新
+                bookDao.findBook(savedBook.id).firstOrNull()?.let {
+                    Config.setBook(it)
+                }
+                return@launch
+            }
+
+            // 没有保存的账本或已被删除，使用第一个
+            books.firstOrNull()?.let { bookId ->
+                bookDao.findBook(bookId).firstOrNull()?.let {
+                    Config.setBook(it)
                 }
             }
         })
