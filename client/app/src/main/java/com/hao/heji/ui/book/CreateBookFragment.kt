@@ -5,6 +5,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.ToastUtils
 import com.lxj.xpopup.XPopup
+import com.hao.heji.data.BookType
 import com.hao.heji.databinding.FragmentBookAddBinding
 import com.hao.heji.ui.base.BaseFragment
 
@@ -27,7 +28,7 @@ class CreateBookFragment : BaseFragment() {
             banner.setOnClickListener { }
             layoutType.setOnClickListener {
                 XPopup.Builder(requireContext()).asBottomList(
-                    "选择账单类型", arrayOf("日常生活", "经营账本", "人情账本", "汽车账本")
+                    "选择账单类型", BookType.labels
                 ) { _, text ->
                     tvBookType.text = text
                 }.show()

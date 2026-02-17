@@ -10,7 +10,10 @@ import com.hao.heji.config.Config
 import com.hao.heji.data.Result
 import com.hao.heji.data.Status
 import com.hao.heji.data.db.Book
+import com.hao.heji.data.db.Category
 import com.github.shamil.Xid
+import com.hao.heji.data.BookType
+import com.hao.heji.data.BillType
 import com.hao.heji.data.repository.BookRepository
 import com.hao.heji.utils.launch
 import com.hao.heji.utils.launchIO
@@ -21,6 +24,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
     private val _bookLiveData = MediatorLiveData<Book>()
     private val _bookListLiveData = MediatorLiveData<MutableList<Book>>()
     private val bookDao get() = App.dataBase.bookDao()
+    private val categoryDao get() = App.dataBase.categoryDao()
 
     private val booksFlow = App.dataBase.bookDao().allBooks()
 
@@ -45,18 +49,33 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
             if (count > 0) {
                 ToastUtils.showLong("账本名已经存在")
             } else {
-                bookRepository.createBook(Book(name = name, type = type))
                 val book = Book(
                     id = Xid.string(),
                     name = name,
                     type = type,
                     crtUserId = Config.user.id
                 )
+                bookRepository.createBook(book)
+                insertDefaultCategories(book.id, type)
                 _bookLiveData.postValue(book)
             }
         })
 
         //network create
+    }
+
+    private fun insertDefaultCategories(bookId: String, type: String) {
+        val bookType = BookType.fromLabel(type) ?: return
+        bookType.expenditureCategories.forEachIndexed { index, name ->
+            categoryDao.insert(Category(bookId = bookId, name = name, type = BillType.EXPENDITURE.value).apply {
+                this.index = index
+            })
+        }
+        bookType.incomeCategories.forEachIndexed { index, name ->
+            categoryDao.insert(Category(bookId = bookId, name = name, type = BillType.INCOME.value).apply {
+                this.index = index
+            })
+        }
     }
 
     fun isFirstBook(id: String) = App.dataBase.bookDao().isInitialBook(id)
