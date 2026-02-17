@@ -5,7 +5,7 @@ ksp = "2.1.20-1.0.32"
 
 # AndroidX Core
 coreKtx = "1.15.0"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 material = "1.13.0"
 constraintlayout = "2.2.1"
 annotation = "1.9.1"
