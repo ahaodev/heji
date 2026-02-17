@@ -1,10 +1,10 @@
 [versions]
 agp = "8.13.2"
-kotlin = "2.1.20"
-ksp = "2.1.20-1.0.32"
+kotlin = "2.3.0"
+ksp = "2.3.2"
 
 # AndroidX Core
-coreKtx = "1.15.0"
+coreKtx = "1.17.0"
 appcompat = "1.7.1"
 material = "1.13.0"
 constraintlayout = "2.2.1"
@@ -19,14 +19,14 @@ lifecycleLivedata = "2.10.0"
 lifecycleViewModel = "2.10.0"
 
 # Navigation
-navigation = "2.8.9"
-navigationSafeArgs = "2.5.3"
+navigation = "2.9.7"
+navigationSafeArgs = "2.9.7"
 
 # Room
-room = "2.6.1"
+room = "2.8.4"
 
 # WorkManager
-work = "2.10.0"
+work = "2.11.1"
 
 # Retrofit & OkHttp
 retrofit = "3.0.0"
@@ -62,8 +62,8 @@ jexcelapi = "2.6.12"
 opencsv = "5.12.0"
 subsamplingScaleImageView = "3.10.0"
 sentry = "5.12.2"
-mmkv = "2.0.1"
-koin = "3.5.6"
+mmkv = "2.3.0"
+koin = "4.1.1"
 
 [libraries]
 # AndroidX
