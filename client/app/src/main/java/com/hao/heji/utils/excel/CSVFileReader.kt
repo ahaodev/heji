@@ -8,7 +8,7 @@ import com.hao.heji.App
 import com.hao.heji.data.BillType
 import com.hao.heji.data.converters.DateConverters
 import com.hao.heji.data.db.Bill
-import com.hao.heji.data.db.mongo.ObjectId
+import com.github.shamil.Xid
 import com.hao.heji.utils.excel.entity.AliPayEntity
 import com.hao.heji.utils.excel.entity.WeiXinPayEntity
 import java.io.FileInputStream
@@ -88,7 +88,7 @@ internal class CSVFileReader : IReader {
 
                     //转换
                     val bill = Bill().apply {
-                        id = ObjectId(DateConverters.str2Date(billTime)).toHexString()
+                        id = Xid.string()
                         money = aliPay.money.toBigDecimal()
                         type = aliPayType
                         time = TimeUtils.string2Date(billTime, "yyyy-MM-dd HH:mm:ss")
@@ -181,7 +181,7 @@ internal class CSVFileReader : IReader {
                 try {
                     //转换
                     val bill = Bill().apply {
-                        id = ObjectId(DateConverters.str2Date(weiPay.transactionTime)).toHexString()
+                        id = Xid.string()
                         money = weiMoney.toBigDecimal()
                         type = aliPayType
                         time = TimeUtils.string2Date(weiPay.transactionTime, "yyyy-MM-dd HH:mm:ss")

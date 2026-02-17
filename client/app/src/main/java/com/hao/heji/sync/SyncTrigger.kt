@@ -5,8 +5,7 @@ import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.data.db.Bill
 import com.hao.heji.data.db.Book
-import com.hao.heji.moshi
-import com.hao.heji.proto.Message
+import com.hao.heji.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -40,28 +39,28 @@ class SyncTrigger(private val scope: CoroutineScope) {
                 LogUtils.d(b,bookUsers)
 //                when (b.syncStatus) {
 //                    NEW -> {
-//                        val bookJson = moshi.adapter(Book::class.java).toJson(b)
+//                        val bookJson = json.encodeToString(Book.serializer(),(b)
 //                        LogUtils.d()
 //                        WebSocketClient.getInstance().send(
-//                            createPacket(
-//                                Message.Type.ADD_BOOK, bookJson, toUsers = bookUsers
+//                            createSyncMessage(
+//                                SyncMessage.Type.ADD_BOOK, bookJson, toUsers = bookUsers
 //                            )
 //                        )
 //                    }
 //
 //                    DELETED -> {
 //                        WebSocketClient.getInstance().send(
-//                            createPacket(
-//                                Message.Type.DELETE_BOOK, b.id, toUsers = bookUsers
+//                            createSyncMessage(
+//                                SyncMessage.Type.DELETE_BOOK, b.id, toUsers = bookUsers
 //                            )
 //                        )
 //                    }
 //
 //                    UPDATED -> {
-//                        val bookJson = moshi.adapter(Book::class.java).toJson(b)
+//                        val bookJson = json.encodeToString(Book.serializer(),(b)
 //                        WebSocketClient.getInstance().send(
-//                            createPacket(
-//                                Message.Type.UPDATE_BOOK, bookJson, toUsers = bookUsers
+//                            createSyncMessage(
+//                                SyncMessage.Type.UPDATE_BOOK, bookJson, toUsers = bookUsers
 //                            )
 //                        )
 //                    }
@@ -91,11 +90,11 @@ class SyncTrigger(private val scope: CoroutineScope) {
 //                when (bill.syncStatus) {
 //                    NEW -> {
 //                        LogUtils.d("同步...")
-//                        val json = moshi.adapter(Bill::class.java).toJson(bill)
+//                        val json = json.encodeToString(Bill.serializer(),(bill)
 //                        val users = bookUserDao.findUsersId(bill.bookId)
 //                        WebSocketClient.getInstance().send(
-//                            createPacket(
-//                                Message.Type.ADD_BILL, content = json, toUsers = users
+//                            createSyncMessage(
+//                                SyncMessage.Type.ADD_BILL, content = json, toUsers = users
 //                            )
 //                        )
 //                    }
@@ -104,19 +103,19 @@ class SyncTrigger(private val scope: CoroutineScope) {
 //                        LogUtils.d("删除...")
 //                        val users = bookUserDao.findUsersId(bill.id)
 //                        WebSocketClient.getInstance().send(
-//                            createPacket(
-//                                Message.Type.DELETE_BILL, content = bill.id, toUsers = users
+//                            createSyncMessage(
+//                                SyncMessage.Type.DELETE_BILL, content = bill.id, toUsers = users
 //                            )
 //                        )
 //                    }
 //
 //                    UPDATED -> {
 //                        LogUtils.d("更新...")
-//                        val json = moshi.adapter(Bill::class.java).toJson(bill)
+//                        val json = json.encodeToString(Bill.serializer(),(bill)
 //                        val users = bookUserDao.findUsersId(bill.bookId)
 //                        WebSocketClient.getInstance().send(
-//                            createPacket(
-//                                Message.Type.UPDATE_BILL, content = json, toUsers = users
+//                            createSyncMessage(
+//                                SyncMessage.Type.UPDATE_BILL, content = json, toUsers = users
 //                            )
 //                        )
 //                    }

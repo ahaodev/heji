@@ -43,7 +43,7 @@ class BookSettingFragment : BaseFragment() {
         arguments?.let {
             book = BookSettingFragmentArgs.fromBundle(it).book
             binding.tvBookType.text = book.type
-            binding.tvCreateTime.text = book.id.getObjectTime().string()
+            binding.tvCreateTime.text = java.util.Date(book.crtTime).string()
             val adapter = UsersAdapter(mutableListOf())
             binding.recycler.adapter = adapter
             binding.recycler.layoutManager = LinearLayoutManager(requireContext())

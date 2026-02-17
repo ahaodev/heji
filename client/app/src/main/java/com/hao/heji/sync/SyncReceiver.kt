@@ -1,7 +1,7 @@
 package com.hao.heji.sync
 
 import com.blankj.utilcode.util.LogUtils
-import com.hao.heji.proto.Message
+import com.hao.heji.json
 import com.hao.heji.sync.handler.AddBillHandler
 import com.hao.heji.sync.handler.AddBookHandler
 import com.hao.heji.sync.handler.DeleteBillHandler
@@ -10,7 +10,6 @@ import com.hao.heji.sync.handler.IMessageHandler
 import com.hao.heji.sync.handler.UpdateBillHandler
 import com.hao.heji.sync.handler.UpdateBookHandler
 import okhttp3.WebSocket
-import okio.ByteString
 
 class SyncReceiver {
     private val handlers = mutableListOf<IMessageHandler>()
@@ -41,12 +40,12 @@ class SyncReceiver {
         handlers.clear()
     }
 
-    fun onReceiver(webSocket: WebSocket, bytes: ByteString) {
-        val packet = Message.Packet.parseFrom(bytes.toByteArray())
+    fun onReceiver(webSocket: WebSocket, text: String) {
+        val message = json.decodeFromString(SyncMessage.serializer(), text)
         for (i in handlers) {
-            if (i.canHandle(packet)) {
-                LogUtils.d("handle by ${i.javaClass.simpleName}",packet)
-                i.handleMessage(webSocket, packet)
+            if (i.canHandle(message)) {
+                LogUtils.d("handle by ${i.javaClass.simpleName}", message)
+                i.handleMessage(webSocket, message)
             }
         }
     }

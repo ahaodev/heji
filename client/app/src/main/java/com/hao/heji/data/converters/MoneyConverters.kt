@@ -2,8 +2,6 @@ package com.hao.heji.data.converters
 
 import androidx.room.Ignore
 import androidx.room.TypeConverter
-import com.squareup.moshi.FromJson
-import com.squareup.moshi.ToJson
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -13,11 +11,9 @@ import java.math.RoundingMode
  * #货币转换
  */
 object MoneyConverters {
-    @FromJson
     @JvmStatic
     @TypeConverter
     fun fromLong(value: Long?): BigDecimal {
-        //.divide(BigDecimal.ONE, 2, BigDecimal.ROUND_DOWN);//两位小数 整数补00
         return if (value == null) ZERO_00() else BigDecimal(value).divide(
             BigDecimal(100),
             2,
@@ -36,7 +32,7 @@ object MoneyConverters {
     fun ZERO_00(): BigDecimal {
         return BigDecimal.ZERO.divide(BigDecimal.ONE, 2,  RoundingMode.DOWN)
     }
-    @ToJson
+
     @JvmStatic
     fun toString(bigDecimal: BigDecimal): String {
         return bigDecimal.multiply(BigDecimal(100)).toPlainString()

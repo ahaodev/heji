@@ -2,8 +2,6 @@ package com.hao.heji.data.converters
 
 import androidx.room.TypeConverter
 import com.blankj.utilcode.util.TimeUtils
-import com.squareup.moshi.FromJson
-import com.squareup.moshi.ToJson
 import java.util.*
 
 /**
@@ -14,13 +12,13 @@ import java.util.*
 object DateConverters {
     const val DB_PATTERN = "yyyy-MM-dd HH:mm:ss"
     const val SHOW_PATTERN = "yyyy-MM-dd HH:mm"
-    @FromJson
+
     @JvmStatic
     @TypeConverter
     fun str2Date(value: String?): Date {
         return if (value == null) Date() else TimeUtils.string2Date(value, DB_PATTERN)
     }
-    @ToJson
+
     @JvmStatic
     @TypeConverter
     fun date2Str(date: Date?): String {

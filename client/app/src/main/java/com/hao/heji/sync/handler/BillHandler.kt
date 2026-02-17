@@ -3,84 +3,70 @@ package com.hao.heji.sync.handler
 import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.App
 import com.hao.heji.data.db.Bill
-import com.hao.heji.moshi
-import com.hao.heji.proto.Message
+import com.hao.heji.json
+import com.hao.heji.sync.SyncMessage
 import com.hao.heji.sync.convertToAck
-import com.hao.heji.sync.toBytes
+import com.hao.heji.sync.toJson
 import okhttp3.WebSocket
 
 class AddBillHandler : IMessageHandler {
 
-    override fun canHandle(packet: Message.Packet): Boolean {
-        val add = packet.type == Message.Type.ADD_BILL
-        val ack = packet.type == Message.Type.ADD_BILL_ACK
-        return add || ack
+    override fun canHandle(message: SyncMessage): Boolean {
+        return message.type == SyncMessage.Type.ADD_BILL || message.type == SyncMessage.Type.ADD_BILL_ACK
     }
 
-    override fun handleMessage(webSocket: WebSocket, packet: Message.Packet) {
-        LogUtils.d("开始处理消息 type=${packet.type}")
+    override fun handleMessage(webSocket: WebSocket, message: SyncMessage) {
+        LogUtils.d("开始处理消息 type=${message.type}")
         val billDao = App.dataBase.billDao()
-        if (packet.type == Message.Type.ADD_BILL_ACK) {
-            billDao.updateSyncStatus(billId = packet.content, 1)
+        if (message.type == SyncMessage.Type.ADD_BILL_ACK) {
+            billDao.updateSyncStatus(billId = message.content, 1)
             return
         }
-        val bill = moshi.adapter(Bill::class.java).fromJson(packet.content)
+        val bill = json.decodeFromString(Bill.serializer(), message.content)
         bill?.let {
             billDao.install(bill)
-            val ack =packet.convertToAck(Message.Type.ADD_BILL_ACK,bill.id)
-            webSocket.send(ack.toBytes())
+            val ack = message.convertToAck(SyncMessage.Type.ADD_BILL_ACK, bill.id)
+            webSocket.send(ack.toJson())
         }
     }
 }
 
 class DeleteBillHandler : IMessageHandler {
-    override fun canHandle(packet: Message.Packet): Boolean {
-        return packet.type == Message.Type.DELETE_BILL || isAck(packet)
+    override fun canHandle(message: SyncMessage): Boolean {
+        return message.type == SyncMessage.Type.DELETE_BILL || message.type == SyncMessage.Type.DELETE_BILL_ACK
     }
 
-    override fun handleMessage(webSocket: WebSocket, packet: Message.Packet) {
-        LogUtils.d(packet)
+    override fun handleMessage(webSocket: WebSocket, message: SyncMessage) {
+        LogUtils.d(message)
         val billDao = App.dataBase.billDao()
-        if (isAck(packet)) {
-            val id =packet.content
-            billDao.deleteById(id)
+        if (message.type == SyncMessage.Type.DELETE_BILL_ACK) {
+            billDao.deleteById(message.content)
             return
         }
-        billDao.deleteById(packet.content)
-        val ackPacket = packet.convertToAck(Message.Type.DELETE_BILL_ACK, packet.content)
-        webSocket.send(ackPacket.toBytes())
+        billDao.deleteById(message.content)
+        val ack = message.convertToAck(SyncMessage.Type.DELETE_BILL_ACK, message.content)
+        webSocket.send(ack.toJson())
     }
-
-    private fun isAck(packet: Message.Packet) =
-        packet.type == Message.Type.DELETE_BILL_ACK
 }
 
 class UpdateBillHandler : IMessageHandler {
-    override fun canHandle(packet: Message.Packet): Boolean {
-        return packet.type == Message.Type.UPDATE_BILL || isAck(packet)
+    override fun canHandle(message: SyncMessage): Boolean {
+        return message.type == SyncMessage.Type.UPDATE_BILL || message.type == SyncMessage.Type.UPDATE_BILL_ACK
     }
 
-    override fun handleMessage(webSocket: WebSocket, packet: Message.Packet) {
-        LogUtils.d(packet)
+    override fun handleMessage(webSocket: WebSocket, message: SyncMessage) {
+        LogUtils.d(message)
         val billDao = App.dataBase.billDao()
 
-        if (isAck(packet)) {
-            billDao.updateSyncStatus(billId = packet.content,1)
+        if (message.type == SyncMessage.Type.UPDATE_BILL_ACK) {
+            billDao.updateSyncStatus(billId = message.content, 1)
             return
         }
-        val bill = moshi.adapter(Bill::class.java).fromJson(packet.content)
+        val bill = json.decodeFromString(Bill.serializer(), message.content)
         bill?.let {
             billDao.update(bill)
-            val ack = packet.convertToAck(
-                Message.Type.UPDATE_BILL_ACK,
-                bill.id,
-            )
-            webSocket.send(ack.toBytes())
-
+            val ack = message.convertToAck(SyncMessage.Type.UPDATE_BILL_ACK, bill.id)
+            webSocket.send(ack.toJson())
         }
     }
-
-    private fun isAck(packet: Message.Packet) =
-        packet.type == Message.Type.UPDATE_BILL_ACK
-
 }

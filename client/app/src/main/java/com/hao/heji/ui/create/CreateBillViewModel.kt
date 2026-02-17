@@ -7,7 +7,7 @@ import com.blankj.utilcode.util.ToastUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.data.db.*
-import com.hao.heji.data.db.mongo.ObjectId
+import com.github.shamil.Xid
 import com.hao.heji.ui.base.BaseViewModel
 import kotlinx.coroutines.launch
 import java.util.*
@@ -66,7 +66,7 @@ internal class CreateBillViewModel :
             val images = mutableListOf<Image>()
             if (bill.images.isNotEmpty()) {
                 val selectImages = bill.images.map { s: String? ->
-                    val image = Image(ObjectId().toString(), bill.id)
+                    val image = Image(Xid.string(), bill.id)
                     image.localPath = s
                     image
                 }.toMutableList()

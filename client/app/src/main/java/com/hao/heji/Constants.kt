@@ -1,10 +1,7 @@
 package com.hao.heji
 
-import com.hao.heji.data.converters.DateConverters
-import com.hao.heji.data.converters.MoneyConverters
 import com.hao.heji.utils.YearMonth
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.serialization.json.Json
 import java.util.*
 
 val currentYearMonth: YearMonth = today()
@@ -15,8 +12,8 @@ fun today(): YearMonth = YearMonth(
     day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
 )
 
-val moshi: Moshi = Moshi.Builder()
-    .addLast(KotlinJsonAdapterFactory())
-    .add(DateConverters)
-    .add(MoneyConverters)
-    .build()
+val json: Json = Json {
+    ignoreUnknownKeys = true
+    coerceInputValues = true
+    encodeDefaults = true
+}

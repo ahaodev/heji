@@ -4,9 +4,10 @@ import android.os.Parcelable
 import androidx.room.*
 import com.hao.heji.config.Config
 import com.hao.heji.data.converters.LogicConverters
-import com.hao.heji.data.db.mongo.ObjectId
-import com.squareup.moshi.Json
+import com.github.shamil.Xid
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 账本
@@ -15,33 +16,34 @@ import kotlinx.parcelize.Parcelize
  *
  */
 
+@Serializable
 @Parcelize
 @Entity(tableName = Book.TAB_NAME, indices = [Index(value = [Book.COLUMN_NAME], unique = true)])
 data class Book(
 
-    @param:Json(name = "_id")
+    @SerialName("_id")
     @PrimaryKey
     @ColumnInfo(name = COLUMN_ID)
-    var id: String = ObjectId().toHexString(),
+    var id: String = Xid.string(),
 
     @ColumnInfo(name = COLUMN_NAME)
     var name: String,//账本名称
 
-    @param:Json(name = "crt_user_id")
+    @SerialName("crt_user_id")
     @ColumnInfo(name = COLUMN_CREATE_USER)
     var crtUserId: String = Config.user.id,//创建人
 
-    @param:Json(name = "type")
+    @SerialName("type")
     @ColumnInfo(name = COLUMN_TYPE)
 
     var type: String? = null,//账本类型
-    @param:Json(name = "crt_time")
+    @SerialName("crt_time")
 
     var crtTime: Long = System.currentTimeMillis(),
-    @param:Json(name = "upd_time")
+    @SerialName("upd_time")
     var updTime: Long? = 0,
 
-    @param:Json(name = "banner")
+    @SerialName("banner")
     @ColumnInfo(name = COLUMN_BANNER_URL)
     var bannerUrl: String? = null,//封面图片
 
@@ -51,7 +53,7 @@ data class Book(
     @ColumnInfo(name = "deleted")
     var deleted: Int = 0,
 
-    @param:Json(name = "is_initial")
+    @SerialName("is_initial")
     @ColumnInfo(name = COLUMN_FIRST)
     @param:TypeConverters(LogicConverters::class)
     var isInitial: Boolean = false//初始账本

@@ -4,7 +4,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.blankj.utilcode.util.StringUtils
 import com.hao.heji.config.LocalUser
-import com.hao.heji.moshi
 import org.json.JSONObject
 import java.util.Base64
 

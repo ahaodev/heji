@@ -2,7 +2,7 @@ package com.hao.heji.config.store
 
 import com.hao.heji.BuildConfig
 import com.hao.heji.data.db.Book
-import com.hao.heji.moshi
+import com.hao.heji.json
 import com.tencent.mmkv.MMKV
 
 /**
@@ -53,12 +53,12 @@ internal object DataStoreManager {
     }
 
     fun saveBook(book: Book) {
-        mmkv.encode(KEY_CURRENT_BOOK, moshi.adapter(Book::class.java).toJson(book))
+        mmkv.encode(KEY_CURRENT_BOOK, json.encodeToString(Book.serializer(), book))
     }
 
     fun getBook(): Book? {
         val bookJsonStr = mmkv.decodeString(KEY_CURRENT_BOOK) ?: return null
-        return moshi.adapter(Book::class.java).fromJson(bookJsonStr)
+        return json.decodeFromString(Book.serializer(), bookJsonStr)
     }
 
     fun removeBook() {

@@ -1,12 +1,13 @@
 package com.hao.heji.network
 
 import com.hao.heji.BuildConfig
-import com.hao.heji.moshi
+import com.hao.heji.json
 import com.hao.heji.network.interceptor.AuthorizedInterceptor
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 
@@ -54,10 +55,11 @@ object HttpRetrofit {
      * @return 返回服务实例
     </T> */
     fun <T> create(url: String?, service: Class<T>?): T {
+        val contentType = "application/json".toMediaType()
         val rt = Retrofit.Builder()
             .baseUrl(url)
             .client(okHttpClient())
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(json.asConverterFactory(contentType))
             .build()
         return rt.create(service)
     }

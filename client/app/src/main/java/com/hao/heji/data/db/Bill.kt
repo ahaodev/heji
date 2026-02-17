@@ -9,11 +9,15 @@ import androidx.room.Index
 import androidx.room.TypeConverters
 import com.blankj.utilcode.util.GsonUtils
 import com.hao.heji.data.BillType
+import com.hao.heji.data.converters.BigDecimalSerializer
 import com.hao.heji.data.converters.DateConverters
+import com.hao.heji.data.converters.DateSerializer
 import com.hao.heji.data.converters.MoneyConverters
-import com.hao.heji.data.db.mongo.ObjectId
-import com.squareup.moshi.Json
+import com.github.shamil.Xid
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.math.BigDecimal
 import java.util.Date
 
@@ -34,61 +38,65 @@ import java.util.Date
     )], indices = [Index(value = [Bill.COLUMN_ID, Bill.COLUMN_BOOK_ID], unique = true)]
 )
 @TypeConverters(DateConverters::class, MoneyConverters::class)
+@Serializable
 data class Bill(
-    @param:Json(name = "_id")
+    @SerialName("_id")
     @ColumnInfo(name = COLUMN_ID)
-    var id: String = ObjectId().toHexString(),
+    var id: String = Xid.string(),
 
-    @param:Json(name = "book_id")
+    @SerialName("book_id")
     @ColumnInfo(name = COLUMN_BOOK_ID, index = true)
     var bookId: String = "",
     /**
      * 钱
      */
-    @param:Json(name = "money")
+    @SerialName("money")
+    @Serializable(with = BigDecimalSerializer::class)
     @param:TypeConverters(MoneyConverters::class)
     var money: BigDecimal = MoneyConverters.ZERO_00(),
 
     /**
      * 收|支类型 s|z
      */
-    @param:Json(name = "type")
+    @SerialName("type")
     var type: Int = BillType.EXPENDITURE.valueInt,
 
     /**
      * 类别
      */
-    @param:Json(name = "category")
+    @SerialName("category")
     var category: String? = null,
 
     /**
      * 账单时间-产生费用的日期-以这个为主
      */
-    @param:Json(name = "time")
+    @SerialName("time")
+    @Serializable(with = DateSerializer::class)
     @ColumnInfo(name = "time")
     var time: Date = Date(),
 
     /**
      * 更新时间
      */
-    @param:Json(name = "upd_time")
+    @SerialName("upd_time")
     @ColumnInfo(name = "upd_time")
     var updTime: Long? = 0,
 
-    @param:Json(name = "crt_user")
+    @SerialName("crt_user")
     @ColumnInfo(name = "crt_user")
     var crtUser: String = "",
 
-    @param:Json(name = "crt_time")
+    @SerialName("crt_time")
     @ColumnInfo(name = "crt_time")
     var crtTime: Long = System.currentTimeMillis(),
 
     /**
      * 备注
      */
-    @param:Json(name = "remark")
+    @SerialName("remark")
     var remark: String? = null,
 
+    @Transient
     @Ignore
     @ColumnInfo(name = "images")
     var images: MutableList<String> = mutableListOf(),
@@ -100,6 +108,7 @@ data class Bill(
     var deleted: Int = 0,
 ) : Parcelable {
 
+    @Transient
     @ColumnInfo(name = "hash")
     var hashValue: Int = hashCode()
 

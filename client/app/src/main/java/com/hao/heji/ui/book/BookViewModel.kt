@@ -9,7 +9,7 @@ import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.data.Result
 import com.hao.heji.data.db.Book
-import com.hao.heji.data.db.mongo.ObjectId
+import com.github.shamil.Xid
 import com.hao.heji.data.repository.BookRepository
 import com.hao.heji.utils.launch
 import com.hao.heji.utils.launchIO
@@ -46,7 +46,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
             } else {
                 bookRepository.createBook(Book(name = name, type = type))
                 val book = Book(
-                    id = ObjectId().toHexString(),
+                    id = Xid.string(),
                     name = name,
                     type = type,
                     crtUserId = Config.user.id

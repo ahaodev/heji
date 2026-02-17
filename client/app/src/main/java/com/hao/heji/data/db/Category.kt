@@ -5,7 +5,8 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.hao.heji.data.BillType
-import com.hao.heji.data.db.mongo.ObjectId
+import com.github.shamil.Xid
+import kotlinx.serialization.Serializable
 import java.util.*
 
 /**
@@ -13,11 +14,12 @@ import java.util.*
  * @author: 锅得铁
  * #收入/支出 类型标签
  */
+@Serializable
 @Entity(tableName = "category")
 data class Category(
     @PrimaryKey
     @ColumnInfo(name = "_id")
-    var id: String = ObjectId().toHexString(),
+    var id: String = Xid.string(),
     /**
      * 账本ID
      */

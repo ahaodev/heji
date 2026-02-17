@@ -1,5 +1,8 @@
 package com.hao.heji.network.response
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class OperateLog(val bookId: String,
                       val opeID: String,
                       val opeType: Int,

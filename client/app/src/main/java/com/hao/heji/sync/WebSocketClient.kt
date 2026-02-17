@@ -2,7 +2,6 @@ package com.hao.heji.sync
 
 import android.util.Log
 import com.blankj.utilcode.util.LogUtils
-import com.hao.heji.proto.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -13,7 +12,6 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.ByteString
 import java.util.concurrent.TimeUnit
 
 class WebSocketClient {
@@ -54,9 +52,10 @@ class WebSocketClient {
         }
     }
 
-    fun send(packet: Message.Packet): Boolean {
-        LogUtils.d(packet)
-        webSocket?.send(bytes = packet.toBytes())
+    fun send(message: SyncMessage): Boolean {
+        val json = message.toJson()
+        LogUtils.d(json)
+        webSocket?.send(json)
         return true
     }
 
@@ -102,13 +101,9 @@ class WebSocketClient {
 
         override fun onMessage(webSocket: WebSocket, text: String) {
             super.onMessage(webSocket, text)
-            LogUtils.d("onMessage", webSocket, text)
-        }
-
-        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-            super.onMessage(webSocket, bytes)
+            LogUtils.d("onMessage", text)
             syncScope.launch(Dispatchers.IO) {
-                syncReceiver.onReceiver(webSocket, bytes)
+                syncReceiver.onReceiver(webSocket, text)
             }
         }
 

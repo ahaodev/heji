@@ -1,37 +1,30 @@
 package com.hao.heji.sync
 
-import com.blankj.utilcode.util.LogUtils
-import com.hao.heji.data.db.mongo.ObjectId
-import com.hao.heji.proto.Message
-import okio.ByteString
+import com.hao.heji.json
+import com.github.shamil.Xid
 
-inline fun createPacket(
-    type: Message.Type,
+fun createSyncMessage(
+    type: String,
     content: String,
-    id: String= ObjectId.get().toHexString(),
-    toUsers: MutableList<String>? = null
-): Message.Packet {
-    val newBuilder = Message.Packet.newBuilder()
-        .setId(id)
-        .setSenderId(com.hao.heji.config.Config.user.id)
-        .setType(type)
-        .setContent(content)
-    toUsers?.let {
-        if (it.isNotEmpty()) {
-            newBuilder.addAllReceiverIds(it)
-        }
-    }
-    return newBuilder.build()
+    id: String = Xid.string(),
+    toUsers: List<String> = emptyList()
+): SyncMessage {
+    return SyncMessage(
+        id = id,
+        type = type,
+        senderId = com.hao.heji.config.Config.user.id,
+        content = content,
+        receiverIds = toUsers,
+    )
 }
 
-inline fun Message.Packet.toBytes(): ByteString {
-    LogUtils.d(this.toString())
-    return ByteString.of(*this.toByteArray())
+fun SyncMessage.toJson(): String {
+    return json.encodeToString(SyncMessage.serializer(), this)
 }
 
-inline fun Message.Packet.convertToAck(
-    type: Message.Type,
+fun SyncMessage.convertToAck(
+    type: String,
     content: String,
-): Message.Packet {
-    return createPacket(type, content,id, mutableListOf(senderId))
+): SyncMessage {
+    return createSyncMessage(type, content, id, listOf(senderId))
 }

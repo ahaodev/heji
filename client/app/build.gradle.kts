@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.ksp)
     alias(libs.plugins.sentry)
@@ -156,7 +157,7 @@ dependencies {
     implementation(libs.koin.android)
 
     // Network
-    implementation(libs.retrofit.converter.moshi)
+    implementation(libs.retrofit.converter.kotlinx)
     implementation(libs.okhttp.logging.interceptor)
 
     // Image Loading
@@ -167,12 +168,11 @@ dependencies {
     // Kotlin
     implementation(libs.kotlin.stdlib.jdk8)
 
-    // Moshi
-    implementation(libs.moshi.kotlin)
+    // serialization
+    implementation(libs.kotlinx.serialization.json)
 
-    // Protobuf
-    implementation(libs.protobuf.java)
-    implementation(libs.protobuf.protoc)
+    // Xid
+    implementation(libs.xid)
 
     // Testing
     testImplementation(libs.junit)

@@ -28,10 +28,6 @@ fun Date.calendar(): Calendar {
     return instance
 }
 
-fun String.getObjectTime(): Date {
-    val time = "${Integer.parseInt(this.substring(0, 8), 16)}000".toLong()
-    return Date(time)
-}
 /**
  * 检查String抛出异常
  */

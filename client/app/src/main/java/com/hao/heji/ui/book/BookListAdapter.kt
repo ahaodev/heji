@@ -18,7 +18,7 @@ import com.hao.heji.utils.ColorUtils
  * @author: 锅得铁
  * #
  */
-class BookListAdapter constructor(val settingClickListener: (Book) -> Unit) :
+class BookListAdapter(val settingClickListener: (Book) -> Unit) :
     BaseQuickAdapter<Book, BaseViewHolder>(
         layoutResId = R.layout.fragment_book_item,
         mutableListOf()

@@ -1,30 +1,24 @@
 package com.hao.heji
 
-import com.hao.heji.data.converters.DateConverters
-import com.hao.heji.data.converters.MoneyConverters
 import com.hao.heji.data.db.Bill
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Test
-import java.util.*
 
 class JsonKtTest {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
+
     @Test
     fun jsonTest() {
         Assert.assertEquals(4, (2 + 2).toLong())
         val jsonString =
-            "{\"id\":\"611e854692891153fb00ae14\",\"bookId\":\"mybook\",\"money\":0.00,\"type\":-1,\"category\":null,\"time\":\"2021-22-20 00:22:30\",\"updateTime\":0,\"dealer\":null,\"createUser\":\"App.getInstance().currentUser.username\",\"remark\":null,\"imgCount\":0,\"syncStatus\":0,\"images\":[]}"
+            "{\"_id\":\"611e854692891153fb00ae14\",\"book_id\":\"mybook\",\"money\":0,\"type\":-1,\"category\":null,\"time\":\"2021-22-20 00:22:30\",\"upd_time\":0,\"crt_user\":\"testuser\",\"remark\":null}"
 
-        val moshi = Moshi.Builder()
-            .addLast(KotlinJsonAdapterFactory())
-            .add(DateConverters)
-            .add(MoneyConverters)
-            .build()
-        val jsonAdapter: JsonAdapter<Bill> = moshi.adapter(Bill::class.java)
-        val bill: Bill = jsonAdapter.fromJson(jsonString)!!
+        val bill: Bill = json.decodeFromString(Bill.serializer(), jsonString)
         println(bill)
-        Assert.assertEquals(Objects.isNull(bill), false)
+        Assert.assertNotNull(bill)
     }
 }

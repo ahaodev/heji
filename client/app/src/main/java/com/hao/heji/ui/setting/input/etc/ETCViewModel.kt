@@ -9,16 +9,13 @@ import com.hao.heji.data.converters.DateConverters
 import com.hao.heji.data.converters.MoneyConverters
 import com.hao.heji.data.db.Bill
 import com.hao.heji.data.db.Category
-import com.hao.heji.data.db.mongo.ObjectId
-import com.hao.heji.moshi
+import com.github.shamil.Xid
+import com.hao.heji.json
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.ui.setting.input.etc.dto.ETCListInfoEntity
 import com.hao.heji.ui.setting.input.etc.dto.HBETCEntity
 import com.hao.heji.ui.setting.input.etc.dto.HBETCEntity.DataBean.OrderArrBean
 import com.hao.heji.network.HttpRetrofit
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -72,14 +69,12 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
      * @return
      */
     private fun saveToDB(strBody: String) {
-        val etcListInfo = moshi.adapter(
-            ETCListInfoEntity::class.java
-        ).fromJson(strBody)
-        if (etcListInfo?.data != null && etcListInfo.data.size > 0) {
+        val etcListInfo = json.decodeFromString<ETCListInfoEntity>(strBody)
+        if (etcListInfo.data.isNotEmpty()) {
             val data = etcListInfo.data
             data.forEach(Consumer { info: ETCListInfoEntity.Info ->
                 val bill = Bill().apply {
-                    id = ObjectId(DateConverters.str2Date(info.exchargetime)).toHexString()
+                    id = Xid.string()
                     bookId = Config.book.id
                     money = BigDecimal(info.etcPrice).divide(BigDecimal(100))
                     remark = info.exEnStationName
@@ -141,11 +136,8 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
                             val error = jsonObject.getString("msg")
                             ToastUtils.showLong(error)
                         } else if (status == "OK") {
-                            val jsonAdapter: JsonAdapter<HBETCEntity> = moshi.adapter(
-                                HBETCEntity::class.java
-                            )
-                            val hbetcEntity = jsonAdapter.fromJson(strBody)
-                            if (hbetcEntity?.data != null && hbetcEntity.data.orderArr.size > 0) {
+                            val hbetcEntity = json.decodeFromString<HBETCEntity>(strBody)
+                            if (hbetcEntity.data != null && hbetcEntity.data.orderArr.isNotEmpty()) {
                                 val data = hbetcEntity.data.orderArr
                                 data.forEach(Consumer { info: OrderArrBean -> saveToBillDB(info) })
                                 send(ETCUiState.InputSuccess)
@@ -231,7 +223,7 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
 
     private fun saveToBillDB(info: OrderArrBean) {
         val bill = Bill().apply {
-            id = ObjectId(DateConverters.str2Date(info.exTime)).toHexString()
+            id = Xid.string()
             bookId=Config.book.id
             money = BigDecimal(info.totalFee).divide(BigDecimal(100))
             remark = info.enStationName + "|" + info.exStationName

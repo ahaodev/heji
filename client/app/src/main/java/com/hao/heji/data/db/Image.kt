@@ -2,7 +2,7 @@ package com.hao.heji.data.db
 
 import androidx.room.*
 import com.blankj.utilcode.util.GsonUtils
-import com.hao.heji.data.db.mongo.ObjectId
+import com.github.shamil.Xid
 import java.util.*
 
 /**
@@ -24,7 +24,7 @@ import java.util.*
 )
 data class Image(
     @ColumnInfo(name = COLUMN_ID)
-    var id: String = ObjectId().toHexString(),
+    var id: String = Xid.string(),
     @ColumnInfo(name = Bill.COLUMN_ID, index = true)
     var billID: String
 ) {

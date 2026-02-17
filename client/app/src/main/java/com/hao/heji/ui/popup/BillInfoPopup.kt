@@ -17,8 +17,8 @@ import com.hao.heji.data.db.Bill
 import com.hao.heji.data.db.Image
 import com.hao.heji.databinding.ItemImgBinding
 import com.hao.heji.databinding.PopLayoutBilliInfoBinding
-import com.hao.heji.getObjectTime
 import com.hao.heji.string
+import java.util.Date
 import com.hao.heji.ui.MainActivity
 import com.hao.heji.ui.create.ArgAddBill
 import com.hao.heji.ui.create.CreateBillFragmentArgs
@@ -59,7 +59,7 @@ class PopupBillInfo(
             binding.apply {
                 tvMonney.text = mBill.money.toString()
                 tvType.text = mBill.category
-                tvRecordTime.text = mBill.id.getObjectTime().string()
+                tvRecordTime.text = Date(mBill.crtTime).string()
                 tvTicketTime.text = mBill.time.string()
             }
         }

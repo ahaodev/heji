@@ -2,7 +2,7 @@ package com.hao.heji
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hao.heji.data.db.Bill
-import com.hao.heji.data.db.mongo.ObjectId
+import com.github.shamil.Xid
 import junit.framework.TestCase
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,7 +24,7 @@ class TestBillChange {
             type = 1
         }
 
-        val newID = ObjectId().toHexString()
+        val newID = Xid.string()
 
         bill.apply {
             id = newID
