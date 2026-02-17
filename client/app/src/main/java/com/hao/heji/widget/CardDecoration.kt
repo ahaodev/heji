@@ -66,7 +66,7 @@ class CardDecoration(val padding: Int = 8) : ItemDecoration() {
         val resources = parent.context.resources
         val padding = getPadding(resources)
         val params = view.layoutParams as RecyclerView.LayoutParams
-        val position = params.viewAdapterPosition
+        val position = params.bindingAdapterPosition
         val viewType = parent.adapter!!.getItemViewType(position)
         if (viewType == TYPE_TITLE) {
             // header
