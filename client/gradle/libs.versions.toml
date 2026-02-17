@@ -14,9 +14,9 @@ legacySupport = "1.0.0"
 cardview = "1.0.0"
 
 # Lifecycle
-lifecycleRuntimeKtx = "2.8.7"
-lifecycleLivedata = "2.8.7"
-lifecycleViewModel = "2.8.7"
+lifecycleRuntimeKtx = "2.10.0"
+lifecycleLivedata = "2.10.0"
+lifecycleViewModel = "2.10.0"
 
 # Navigation
 navigation = "2.8.9"
@@ -29,8 +29,8 @@ room = "2.6.1"
 work = "2.10.0"
 
 # Retrofit & OkHttp
-retrofit = "2.9.0"
-okhttp = "5.0.0-alpha.8"
+retrofit = "3.0.0"
+okhttp = "5.3.2"
 
 # Glide
 glide = "4.15.1"
