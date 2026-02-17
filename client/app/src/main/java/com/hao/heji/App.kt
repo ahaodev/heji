@@ -6,10 +6,14 @@ import android.content.Context
 import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.config.Config
 import com.hao.heji.data.AppDatabase
+import com.hao.heji.di.appModules
 import com.tencent.mmkv.MMKV
-import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
 import io.sentry.android.core.SentryAndroid
+import org.koin.android.ext.android.get
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
 /**
  * @date: 2020/8/28
  * @author: 锅得铁
@@ -33,7 +37,14 @@ class App : Application() {
             LogUtils.d("enableOfflineMode=${Config.enableOfflineMode}", Config.book, Config.user)
         }
         switchDataBase(Config.user.id)
-        viewModel = AppViewModel(this)
+
+        startKoin {
+            androidLogger()
+            androidContext(this@App)
+            modules(appModules)
+        }
+
+        viewModel = get()
     }
 
     companion object {

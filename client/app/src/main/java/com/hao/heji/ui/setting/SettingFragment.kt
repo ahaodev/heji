@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.ParcelFileDescriptor
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.UriUtils
@@ -24,7 +24,7 @@ class SettingFragment : BaseFragment() {
             layoutInflater
         )
     }
-    private val viewModel by lazy { ViewModelProvider(this)[SettingViewModel::class.java] }
+    private val viewModel by koinViewModel<SettingViewModel>()
 
     override fun initView(rootView: View) {
         binding.inputETC.setOnClickListener { findNavController().navigate(R.id.nav_input_etc) }

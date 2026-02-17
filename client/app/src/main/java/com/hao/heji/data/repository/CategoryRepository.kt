@@ -10,11 +10,10 @@ import com.hao.heji.network.request.CategoryEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class CategoryRepository () {
-    private val network=HttpManager.getInstance()
-    private val categoryDao =App.dataBase.categoryDao()
+class CategoryRepository(private val httpManager: HttpManager) {
+    private val categoryDao get() = App.dataBase.categoryDao()
     suspend fun addCategory(category: CategoryEntity, bookId: String) {
-        val response = network.categoryPush(category)
+        val response = httpManager.categoryPush(category)
         response.let {
             val dbCategory = category.toDbCategory()
             categoryDao.update(dbCategory)
@@ -22,7 +21,7 @@ class CategoryRepository () {
     }
 
     suspend fun deleteCategory(_id: String): Flow<Result<Boolean>> {
-        val response = network.categoryDelete(_id)
+        val response = httpManager.categoryDelete(_id)
         response.let {
             categoryDao.deleteById(_id)
         }
@@ -30,7 +29,7 @@ class CategoryRepository () {
     }
 
     suspend fun getCategory() {
-        val response: BaseResponse<List<CategoryEntity>> = network.categoryPull()
+        val response: BaseResponse<List<CategoryEntity>> = httpManager.categoryPull()
        response.data?.let {
            it.forEach { entity: CategoryEntity ->
                val _id = App.dataBase.categoryDao().findByID(entity.id)
@@ -45,7 +44,7 @@ class CategoryRepository () {
 
     suspend fun updateCategory(category: Category) {
         categoryDao.update(category)
-        val response = network.categoryUpdate()
+        val response = httpManager.categoryUpdate()
         if (response.code == 0) {
             category.synced=1
             categoryDao.update(category)

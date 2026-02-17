@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewStub
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil.ItemCallback
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,7 +41,7 @@ class BillListFragment : BaseFragment() {
     private lateinit var subTotalLayoutBinding: LayoutBillsTopBinding
     private lateinit var stubTotalView: ViewStub
 
-    private val homeViewModel: BillListViewModel by lazy { ViewModelProvider(mainActivity)[BillListViewModel::class.java] }
+    private val homeViewModel: BillListViewModel by activityViewModel()
     private lateinit var adapter: NodeBillsAdapter
     private val binding: FragmentBillsHomeBinding by lazy {
         FragmentBillsHomeBinding.inflate(layoutInflater).apply {

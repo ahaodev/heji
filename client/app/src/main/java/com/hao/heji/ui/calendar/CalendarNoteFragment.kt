@@ -2,7 +2,7 @@ package com.hao.heji.ui.calendar
 
 import android.content.Context
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.LogUtils
@@ -33,7 +33,7 @@ class CalendarNoteFragment : BaseFragment() {
             delete = { notifyCalendar() },
             update = {})
     }
-    private val vm by lazy { ViewModelProvider(this)[CalendarNoteViewModule::class.java] }
+    private val vm by koinViewModel<CalendarNoteViewModule>()
     lateinit var adapter: NodeBillsAdapter
 
     override fun layout(): View {

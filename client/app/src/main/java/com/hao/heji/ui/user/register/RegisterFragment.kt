@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.Navigation
 import com.blankj.utilcode.util.ToastUtils
 import com.hao.heji.R
@@ -18,9 +18,7 @@ import androidx.navigation.findNavController
 
 
 class RegisterFragment : Fragment() {
-    private val viewModel: RegisterViewModel by lazy {
-        ViewModelProvider(this)[RegisterViewModel::class.java]
-    }
+    private val viewModel: RegisterViewModel by koinViewModel()
     private val binding: FragmentRegisterBinding by lazy {
         FragmentRegisterBinding.inflate(
             layoutInflater

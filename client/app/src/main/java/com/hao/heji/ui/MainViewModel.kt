@@ -19,8 +19,7 @@ import java.util.Calendar
  * @author: 锅得铁
  * # APP运行时 UI常量共享存储
  */
-class MainViewModel : ViewModel() {
-    private val bookRepository = BookRepository()
+class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
 
     /**
      * 全局选择的年月（home to subpage）

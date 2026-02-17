@@ -2,7 +2,7 @@ package com.hao.heji.ui.category.manager
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.KeyboardUtils
@@ -34,9 +34,7 @@ class CategoryManagerFragment : BaseFragment() {
         }
     }
 
-    private val viewModel: CategoryManagerViewModel by lazy {
-        ViewModelProvider(this)[CategoryManagerViewModel::class.java]
-    }
+    private val viewModel: CategoryManagerViewModel by koinViewModel()
     lateinit var args: CategoryManagerFragmentArgs
     private lateinit var adapter: CategoryManagerAdapter
     override fun layout() = binding.root

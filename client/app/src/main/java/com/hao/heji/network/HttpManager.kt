@@ -95,18 +95,4 @@ class HttpManager {
     fun redirectServer() {
         apiServer = HttpRetrofit.create(Config.serverUrl, ApiServer::class.java)
     }
-
-    companion object {
-        private var network: HttpManager? = null
-        fun getInstance(): HttpManager {
-            if (network == null) {
-                synchronized(HttpManager::class.java) {
-                    if (network == null) {
-                        network = HttpManager()
-                    }
-                }
-            }
-            return network!!
-        }
-    }
 }

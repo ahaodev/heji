@@ -147,6 +147,9 @@ dependencies {
     // MMKV
     implementation(libs.mmkv)
 
+    // Koin
+    implementation(libs.koin.android)
+
     // Network
     implementation(libs.retrofit.converter.moshi)
     implementation(libs.okhttp.logging.interceptor)

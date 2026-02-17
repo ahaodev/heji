@@ -11,10 +11,10 @@ import okio.buffer
 import okio.sink
 import java.io.File
 
-internal class ExportViewModel : BaseViewModel<ExportUiState>() {
+internal class ExportViewModel(private val httpManager: HttpManager) : BaseViewModel<ExportUiState>() {
     fun exportExcel(fileName: String) {
         launchIO({
-            var response = HttpManager.getInstance().billExport()
+            var response = httpManager.billExport()
             if (response.isSuccessful && response.code() == 200) {
                 val filesDir =
                     App.context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)

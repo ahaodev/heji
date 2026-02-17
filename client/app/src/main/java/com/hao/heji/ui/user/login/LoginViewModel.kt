@@ -13,8 +13,10 @@ import com.hao.heji.utils.launch
 import com.hao.heji.utils.launchIO
 
 
-internal class LoginViewModel : BaseViewModel<LoginUiState>() {
-    private val userRepository = UserRepository()
+internal class LoginViewModel(
+    private val userRepository: UserRepository,
+    private val httpManager: HttpManager
+) : BaseViewModel<LoginUiState>() {
 
 
     fun login(tel: String, password: String) {
@@ -43,7 +45,7 @@ internal class LoginViewModel : BaseViewModel<LoginUiState>() {
     }
     fun saveServerUrl(address:String) {
         Config.setServerUrl(address)
-        HttpManager.getInstance().redirectServer()
+        httpManager.redirectServer()
     }
     private fun encodePassword(password: String): String {
         return EncryptUtils.encryptSHA512ToString(String(EncryptUtils.encryptSHA512(password.toByteArray())))

@@ -13,7 +13,7 @@ import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.*
 import com.google.android.material.tabs.TabLayout
@@ -49,9 +49,7 @@ import java.util.function.Consumer
  */
 class CreateBillFragment : BaseFragment() {
 
-    internal val viewModel by lazy {
-        ViewModelProvider(this)[CreateBillViewModel::class.java]
-    }
+    internal val viewModel by koinViewModel<CreateBillViewModel>()
 
     val binding: FragmentCreatebillBinding by lazy {
         FragmentCreatebillBinding.inflate(layoutInflater)

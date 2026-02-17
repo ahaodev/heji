@@ -2,7 +2,7 @@ package com.hao.heji.ui.book
 
 import android.graphics.Rect
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,9 +30,7 @@ class BookListFragment : BaseFragment() {
     private val  binding: FragmentBookListBinding by lazy {
         FragmentBookListBinding.inflate(layoutInflater)
     }
-    private val bookViewModel: BookViewModel by lazy {
-        ViewModelProvider(this)[BookViewModel::class.java]
-    }
+    private val bookViewModel: BookViewModel by koinViewModel()
 
     override fun layout()=binding.root
 

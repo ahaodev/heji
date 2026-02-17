@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.view.View
 import android.view.ViewStub
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ScreenUtils
@@ -31,7 +31,7 @@ import java.math.RoundingMode
  * 报告统计页面
  */
 class ReportFragment : BaseFragment() {
-    private val viewModel: ReportViewModel by lazy { ViewModelProvider(this)[ReportViewModel::class.java] }
+    private val viewModel: ReportViewModel by koinViewModel()
     private val categoryTotalAdapter: CategoryTotalAdapter = CategoryTotalAdapter(mutableListOf())
     private val monthYearBillsAdapter: MonthYearBillAdapter = MonthYearBillAdapter(mutableListOf())
     private lateinit var emptyStubView: ViewStub

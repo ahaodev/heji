@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavController.OnDestinationChangedListener
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var navController: NavController private set
     private lateinit var drawerLayout: DrawerLayout
-    val viewModel: MainViewModel by lazy { ViewModelProvider(this)[MainViewModel::class.java] }
+    val viewModel: MainViewModel by koinViewModel()
     private lateinit var navHeaderMainBinding: HeaderMainNavBinding//侧拉头像
     private lateinit var navigationView: NavigationView
 

@@ -1,13 +1,13 @@
 package com.hao.heji.ui.user.info
 
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import com.hao.heji.config.Config
 import com.hao.heji.databinding.FragmentUserInfoBinding
 import com.hao.heji.ui.base.BaseFragment
 
 class UserInfoFragment : BaseFragment() {
-    private val viewModel by lazy { ViewModelProvider(this)[UserInfoViewModel::class.java] }
+    private val viewModel by koinViewModel<UserInfoViewModel>()
     val binding: FragmentUserInfoBinding by lazy {
         FragmentUserInfoBinding.inflate(layoutInflater)
     }

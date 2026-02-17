@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.LogUtils
@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
     private val binding: FragmentLoginBinding by lazy { FragmentLoginBinding.inflate(layoutInflater) }
-    private val viewModel by lazy { ViewModelProvider(this)[LoginViewModel::class.java] }
+    private val viewModel by koinViewModel<LoginViewModel>()
     private val serverUrlInputConfirm: InputConfirmPopupView by lazy {
         XPopup.Builder(context).asInputConfirm(
             "服务", "请输入服务地址", "http://192.168.8.68:8080"

@@ -6,8 +6,7 @@ import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.data.repository.UserRepository
 import com.hao.heji.utils.launch
 
-internal class RegisterViewModel : BaseViewModel<RegisterUiState>() {
-    private val userRepository = UserRepository()
+internal class RegisterViewModel(private val userRepository: UserRepository) : BaseViewModel<RegisterUiState>() {
     fun register(
         username: String,
         tel: String,

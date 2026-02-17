@@ -11,7 +11,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
@@ -30,9 +30,7 @@ import java.util.Calendar
  */
 class ETCFragment : BaseFragment() {
     private val binding: FragmentEtcBinding by lazy { FragmentEtcBinding.inflate(layoutInflater) }
-    private val etcViewModel: ETCViewModel by lazy {
-        ViewModelProvider(this)[ETCViewModel::class.java]
-    }
+    private val etcViewModel: ETCViewModel by koinViewModel()
     private val inputLoading by lazy {
         XPopup.Builder(requireContext()).asLoading().setTitle("正在导入")
     }

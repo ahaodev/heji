@@ -1,7 +1,7 @@
 package com.hao.heji.ui.book
 
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.ToastUtils
 import com.lxj.xpopup.XPopup
@@ -9,9 +9,7 @@ import com.hao.heji.databinding.FragmentBookAddBinding
 import com.hao.heji.ui.base.BaseFragment
 
 class CreateBookFragment : BaseFragment() {
-    private val viewModel: BookViewModel by lazy {
-        ViewModelProvider(this)[BookViewModel::class.java]
-    }
+    private val viewModel: BookViewModel by koinViewModel()
     private val binding: FragmentBookAddBinding by lazy {
         FragmentBookAddBinding.inflate(layoutInflater)
     }

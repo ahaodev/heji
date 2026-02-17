@@ -2,7 +2,7 @@ package com.hao.heji.ui.setting.export
 
 import android.content.Intent
 import android.net.Uri
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import android.provider.DocumentsContract
 import android.view.View
 import com.blankj.utilcode.util.TimeUtils
@@ -23,7 +23,7 @@ class ExportFragment : BaseFragment() {
         const val CREATE_FILE_CSV = 2
     }
 
-    private val viewModel by lazy { ViewModelProvider(this)[ExportViewModel::class.java] }
+    private val viewModel by koinViewModel<ExportViewModel>()
     private val popup by lazy { XPopup.Builder(requireContext()).asLoading().setTitle("正在导出") }
     override fun initView(rootView: View) {
         binding.tvExportFormat.setOnClickListener {

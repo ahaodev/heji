@@ -16,12 +16,11 @@ import com.hao.heji.utils.launchIO
 import com.hao.heji.utils.runMainThread
 import kotlinx.coroutines.flow.*
 
-class BookViewModel : ViewModel() {
+class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
     private val _bookLiveData = MediatorLiveData<Book>()
     private val _bookListLiveData = MediatorLiveData<MutableList<Book>>()
-    private val bookDao = App.dataBase.bookDao()
+    private val bookDao get() = App.dataBase.bookDao()
 
-    private val bookRepository = BookRepository()
     private val booksFlow = App.dataBase.bookDao().allBooks()
 
     init {

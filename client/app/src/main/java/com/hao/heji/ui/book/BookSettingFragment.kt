@@ -1,7 +1,7 @@
 package com.hao.heji.ui.book
 
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.blankj.utilcode.util.ClickUtils
@@ -21,9 +21,7 @@ import com.hao.heji.ui.popup.BookSharePopup
 
 class BookSettingFragment : BaseFragment() {
 
-    private val viewModel: BookViewModel by lazy {
-        ViewModelProvider(this)[BookViewModel::class.java]
-    }
+    private val viewModel: BookViewModel by koinViewModel()
     private val binding: FragmentBookSettingBinding by lazy {
         FragmentBookSettingBinding.inflate(
             layoutInflater
