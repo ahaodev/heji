@@ -63,7 +63,7 @@ internal class CategoryManagerViewModel :
                 ToastUtils.showShort("标签已经存在")
             } else {
                 categoryDao.insert(category)
-                send(CategoryManagerUiState.SaveSuccess("保存成功"))
+                send(CategoryManagerUiState.SaveSuccess("保存成功", parentId))
                 ToastUtils.showShort("保存成功")
             }
         }, {

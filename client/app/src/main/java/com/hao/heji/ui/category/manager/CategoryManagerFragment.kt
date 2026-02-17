@@ -96,6 +96,9 @@ class CategoryManagerFragment : BaseFragment() {
                 }
                 is CategoryManagerUiState.SaveSuccess -> {
                     viewModel.getParentCategories(currentType)
+                    if (!it.parentId.isNullOrEmpty()) {
+                        viewModel.getChildCategories(it.parentId)
+                    }
                 }
             }
         }

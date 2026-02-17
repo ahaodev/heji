@@ -13,5 +13,5 @@ internal sealed interface CategoryManagerUiState : IUiState {
     class Categories(val data: MutableList<Category>) : CategoryManagerUiState
     class ParentCategories(val data: MutableList<Category>) : CategoryManagerUiState
     class ChildCategories(val parentId: String, val data: MutableList<Category>) : CategoryManagerUiState
-    class SaveSuccess(val message: String) : CategoryManagerUiState
+    class SaveSuccess(val message: String, val parentId: String? = null) : CategoryManagerUiState
 }

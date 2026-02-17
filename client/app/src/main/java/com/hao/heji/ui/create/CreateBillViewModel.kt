@@ -31,13 +31,18 @@ internal class CreateBillViewModel :
             TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
         )
         val categories = App.dataBase.categoryDao()
-            .findIncomeOrExpenditure(Config.book.id, type)
+            .findParentCategories(Config.book.id, type)
         send(CreateBillUIState.Categories(type, categories))
         LogUtils.d(
             "TimeTest",
             categories,
             TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
         )
+    }
+
+    fun getChildCategories(type: Int, parentId: String) {
+        val children = App.dataBase.categoryDao().findChildCategories(parentId)
+        send(CreateBillUIState.SubCategories(type, parentId, children))
     }
 
     fun deleteImage(id: String) {

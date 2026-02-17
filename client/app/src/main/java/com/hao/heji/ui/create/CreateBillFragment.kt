@@ -277,6 +277,12 @@ class CreateBillFragment : BaseFragment() {
                 is CreateBillUIState.Categories -> {
                     setCategories(uiState.type, uiState.categories)
                 }
+
+                is CreateBillUIState.SubCategories -> {
+                    val index = if (uiState.type == BillType.EXPENDITURE.value) 0 else 1
+                    val categoryFragment = pagerAdapter.getItem(index) as CategoryFragment
+                    categoryFragment.setSubCategories(uiState.children)
+                }
             }
         }
     }

@@ -24,4 +24,5 @@ internal sealed class CreateBillUIState : IUiState {
     class Error(val throws: Throwable) : CreateBillUIState()
     class Images(val images: MutableList<Image>) : CreateBillUIState()
     class Categories(val type: Int, val categories: MutableList<Category>) : CreateBillUIState()
+    class SubCategories(val type: Int, val parentId: String, val children: MutableList<Category>) : CreateBillUIState()
 }

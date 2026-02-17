@@ -37,6 +37,9 @@ interface CategoryDao {
     @Query("SELECT * FROM category WHERE book_id=:bookID AND type=:type AND (parentId IS NULL OR parentId = '') AND deleted != 1 ORDER BY `index` DESC, _id DESC")
     fun observeParentCategories(bookID: String, type: Int): Flow<MutableList<Category>>
 
+    @Query("SELECT * FROM category WHERE book_id=:bookID AND type=:type AND (parentId IS NULL OR parentId = '') AND deleted != 1 ORDER BY `index` DESC, _id DESC")
+    fun findParentCategories(bookID: String, type: Int): MutableList<Category>
+
     @Query("SELECT * FROM category WHERE parentId=:parentId AND deleted != 1 ORDER BY `index` DESC, _id DESC")
     fun findChildCategories(parentId: String): MutableList<Category>
 

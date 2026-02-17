@@ -3,16 +3,14 @@ package com.hao.heji.ui.create
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.TimeUtils
-import com.chad.library.adapter.base.BaseQuickAdapter
 import com.hao.heji.data.BillType
 import com.hao.heji.data.db.Category
 import com.hao.heji.databinding.FragmentCategoryContentBinding
 import com.hao.heji.ui.base.BaseFragment
-import com.hao.heji.ui.create.adapter.SelectCategoryAdapter
+import com.hao.heji.ui.create.adapter.CategoryWithSubAdapter
 
 /**
  * @date: 2020/10/11
@@ -23,26 +21,20 @@ internal class CategoryFragment : BaseFragment() {
     val binding: FragmentCategoryContentBinding by lazy {
         FragmentCategoryContentBinding.inflate(layoutInflater)
     }
-    private val labelAdapter by lazy {
-        SelectCategoryAdapter(ArrayList()).apply {
-            setDiffCallback(object : DiffUtil.ItemCallback<Category>() {
-                override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
-                    return oldItem.id == newItem.id
+    private val categoryAdapter by lazy {
+        CategoryWithSubAdapter().apply {
+            onParentClick = { category ->
+                createBillFragment.selectedCategory(type.value, category)
+                createBillFragment.viewModel.getChildCategories(type.value, category.id)
+            }
+            onSubCategoryClick = { subCategory ->
+                createBillFragment.selectedCategory(type.value, subCategory)
+            }
+            setOnItemClickListener { _, _, position ->
+                val item = getItem(position)
+                if (item is CategoryWithSubAdapter.CategoryItem.ParentItem) {
+                    selectParent(item.category)
                 }
-
-                override fun areContentsTheSame(oldItem: Category, newItem: Category): Boolean {
-                    return oldItem.id == newItem.id
-                }
-
-            })
-            setOnItemClickListener { adapter: BaseQuickAdapter<*, *>?, view: View?, position: Int ->
-                selectCategory = getItem(position) //当前点击的
-                //使其他置为为选中状态
-                data.forEach {
-                    it.isSelected = it.name == selectCategory!!.name
-                }
-                notifyDataSetChanged()
-                createBillFragment.selectedCategory(type.value, selectCategory!!)
             }
         }
     }
@@ -84,10 +76,12 @@ internal class CategoryFragment : BaseFragment() {
     }
 
     override fun initView(view: View) {
+        val gridLayoutManager = GridLayoutManager(mainActivity, CategoryWithSubAdapter.SPAN_COUNT)
         binding.categoryRecycler.apply {
-            layoutManager = GridLayoutManager(mainActivity, 6)
-            adapter = labelAdapter
+            layoutManager = gridLayoutManager
+            adapter = categoryAdapter
         }
+        categoryAdapter.setupSpanSizeLookup(gridLayoutManager)
     }
 
 
@@ -101,24 +95,26 @@ internal class CategoryFragment : BaseFragment() {
             "TimeTest", type,
             TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
         )
-        labelAdapter.setDiffNewData(categories)
+        categoryAdapter.setParentCategories(categories)
         defSelected()
+    }
+
+    fun setSubCategories(children: MutableList<Category>) {
+        categoryAdapter.showSubCategories(children)
     }
 
     /**
      * 默认第一个为选中
      */
     private fun defSelected() {
-        val data = labelAdapter.data
         if (selectCategory != null) return
-        if (data.isNotEmpty() && data.size > 0) {
-            val count =
-                data.count { category: Category -> category.isSelected }
+        val parents = categoryAdapter.data.filterIsInstance<CategoryWithSubAdapter.CategoryItem.ParentItem>()
+        if (parents.isNotEmpty()) {
+            val count = parents.count { it.category.isSelected }
             if (count <= 0) {
-                selectCategory = data.stream().findFirst().get()
-                createBillFragment.selectedCategory(type.value, selectCategory!!)
-                selectCategory!!.isSelected = true
-                labelAdapter.notifyDataSetChanged()
+                val first = parents.first().category
+                selectCategory = first
+                categoryAdapter.selectParent(first)
             }
         }
     }
@@ -126,7 +122,7 @@ internal class CategoryFragment : BaseFragment() {
     fun setSelectCategory(category: String? = null) {
         if (!category.isNullOrEmpty()) {
             binding.root.post {
-                labelAdapter.setSelectCategory(category)
+                categoryAdapter.setSelectCategoryByName(category)
             }
         }
     }
