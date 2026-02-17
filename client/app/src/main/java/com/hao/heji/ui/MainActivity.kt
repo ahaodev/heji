@@ -44,7 +44,6 @@ import com.hao.heji.ui.user.login.LoginActivity
 import com.hao.heji.utils.permitDiskReads
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.lang.ref.WeakReference
 
 
@@ -174,9 +173,7 @@ class MainActivity : AppCompatActivity() {
         val navMenu = navigationView.menu
         navMenu.findItem(R.id.menu_logout).setOnMenuItemClickListener {
             XPopup.Builder(this@MainActivity).asConfirm("退出确认", "确认退出当前用户吗?") {
-                runBlocking {
-                    Config.remove()
-                }
+                Config.remove()
                 finish()
                 LoginActivity.start(this)
             }.show()

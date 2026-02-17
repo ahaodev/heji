@@ -12,7 +12,6 @@ import com.hao.heji.network.HttpManager
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.ui.user.JWTParse
 import com.hao.heji.utils.launch
-import com.hao.heji.utils.launchIO
 
 
 internal class LoginViewModel(
@@ -58,12 +57,11 @@ internal class LoginViewModel(
      * 开启离线使用模式
      */
     fun enableOfflineMode() {
-        launchIO({
-            Config.enableOfflineMode(true)
-            Config.setUser(LocalUser)
+        Config.enableOfflineMode(true)
+        Config.setUser(LocalUser)
+        launch({
             send(LoginUiState.OfflineRun)
         })
-
     }
 }
 

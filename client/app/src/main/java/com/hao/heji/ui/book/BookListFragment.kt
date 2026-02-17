@@ -16,7 +16,6 @@ import com.hao.heji.databinding.FragmentBookListBinding
 import com.hao.heji.ui.base.BaseFragment
 import com.hao.heji.ui.base.hideRefreshing
 import com.hao.heji.ui.base.swipeRefreshLayout
-import kotlinx.coroutines.runBlocking
 
 import androidx.recyclerview.widget.DiffUtil.ItemCallback as ItemCallback
 
@@ -98,9 +97,7 @@ class BookListFragment : BaseFragment() {
         adapter.setOnItemClickListener { adapter, view, position ->
             val book: Book = adapter.getItem(position) as Book
             mainActivity.setCurrentBook(book.name)
-            runBlocking {
-                Config.setBook(book)
-            }
+            Config.setBook(book)
             findNavController().popBackStack()
         }
         binding.fab.setOnClickListener {

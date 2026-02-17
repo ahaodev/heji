@@ -8,7 +8,6 @@ import com.hao.heji.config.Config
 import com.hao.heji.data.AppDatabase
 import com.hao.heji.di.appModules
 import com.tencent.mmkv.MMKV
-import kotlinx.coroutines.runBlocking
 import io.sentry.android.core.SentryAndroid
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
@@ -32,10 +31,7 @@ class App : Application() {
                 "https://77565e76a3ff93fa653f67e77a9bc41d@o4508631282155520.ingest.us.sentry.io/4508922877771776"
             config.isDebug = true
         }
-        runBlocking {
-            Config.load()
-            LogUtils.d("enableOfflineMode=${Config.enableOfflineMode}", Config.book, Config.user)
-        }
+        LogUtils.d("enableOfflineMode=${Config.enableOfflineMode}", Config.book, Config.user)
         switchDataBase(Config.user.id)
 
         startKoin {
