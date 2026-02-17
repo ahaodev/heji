@@ -109,7 +109,7 @@ private fun lineChartConvertAdapter(bills: List<BillTotal>, yearMonth: YearMonth
             yearMonth.year,
             yearMonth.month
         )
-        if (currentYearMonth == yearMonth && bills.last().time.split("-")[2].toInt() < currentYearMonth.day) {
+        if (bills.isNotEmpty() && currentYearMonth == yearMonth && bills.last().time.split("-")[2].toInt() < currentYearMonth.day) {
             dayCount = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
         }
         for (day in 1..dayCount) {

@@ -1,5 +1,7 @@
 package com.hao.heji.ui.user.login
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.blankj.utilcode.util.EncryptUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
@@ -19,6 +21,7 @@ internal class LoginViewModel(
 ) : BaseViewModel<LoginUiState>() {
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun login(tel: String, password: String) {
         launch({
             var resp = userRepository.login(

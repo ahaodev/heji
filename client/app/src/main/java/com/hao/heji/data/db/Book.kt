@@ -19,7 +19,7 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = Book.TAB_NAME, indices = [Index(value = [Book.COLUMN_NAME], unique = true)])
 data class Book(
 
-    @Json(name = "_id")
+    @param:Json(name = "_id")
     @PrimaryKey
     @ColumnInfo(name = COLUMN_ID)
     var id: String = ObjectId().toHexString(),
@@ -27,21 +27,21 @@ data class Book(
     @ColumnInfo(name = COLUMN_NAME)
     var name: String,//账本名称
 
-    @Json(name = "crt_user_id")
+    @param:Json(name = "crt_user_id")
     @ColumnInfo(name = COLUMN_CREATE_USER)
     var crtUserId: String = Config.user.id,//创建人
 
-    @Json(name = "type")
+    @param:Json(name = "type")
     @ColumnInfo(name = COLUMN_TYPE)
 
     var type: String? = null,//账本类型
-    @Json(name = "crt_time")
+    @param:Json(name = "crt_time")
 
     var crtTime: Long = System.currentTimeMillis(),
-    @Json(name = "upd_time")
+    @param:Json(name = "upd_time")
     var updTime: Long? = 0,
 
-    @Json(name = "banner")
+    @param:Json(name = "banner")
     @ColumnInfo(name = COLUMN_BANNER_URL)
     var bannerUrl: String? = null,//封面图片
 
@@ -51,9 +51,9 @@ data class Book(
     @ColumnInfo(name = "deleted")
     var deleted: Int = 0,
 
-    @Json(name = "is_initial")
+    @param:Json(name = "is_initial")
     @ColumnInfo(name = COLUMN_FIRST)
-    @TypeConverters(LogicConverters::class)
+    @param:TypeConverters(LogicConverters::class)
     var isInitial: Boolean = false//初始账本
 
 ) : Parcelable {

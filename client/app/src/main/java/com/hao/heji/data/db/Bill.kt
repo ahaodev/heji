@@ -35,58 +35,58 @@ import java.util.Date
 )
 @TypeConverters(DateConverters::class, MoneyConverters::class)
 data class Bill(
-    @Json(name = "_id")
+    @param:Json(name = "_id")
     @ColumnInfo(name = COLUMN_ID)
     var id: String = ObjectId().toHexString(),
 
-    @Json(name = "book_id")
+    @param:Json(name = "book_id")
     @ColumnInfo(name = COLUMN_BOOK_ID, index = true)
     var bookId: String = "",
     /**
      * 钱
      */
-    @Json(name = "money")
-    @TypeConverters(MoneyConverters::class)
+    @param:Json(name = "money")
+    @param:TypeConverters(MoneyConverters::class)
     var money: BigDecimal = MoneyConverters.ZERO_00(),
 
     /**
      * 收|支类型 s|z
      */
-    @Json(name = "type")
+    @param:Json(name = "type")
     var type: Int = BillType.EXPENDITURE.valueInt,
 
     /**
      * 类别
      */
-    @Json(name = "category")
+    @param:Json(name = "category")
     var category: String? = null,
 
     /**
      * 账单时间-产生费用的日期-以这个为主
      */
-    @Json(name = "time")
+    @param:Json(name = "time")
     @ColumnInfo(name = "time")
     var time: Date = Date(),
 
     /**
      * 更新时间
      */
-    @Json(name = "upd_time")
+    @param:Json(name = "upd_time")
     @ColumnInfo(name = "upd_time")
     var updTime: Long? = 0,
 
-    @Json(name = "crt_user")
+    @param:Json(name = "crt_user")
     @ColumnInfo(name = "crt_user")
     var crtUser: String = "",
 
-    @Json(name = "crt_time")
+    @param:Json(name = "crt_time")
     @ColumnInfo(name = "crt_time")
     var crtTime: Long = System.currentTimeMillis(),
 
     /**
      * 备注
      */
-    @Json(name = "remark")
+    @param:Json(name = "remark")
     var remark: String? = null,
 
     @Ignore
