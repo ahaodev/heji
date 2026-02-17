@@ -69,17 +69,17 @@ class ReportFragment : BaseFragment() {
     }
 
     private fun setLinChart(type: Int, state: ReportUiState.LinChart) {
-        if (type == BillType.EXPENDITURE.valueInt) {
+        if (type == BillType.EXPENDITURE.value) {
             setExpenditureLineChartNodes(
                 viewModel.yearMonth, state.data
             )
         }
-        if (type == BillType.INCOME.valueInt) {
+        if (type == BillType.INCOME.value) {
             setIncomeLineChartNodes(
                 viewModel.yearMonth, state.data
             )
         }
-        if (type == BillType.ALL.valueInt) {
+        if (type == BillType.ALL.value) {
             val arrays = state.all
             setIELineChartNodes(
                 viewModel.yearMonth, expenditures = arrays[0], incomes = arrays[1]
@@ -125,26 +125,26 @@ class ReportFragment : BaseFragment() {
         lineChartStyle(binding.lineChart)
         val yearMonth = viewModel.yearMonth
         binding.tvTypeExpenditure.setOnClickListener {
-            viewModel.getLinChartData(BillType.EXPENDITURE.valueInt)
+            viewModel.getLinChartData(BillType.EXPENDITURE.value)
             lineChartSelectType(BillType.EXPENDITURE)
         }
         binding.tvTypeIncome.setOnClickListener {
-            viewModel.getLinChartData(BillType.INCOME.valueInt)
+            viewModel.getLinChartData(BillType.INCOME.value)
             lineChartSelectType(BillType.INCOME)
         }
         binding.tvTypeAll.setOnClickListener {
-            viewModel.getLinChartData(BillType.ALL.valueInt)
+            viewModel.getLinChartData(BillType.ALL.value)
             lineChartSelectType(BillType.ALL)
         }
 
         pieChartStyle(binding.pieChartCategory)
 
         binding.tvTypeExpenditurePie.setOnClickListener {
-            viewModel.getProportionChart(BillType.EXPENDITURE.valueInt)
+            viewModel.getProportionChart(BillType.EXPENDITURE.value)
             pieChartSelectType(BillType.EXPENDITURE)
         }
         binding.tvTypeIncomePie.setOnClickListener {
-            viewModel.getProportionChart(BillType.INCOME.valueInt)
+            viewModel.getProportionChart(BillType.INCOME.value)
             pieChartSelectType(BillType.INCOME)
         }
 

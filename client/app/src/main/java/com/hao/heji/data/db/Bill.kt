@@ -9,6 +9,7 @@ import androidx.room.Index
 import androidx.room.TypeConverters
 import com.blankj.utilcode.util.GsonUtils
 import com.hao.heji.data.BillType
+import com.hao.heji.data.Status
 import com.hao.heji.data.converters.BigDecimalSerializer
 import com.hao.heji.data.converters.DateConverters
 import com.hao.heji.data.converters.DateSerializer
@@ -59,7 +60,7 @@ data class Bill(
      * 收|支类型 s|z
      */
     @SerialName("type")
-    var type: Int = BillType.EXPENDITURE.valueInt,
+    var type: Int = BillType.EXPENDITURE.value,
 
     /**
      * 类别
@@ -102,10 +103,10 @@ data class Bill(
     var images: MutableList<String> = mutableListOf(),
 
     @ColumnInfo(name = "synced")
-    var synced: Int = 0,
+    var synced: Int = Status.NOT_SYNCED,
 
     @ColumnInfo(name = "deleted")
-    var deleted: Int = 0,
+    var deleted: Int = Status.NOT_DELETED,
 ) : Parcelable {
 
     @Transient

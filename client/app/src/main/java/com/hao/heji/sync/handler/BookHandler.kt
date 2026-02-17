@@ -1,6 +1,7 @@
 package com.hao.heji.sync.handler
 
 import com.hao.heji.App
+import com.hao.heji.data.Status
 import com.hao.heji.data.db.Book
 import com.hao.heji.json
 import com.hao.heji.sync.SyncMessage
@@ -17,7 +18,7 @@ class AddBookHandler : IMessageHandler {
         if (message.type == SyncMessage.Type.ADD_BOOK) {
             val book = json.decodeFromString(Book.serializer(), message.content)
             book?.let {
-                book.synced = 1
+                book.synced = Status.SYNCED
                 App.dataBase.bookDao().insert(book)
                 val ack = message.convertToAck(SyncMessage.Type.ADD_BOOK_ACK, book.id)
                 webSocket.send(ack.toJson())

@@ -20,6 +20,7 @@ import com.google.android.material.tabs.TabLayout
 import com.lxj.xpopup.XPopup
 import com.hao.heji.*
 import com.hao.heji.config.Config
+import com.hao.heji.data.Status
 import com.hao.heji.data.BillType
 import com.hao.heji.data.converters.DateConverters
 import com.hao.heji.data.converters.MoneyConverters.ZERO_00
@@ -62,7 +63,7 @@ class CreateBillFragment : BaseFragment() {
                 CategoryFragment.newInstance(BillType.INCOME)
             ),
             listOf(
-                BillType.EXPENDITURE.valueString, BillType.INCOME.valueString
+                BillType.EXPENDITURE.label, BillType.INCOME.label
             )
         )
     }
@@ -146,7 +147,7 @@ class CreateBillFragment : BaseFragment() {
     private fun setSelectCategory(category: String, type: Int) {
         //内容页绘制完成后选中类别
         binding.vpContent.post {
-            val index = if (type == BillType.EXPENDITURE.valueInt) 0 else 1
+            val index = if (type == BillType.EXPENDITURE.value) 0 else 1
             val categoryFragment = pagerAdapter.getItem(index) as CategoryFragment
             binding.tab.getTabAt(index)
             categoryFragment.setSelectCategory(category)
@@ -164,11 +165,11 @@ class CreateBillFragment : BaseFragment() {
             "TimeTest",
             TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
         )
-        val index = if (type == BillType.EXPENDITURE.valueInt) 0 else 1
+        val index = if (type == BillType.EXPENDITURE.value) 0 else 1
         val categoryFragment = pagerAdapter.getItem(index) as CategoryFragment
         binding.tab.getTabAt(index)
         categoryFragment.setCategories(categories)
-        val billType = BillType.transform(type)
+        val billType = BillType.fromValue(type)
         binding.keyboard.setType(billType)
         val color = if (billType == BillType.EXPENDITURE) R.color.expenditure else R.color.income
         binding.tvMoney.setTextColor(resources.getColor(color, null))
@@ -200,7 +201,7 @@ class CreateBillFragment : BaseFragment() {
                 override fun onTabSelected(tab: TabLayout.Tab) {
                     LogUtils.d("onTabSelected", tab.position)
                     val type =
-                        if (tab.position == 0) BillType.EXPENDITURE.valueInt else BillType.INCOME.valueInt
+                        if (tab.position == 0) BillType.EXPENDITURE.value else BillType.INCOME.value
                     viewModel.getCategories(type)
 
                 }
@@ -353,7 +354,7 @@ class CreateBillFragment : BaseFragment() {
      */
     fun selectedCategory(type: Int, category: Category?) {
         LogUtils.d("selectedCategory : type=$type category= $category")
-        val billType = BillType.transform(type)
+        val billType = BillType.fromValue(type)
         if (null != category) {
             mBill.category = category.name
         } else {
@@ -423,7 +424,7 @@ class CreateBillFragment : BaseFragment() {
     private fun save(again: Boolean) {
         try {
             if (isModify){
-                mBill.synced=1
+                mBill.synced = Status.SYNCED
             }
             mBill.bookId = Config.book.id
             mBill.remark = binding.eidtRemark.text.toString()

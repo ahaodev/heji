@@ -42,7 +42,7 @@ internal class CategoryFragment : BaseFragment() {
                     it.isSelected = it.name == selectCategory!!.name
                 }
                 notifyDataSetChanged()
-                createBillFragment.selectedCategory(type.valueInt, selectCategory!!)
+                createBillFragment.selectedCategory(type.value, selectCategory!!)
             }
         }
     }
@@ -66,7 +66,7 @@ internal class CategoryFragment : BaseFragment() {
             arguments?.let {
                 type = CategoryFragmentArgs.fromBundle(it).type
                 if (type == BillType.INCOME)//预加载一次
-                    createBillFragment.viewModel.getCategories(type.valueInt)
+                    createBillFragment.viewModel.getCategories(type.value)
             }
         }
     }
@@ -75,9 +75,9 @@ internal class CategoryFragment : BaseFragment() {
         super.onResume()
         binding.root.post {
             with(createBillFragment) {
-                viewModel.getCategories(type.valueInt)
+                viewModel.getCategories(type.value)
             }
-            createBillFragment.selectedCategory(type.valueInt, selectCategory)
+            createBillFragment.selectedCategory(type.value, selectCategory)
             LogUtils.d(selectCategory)
             LogUtils.d(type)
         }
@@ -116,7 +116,7 @@ internal class CategoryFragment : BaseFragment() {
                 data.count { category: Category -> category.isSelected }
             if (count <= 0) {
                 selectCategory = data.stream().findFirst().get()
-                createBillFragment.selectedCategory(type.valueInt, selectCategory!!)
+                createBillFragment.selectedCategory(type.value, selectCategory!!)
                 selectCategory!!.isSelected = true
                 labelAdapter.notifyDataSetChanged()
             }

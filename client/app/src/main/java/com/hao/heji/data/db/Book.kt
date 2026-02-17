@@ -3,6 +3,7 @@ package com.hao.heji.data.db
 import android.os.Parcelable
 import androidx.room.*
 import com.hao.heji.config.Config
+import com.hao.heji.data.Status
 import com.hao.heji.data.converters.LogicConverters
 import com.github.shamil.Xid
 import kotlinx.parcelize.Parcelize
@@ -48,10 +49,10 @@ data class Book(
     var bannerUrl: String? = null,//封面图片
 
     @ColumnInfo(name = "synced")
-    var synced: Int = 0,
+    var synced: Int = Status.NOT_SYNCED,
 
     @ColumnInfo(name = "deleted")
-    var deleted: Int = 0,
+    var deleted: Int = Status.NOT_DELETED,
 
     @SerialName("is_initial")
     @ColumnInfo(name = COLUMN_FIRST)

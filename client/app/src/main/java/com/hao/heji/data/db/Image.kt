@@ -3,6 +3,7 @@ package com.hao.heji.data.db
 import androidx.room.*
 import com.blankj.utilcode.util.GsonUtils
 import com.github.shamil.Xid
+import com.hao.heji.data.Status
 import java.util.*
 
 /**
@@ -40,10 +41,10 @@ data class Image(
     var onlinePath: String? = null
 
     @ColumnInfo(name = "synced")
-    var synced = 0
+    var synced = Status.NOT_SYNCED
 
     @ColumnInfo(name = "deleted")
-    var deleted = 0
+    var deleted = Status.NOT_DELETED
 
     override fun hashCode(): Int {
         return Objects.hash(id, billID, localPath, onlinePath)

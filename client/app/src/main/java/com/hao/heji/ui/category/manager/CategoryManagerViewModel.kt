@@ -4,6 +4,7 @@ import android.text.TextUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
+import com.hao.heji.data.Status
 import com.hao.heji.data.db.Category
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.utils.launchIO
@@ -59,7 +60,7 @@ internal class CategoryManagerViewModel :
      */
     fun deleteCategory(category: Category) {
         launchIO({
-            category.deleted=1
+            category.deleted = Status.DELETED
             categoryDao.update(category)
             //deleteLiveData.postValue(true)
         }, {

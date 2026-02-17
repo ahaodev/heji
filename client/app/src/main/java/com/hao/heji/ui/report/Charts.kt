@@ -94,12 +94,12 @@ private fun lineChartConvertAdapter(bills: List<BillTotal>, yearMonth: YearMonth
             val month = it.time.split("-")[1]
             map.replace(
                 month,
-                Entry(month.toFloat(), it.money.toFloat(), BillType.transform(it.type).valueString)
+                Entry(month.toFloat(), it.money.toFloat(), BillType.fromValue(it.type).label)
             )
             return@map Entry(
                 month.toFloat(),
                 it.money.toFloat(),
-                BillType.transform(it.type).valueString
+                BillType.fromValue(it.type).label
             )
         }.toMutableList()
         val entries = map.values.toMutableList()
@@ -121,9 +121,9 @@ private fun lineChartConvertAdapter(bills: List<BillTotal>, yearMonth: YearMonth
             val day = it.time.split("-")[2]
             map.replace(
                 day,
-                Entry(day.toFloat(), it.money.toFloat(), BillType.transform(it.type).valueString)
+                Entry(day.toFloat(), it.money.toFloat(), BillType.fromValue(it.type).label)
             )
-            return@map Entry(day.toFloat(), it.money.toFloat(), BillType.transform(it.type).valueString)
+            return@map Entry(day.toFloat(), it.money.toFloat(), BillType.fromValue(it.type).label)
         }.toMutableList()
 
         val entries = map.values.toMutableList()
@@ -132,7 +132,7 @@ private fun lineChartConvertAdapter(bills: List<BillTotal>, yearMonth: YearMonth
 }
 
 private fun parserBillsType(bills: List<BillTotal>) =
-    if (bills.isEmpty()) "收入" else BillType.transform(bills[0].type).valueString
+    if (bills.isEmpty()) "收入" else BillType.fromValue(bills[0].type).label
 
 fun ReportFragment.setIncomeLineChartNodes(yearMonth: YearMonth, bills: MutableList<BillTotal>) {
     lineChartConvertAdapter(bills, yearMonth).apply {

@@ -53,7 +53,7 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
             if (categories.isEmpty()) {
                 category = Category(name = "过路费", bookId = Config.book.id).apply {
                     level = 0
-                    type = BillType.EXPENDITURE.valueInt
+                    type = BillType.EXPENDITURE.value
                 }
                 App.dataBase.categoryDao().insert(category)
             } else {
@@ -80,7 +80,7 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
                     remark = info.exEnStationName
                     time = DateConverters.str2Date(info.exchargetime)
                     category = categoryName
-                    type = BillType.EXPENDITURE.valueInt
+                    type = BillType.EXPENDITURE.value
                 }.also {
                     it.hashValue = it.hashCode()
                 }
@@ -229,7 +229,7 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
             remark = info.enStationName + "|" + info.exStationName
             time = DateConverters.str2Date(info.exTime)
             category = categoryName
-            type = BillType.EXPENDITURE.valueInt
+            type = BillType.EXPENDITURE.value
         }.also {
             it.hashValue = it.hashCode()
         }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
+import com.hao.heji.data.Status
 import com.hao.heji.data.db.Book
 import com.hao.heji.data.repository.BookRepository
 import com.hao.heji.launchIO
@@ -47,7 +48,7 @@ class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
                 //协同账本在线模式
                 bookRepository.bookList().data?.let {
                     it.forEach { book ->
-                        book.synced=1
+                        book.synced = Status.SYNCED
                         val exist = bookDao.exist(book.id) > 0
                         if (exist)
                             bookDao.update(book)

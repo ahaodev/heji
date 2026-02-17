@@ -67,7 +67,7 @@ class CategoryManagerFragment : BaseFragment() {
     override fun setUpToolBar() {
         super.setUpToolBar()
         toolBar.apply {
-            title = "分类管理(${BillType.transform(args.ieType).valueString})"
+            title = "分类管理(${BillType.fromValue(args.ieType).label})"
             navigationIcon = blackDrawable()
             setNavigationOnClickListener {
                 findNavController().navigateUp()

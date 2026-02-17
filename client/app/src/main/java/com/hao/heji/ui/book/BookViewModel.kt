@@ -8,6 +8,7 @@ import com.blankj.utilcode.util.ToastUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.data.Result
+import com.hao.heji.data.Status
 import com.hao.heji.data.db.Book
 import com.github.shamil.Xid
 import com.hao.heji.data.repository.BookRepository
@@ -77,7 +78,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
                     return@launch
                 }
                 for (book in it) {
-                    book.synced=1
+                    book.synced = Status.SYNCED
                     if (bookDao.exist(book.id) > 0) {
                         bookDao.update(book)
                     } else {

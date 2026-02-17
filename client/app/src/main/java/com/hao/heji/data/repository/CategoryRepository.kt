@@ -3,6 +3,7 @@ package com.hao.heji.data.repository
 import android.text.TextUtils
 import com.hao.heji.App
 import com.hao.heji.data.Result
+import com.hao.heji.data.Status
 import com.hao.heji.data.db.Category
 import com.hao.heji.network.BaseResponse
 import com.hao.heji.network.HttpManager
@@ -35,7 +36,7 @@ class CategoryRepository(private val httpManager: HttpManager) {
                val _id = App.dataBase.categoryDao().findByID(entity.id)
                if (TextUtils.isEmpty(_id)) {
                    val dbCategory = entity.toDbCategory()
-                   dbCategory.synced = 1
+                   dbCategory.synced = Status.SYNCED
                    App.dataBase.categoryDao().insert(dbCategory)
                }
            }
@@ -46,7 +47,7 @@ class CategoryRepository(private val httpManager: HttpManager) {
         categoryDao.update(category)
         val response = httpManager.categoryUpdate()
         if (response.code == 0) {
-            category.synced=1
+            category.synced = Status.SYNCED
             categoryDao.update(category)
         }
     }

@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.hao.heji.data.BillType
+import com.hao.heji.data.Status
 import com.github.shamil.Xid
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -33,7 +34,7 @@ data class Category(
      * 收入、支出
      */
     @ColumnInfo(name = "type")
-    var type: Int = BillType.EXPENDITURE.valueInt
+    var type: Int = BillType.EXPENDITURE.value
 ) {
 
 
@@ -64,10 +65,10 @@ data class Category(
      * 同步状态
      */
     @ColumnInfo(name = "synced", defaultValue = "0")
-    var synced: Int =0
+    var synced: Int = Status.NOT_SYNCED
 
     @ColumnInfo(name = "deleted", defaultValue = "0")
-    var deleted: Int =0
+    var deleted: Int = Status.NOT_DELETED
 
     /**
      * 是否在记账页面显示

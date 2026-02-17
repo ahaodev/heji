@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import androidx.room.Update
 import com.hao.heji.config.Config
+import com.hao.heji.data.Status
 import com.hao.heji.data.converters.MoneyConverters
 import com.hao.heji.data.db.dto.BillTotal
 import com.hao.heji.data.db.dto.CategoryPercentage
@@ -46,7 +47,7 @@ interface BillDao {
     fun status(billId: String): Int
 
     @Query("UPDATE bill SET deleted =:deleted WHERE bill_id=:billId AND crt_user=:uid")
-    fun preDelete(billId: String, uid: String, deleted: Int = 1): Int
+    fun preDelete(billId: String, uid: String, deleted: Int = Status.DELETED): Int
 
     @Query("UPDATE bill SET synced = :status WHERE bill_id=:billId")
     fun updateSyncStatus(billId: String, status: Int): Int

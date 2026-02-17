@@ -72,11 +72,11 @@ internal class CSVFileReader : IReader {
                 val aliPayType: Int = when (aliPay.receiptOrExpenditure) {
                     "支出" -> {
                         expenditureCount++
-                        BillType.EXPENDITURE.valueInt
+                        BillType.EXPENDITURE.value
                     }
                     "收入" -> {
                         incomeCount++
-                        BillType.INCOME.valueInt
+                        BillType.INCOME.value
                     }
                     else -> {
                         notIECount++
@@ -172,9 +172,9 @@ internal class CSVFileReader : IReader {
 
                 //仅仅计入收入和支出
                 var aliPayType: Int = if (weiPay.receiptOrExpenditure == "支出") {
-                    BillType.EXPENDITURE.valueInt
+                    BillType.EXPENDITURE.value
                 } else if (weiPay.receiptOrExpenditure == "收入") {
-                    BillType.INCOME.valueInt
+                    BillType.INCOME.value
                 } else {
                     continue
                 }
