@@ -18,7 +18,6 @@ internal class CategoryManagerViewModel :
     BaseViewModel<CategoryManagerUiState>() {
     private val categoryDao = App.dataBase.categoryDao()
 
-
     fun getCategories(type: Int) {
         launchIO({
             categoryDao.observeIncomeOrExpenditure(
@@ -30,8 +29,25 @@ internal class CategoryManagerViewModel :
         })
     }
 
-    //保存标签
-    fun saveCategory(name: String, type: Int) {
+    fun getParentCategories(type: Int) {
+        launchIO({
+            categoryDao.observeParentCategories(
+                Config.book.id,
+                type
+            ).collect {
+                send(CategoryManagerUiState.ParentCategories(it))
+            }
+        })
+    }
+
+    fun getChildCategories(parentId: String) {
+        launchIO({
+            val children = categoryDao.findChildCategories(parentId)
+            send(CategoryManagerUiState.ChildCategories(parentId, children))
+        })
+    }
+
+    fun saveCategory(name: String, type: Int, parentId: String? = null) {
         if (TextUtils.isEmpty(name)) {
             ToastUtils.showShort("您必须填写分类名称")
             return
@@ -39,13 +55,15 @@ internal class CategoryManagerViewModel :
         launchIO({
             val category = Category(name = name, bookId = Config.book.id).apply {
                 this.type = type
-                level = 0
+                this.parentId = parentId
+                level = if (parentId.isNullOrEmpty()) 0 else 1
             }
             val exist = categoryDao.exist(category.hashCode())
             if (exist > 0) {
                 ToastUtils.showShort("标签已经存在")
             } else {
                 categoryDao.insert(category)
+                send(CategoryManagerUiState.SaveSuccess("保存成功"))
                 ToastUtils.showShort("保存成功")
             }
         }, {
@@ -62,7 +80,15 @@ internal class CategoryManagerViewModel :
         launchIO({
             category.deleted = Status.DELETED
             categoryDao.update(category)
-            //deleteLiveData.postValue(true)
+        }, {
+            ToastUtils.showLong(it.message)
+        })
+    }
+
+    fun updateCategory(category: Category) {
+        launchIO({
+            categoryDao.update(category)
+            ToastUtils.showShort("修改成功")
         }, {
             ToastUtils.showLong(it.message)
         })

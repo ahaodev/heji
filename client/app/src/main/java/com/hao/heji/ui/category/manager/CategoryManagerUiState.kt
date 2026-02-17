@@ -11,4 +11,7 @@ import com.hao.heji.ui.base.IUiState
 
 internal sealed interface CategoryManagerUiState : IUiState {
     class Categories(val data: MutableList<Category>) : CategoryManagerUiState
+    class ParentCategories(val data: MutableList<Category>) : CategoryManagerUiState
+    class ChildCategories(val parentId: String, val data: MutableList<Category>) : CategoryManagerUiState
+    class SaveSuccess(val message: String) : CategoryManagerUiState
 }
