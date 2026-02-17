@@ -24,7 +24,7 @@ class AddBillHandler : IMessageHandler {
         }
         val bill = json.decodeFromString(Bill.serializer(), message.content)
         bill?.let {
-            billDao.install(bill)
+            billDao.insert(bill)
             val ack = message.convertToAck(SyncMessage.Type.ADD_BILL_ACK, bill.id)
             webSocket.send(ack.toJson())
         }

@@ -24,9 +24,9 @@ sealed interface ReportUiState : IUiState {
      * @property type
      * @property data
      */
-    class LinChart(val type: Int, val data: MutableList<BillTotal> = mutableListOf()) :
+    class LinChart(val type: Int, val data: List<BillTotal> = emptyList()) :
         ReportUiState {
-        var all: ArrayList<MutableList<BillTotal>> = arrayListOf()
+        var all: ArrayList<List<BillTotal>> = arrayListOf()
     }
 
     /**
@@ -34,13 +34,13 @@ sealed interface ReportUiState : IUiState {
      *
      * @property data
      */
-    class ProportionChart(val type: Int, val data: MutableList<PieEntry>) : ReportUiState
+    class ProportionChart(val type: Int, val data: List<PieEntry>) : ReportUiState
 
     /**
      * 报表
      * @property data
      */
-    class ReportList(val data: MutableList<IncomeTimeSurplus>) : ReportUiState
+    class ReportList(val data: List<IncomeTimeSurplus>) : ReportUiState
 
     /**
      * 账单图片
@@ -54,12 +54,12 @@ sealed interface ReportUiState : IUiState {
      *
      * @property data
      */
-    class CategoryList(val category: String, val data: MutableList<Bill>) : ReportUiState
+    class CategoryList(val category: String, val data: List<Bill>) : ReportUiState
 
     /**
      * 列表 day list
      *
      * @property data
      */
-    class ReportBillInfoList(val time: String, val data: MutableList<Bill>) : ReportUiState
+    class ReportBillInfoList(val time: String, val data: List<Bill>) : ReportUiState
 }

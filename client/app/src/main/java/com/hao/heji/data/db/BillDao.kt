@@ -8,7 +8,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
 import androidx.room.Update
-import com.hao.heji.config.Config
 import com.hao.heji.data.Status
 import com.hao.heji.data.converters.MoneyConverters
 import com.hao.heji.data.db.dto.BillTotal
@@ -21,12 +20,11 @@ import kotlinx.coroutines.flow.Flow
 /**
  * @date: 2020/8/28
  * @author: 锅得铁
- * #
  */
 @Dao
 interface BillDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun install(billTab: Bill): Long
+    fun insert(billTab: Bill): Long
 
     @Query("SELECT COUNT(1) FROM bill WHERE hash =:hasCode")
     fun exist(hasCode: Int): Int
@@ -44,7 +42,7 @@ interface BillDao {
     fun findById(billId: String): Bill
 
     @Query("SELECT synced FROM bill WHERE bill_id=:billId")
-    fun status(billId: String): Int
+    fun getSyncStatus(billId: String): Int
 
     @Query("UPDATE bill SET deleted =:deleted WHERE bill_id=:billId AND crt_user=:uid")
     fun preDelete(billId: String, uid: String, deleted: Int = Status.DELETED): Int
@@ -55,8 +53,8 @@ interface BillDao {
     @Query("DELETE FROM bill WHERE bill_id=:billId")
     fun deleteById(billId: String): Int
 
-    @Query("DELETE FROM bill WHERE book_id=:id")
-    fun deleteByBookId(id: String): Int
+    @Query("DELETE FROM bill WHERE book_id=:bookId")
+    fun deleteByBookId(bookId: String): Int
 
     @Query("SELECT count(*)  FROM bill WHERE bill_id =:id")
     fun countById(id: String): Int
@@ -65,169 +63,92 @@ interface BillDao {
     fun countByBookId(bookId: String): Int
 
     @Query("SELECT * FROM bill WHERE book_id=:bookId AND synced !=:status LIMIT 100")
-    fun flowNotSynced(bookId: String, status: Int = 0): Flow<MutableList<Bill>>
+    fun flowNotSynced(bookId: String, status: Int = Status.SYNCED): Flow<List<Bill>>
 
     /**
-     * 根据时间区间查
-     *
-     * @param start 起始时间
-     * @param end   结束时间
-     * @return 账单列表
+     * 按日期查询账单
      */
-    @Query("SELECT * FROM bill WHERE (date(time) BETWEEN :start AND :end ) AND (book_id=:bookId) AND (deleted=0) ORDER BY time DESC ,bill_id DESC")
-    fun findBetweenTime(
-        start: String,
-        end: String,
-        bookId: String? = Config.book.id
-    ): MutableList<Bill>
+    @Query("SELECT * FROM bill WHERE date(time) =:time AND book_id=:bookId AND deleted!=1")
+    fun findByDay(time: String, bookId: String): List<Bill>
 
     /**
-     * 查询有账单的日子,日子去重
-     *
-     * @param start
-     * @param end
-     * @return
+     * 按日期+类型查询账单
      */
-    @Query("SELECT DISTINCT date(time)   FROM bill WHERE ( date(time) BETWEEN :start AND :end ) AND (book_id=:bookId) AND (deleted=0) ORDER BY time DESC ,bill_id DESC")
-    fun findHaveBillDays(
-        start: String,
-        end: String,
-        bookId: String? = Config.book.id
-    ): MutableList<String>
-
-    @Query("SELECT * FROM bill WHERE date(time) =:time AND book_id=:bookId AND synced!=-1")
-    fun findByDay(time: String, bookId: String? = Config.book.id): MutableList<Bill>
+    @Query("SELECT * FROM bill WHERE strftime('%Y-%m-%d',time) ==:date AND book_id=:bookId AND deleted!=1 AND type=:type ORDER BY date(time)")
+    fun findByDayAndType(
+        date: String,
+        type: Int,
+        bookId: String,
+    ): List<Bill>
 
     /**
-     * 时间内收入、支出
-     *
-     * @param start 起始时间
-     * @param end   结束时间
-     * @return
+     * 按月份查询账单
      */
-    @TypeConverters(MoneyConverters::class)
-    @Query("SELECT SUM(money) AS value FROM Bill WHERE ( date(time) BETWEEN :start AND :end ) AND (book_id=:bookId) AND (type = :sz) AND (deleted != 1)")
-    fun findTotalMoneyByTime(
-        start: String,
-        end: String,
-        sz: Int,
-        bookId: String? = Config.book.id
-    ): Flow<Double>
+    @Query("SELECT * FROM bill WHERE strftime('%Y-%m',time) ==:yearMonth AND book_id=:bookId AND type=:type AND deleted!=1")
+    fun findByMonth(
+        yearMonth: String,
+        type: Int?,
+        bookId: String,
+    ): List<Bill>
 
-    @TypeConverters(MoneyConverters::class)
-    @Query("SELECT sum(case when type=-1 then money else 0 end)as expenditure ,sum(case  when  type=1 then money else 0 end)AS income FROM bill  WHERE deleted!=1 AND book_id=:bookId AND date(time)=:time")
-    fun sumDayIncome(
-        time: String,
-        bookId: String? = Config.book.id
-    ): Income
+    /**
+     * 按分类和月份查询账单
+     */
+    @Query("SELECT * FROM bill WHERE strftime('%Y-%m',time) ==:yearMonth AND book_id=:bookId AND category=:category AND type =:type AND deleted!=1")
+    fun findByCategoryAndMonth(
+        category: String,
+        yearMonth: String,
+        type: Int,
+        bookId: String,
+    ): List<Bill>
 
+    /**
+     * 查询每日收支汇总（按月）
+     */
     @TypeConverters(MoneyConverters::class)
     @Query("SELECT sum(case when type=-1 then money else 0 end)AS expenditure ,sum(case  when  type=1 then money else 0 end)AS income ,date(time) AS time FROM bill  WHERE deleted!=1 AND book_id=:bookId AND strftime('%Y-%m',time)=:yearMonth GROUP BY date(time) ORDER BY time DESC ,bill_id DESC")
     fun findEveryDayIncomeByMonth(
-        bookId: String? = Config.book.id,
+        bookId: String,
         yearMonth: String,
-    ): MutableList<IncomeTime>
+    ): List<IncomeTime>
 
+    /**
+     * 月度收支汇总（Flow）
+     */
     @TypeConverters(MoneyConverters::class)
     @Query("SELECT sum(case when type=-1 then money else 0 end)AS expenditure ,sum(case  when  type=1 then money else 0 end)AS income FROM bill  WHERE deleted!=1 AND book_id=:bookId AND ( strftime('%Y-%m',time)=:yearMonth)")
     fun sumIncome(
         yearMonth: String,
-        bookId: String? = Config.book.id,
+        bookId: String,
     ): Flow<Income>
 
+    /**
+     * 月度收支汇总（同步）
+     */
     @TypeConverters(MoneyConverters::class)
     @Query("SELECT sum(case when type=-1 then money else 0 end)AS expenditure ,sum(case  when  type=1 then money else 0 end)AS income FROM bill  WHERE deleted!=1 AND book_id=:bookId AND ( strftime('%Y-%m',time)=:yearMonth)")
-    fun sumMonthIncomeExpenditure(
+    fun sumMonthIncome(
         yearMonth: String,
-        bookId: String? = Config.book.id,
+        bookId: String,
     ): Income
 
-
-    @Query("SELECT * FROM bill WHERE  synced==:syncStatus")
-    fun findByStatus(syncStatus: Int): MutableList<Bill>
-
     /**
-     * 根据月份查询账单
-     *
-     * @param date
-     * @return
+     * 按月按日汇总金额
      */
     @TypeConverters(MoneyConverters::class)
     @Transaction
-    @Query("SELECT sum(money) AS money,type,date(time) AS time FROM bill WHERE strftime('%Y-%m',time) ==:date AND book_id=:bookId AND type=:type AND deleted!=1 GROUP by date(time)")
+    @Query("SELECT sum(money) AS money,type,date(time) AS time FROM bill WHERE strftime('%Y-%m',time) ==:yearMonth AND book_id=:bookId AND type=:type AND deleted!=1 GROUP by date(time)")
     fun sumByMonth(
-        date: String,
+        yearMonth: String,
         type: Int,
-        bookId: String = Config.book.id,
-    ): MutableList<BillTotal>
-
-    /**
-     * 根据月份查询账单
-     *
-     * @param date
-     * @return
-     */
-    @Query("SELECT * FROM bill WHERE strftime('%Y-%m',time) ==:date AND book_id=:bookId AND type=:type AND deleted!=1")
-    fun findByMonth(
-        date: String,
-        type: Int?,
-        bookId: String? = Config.book.id,
-    ): MutableList<Bill>
-
-    /**
-     * 根据月份查询账单
-     *
-     * @param date
-     * @return
-     */
-    @Query("SELECT * FROM bill WHERE strftime('%Y-%m-%d',time) ==:date AND book_id=:bookId AND deleted!=1 AND type=:type order by date(time)")
-    fun findByDay(
-        date: String,
-        type: Int,
-        bookId: String? = Config.book.id,
-    ): MutableList<Bill>
-
-    /**
-     * 根据月份查询账单
-     *
-     * @param date
-     * @return
-     */
-    @Query("SELECT * FROM bill WHERE strftime('%Y-%m',time) ==:date AND book_id=:bookId AND type=:type AND deleted!=1 group by date(time)")
-    fun findByMonthGroupByDay(
-        date: String,
-        type: Int,
-        bookId: String? = Config.book.id,
-    ): MutableList<Bill>
-
-    /**
-     * 根据月份查询账单
-     *
-     * @param date
-     * @return
-     */
-    @Query("SELECT * FROM bill WHERE strftime('%Y-%m',time) ==:date AND book_id=:bookId AND type =:type AND deleted!=1 group by category")
-    fun findByMonthGroupByCategory(
-        date: String,
-        type: Int,
-        bookId: String = Config.book.id,
-    ): MutableList<Bill>
-
-    /**
-     * 根据Category月份查询账单
-     *
-     * @param date
-     * @return
-     */
-    @Query("SELECT * FROM bill WHERE strftime('%Y-%m',time) ==:date AND book_id=:bookId AND category=:category AND type =:type AND deleted!=1")
-    fun findByCategoryAndMonth(
-        category: String,
-        date: String,
-        type: Int,
-        bookId: String? = Config.book.id,
-    ): MutableList<Bill>
+        bookId: String,
+    ): List<BillTotal>
 
     //---------------统计----------------//
+
+    /**
+     * 月度每日收支结余
+     */
     @TypeConverters(MoneyConverters::class)
     @Query(
         "SELECT strftime('%m-%d',time) AS time ," +
@@ -238,9 +159,12 @@ interface BillDao {
     )
     fun listIncomeExpSurplusByMonth(
         yearMonth: String,
-        bookId: String? = Config.book.id,
-    ): MutableList<IncomeTimeSurplus>
+        bookId: String,
+    ): List<IncomeTimeSurplus>
 
+    /**
+     * 年度每月收支结余
+     */
     @TypeConverters(MoneyConverters::class)
     @Query(
         "SELECT strftime('%Y-%m',time) AS time ," +
@@ -251,47 +175,24 @@ interface BillDao {
     )
     fun listIncomeExpSurplusByYear(
         year: String,
-        bookId: String? = Config.book.id,
-    ): MutableList<IncomeTimeSurplus>
+        bookId: String,
+    ): List<IncomeTimeSurplus>
+
     /**
-     * 根据月份查询账单
-     *
-     * @param date
-     * @return
+     * 按分类统计占比
      */
-    //    @Query("select sum(case when type=-1 then money else 0 end)as expenditure ," +
-    //            "sum(case  when  type=1 then money else 0 end)as income ," +
-    //            "date(time) as time " +
-    //            "from bill  where synced!=-1 AND strftime('%Y-%m',time) ==:date group by date(time) ")
-    //    List<IncomeTimeSurplus> reportMonthList(String date);
-    /**
-     * 查询全年月份账单
-     *
-     * @param date
-     * @return
-     */
-    //    @Query("select sum(case when type=-1 then money else 0 end)as expenditure ," +
-    //            "sum(case  when  type=1 then money else 0 end)as income ," +
-    //            "strftime('%Y-%m',time) as time ,avg(money) as surplus " +
-    //            "from bill  where synced!=-1 AND strftime('%Y',time) ==:date group by strftime('%Y-%m',time) ")
-    //    List<IncomeTimeSurplus> reportYearList(String date);
     @TypeConverters(MoneyConverters::class)
     @Query(
         "SELECT category AS category,sum(money)AS money," +
-                "round(sum(money)*100.0 / (select sum(money)  from bill where book_id=:bookId and type =:type and synced!=-1 and strftime('%Y-%m',time) ==:date),2)AS percentage " +
-                "FROM bill WHERE type =:type AND deleted!=1 AND book_id=:bookId AND strftime('%Y-%m',time) ==:date GROUP BY category ORDER BY money DESC"
+                "round(sum(money)*100.0 / (select sum(money)  from bill where book_id=:bookId and type =:type and deleted!=1 and strftime('%Y-%m',time) ==:yearMonth),2)AS percentage " +
+                "FROM bill WHERE type =:type AND deleted!=1 AND book_id=:bookId AND strftime('%Y-%m',time) ==:yearMonth GROUP BY category ORDER BY money DESC"
     )
     fun reportCategory(
         type: Int,
-        date: String,
-        bookId: String? = Config.book.id,
+        yearMonth: String,
+        bookId: String,
     ): List<CategoryPercentage>
 
-    /**
-     * @param bill
-     */
     @Delete
     fun delete(bill: Bill)
-
-
 }

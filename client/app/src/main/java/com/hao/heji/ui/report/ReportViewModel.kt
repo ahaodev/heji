@@ -36,6 +36,8 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
 
     private var pieDataType: Int = BillType.EXPENDITURE.value
 
+    private val bookId get() = Config.book.id
+
     fun selectTime(ym: YearMonth) {
         yearMonth = ym
         total()
@@ -46,20 +48,20 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
 
      fun getReportBillInfoList(ymd: String) {
         launchIO({
-            var data: MutableList<Bill>
+            var data: List<Bill>
             if (yearMonth.day == 0) {//按月查
                 //TODO 目前暂未实现按年统计
-                data = App.dataBase.billDao().findByMonth(ymd, type = null, Config.book.id)
+                data = App.dataBase.billDao().findByMonth(ymd, type = null, bookId)
                     .filter { bill ->
                         bill.images = App.dataBase.imageDao().findImagesId(bill.id)
                         return@filter true
-                    }.toMutableList()
+                    }
                 send(ReportUiState.ReportBillInfoList(yearMonth.yearMonthString(), data))
             } else {//按天查
-                data = App.dataBase.billDao().findByDay(ymd).filter {
+                data = App.dataBase.billDao().findByDay(ymd, bookId).filter {
                     it.images = App.dataBase.imageDao().findImagesId(it.id)
                     return@filter true
-                }.toMutableList()
+                }
                 send(ReportUiState.ReportBillInfoList(yearMonth.monthDayString(), data))
             }
         })
@@ -68,11 +70,11 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
     fun getCategoryBills(category: String, type: Int) {
         launchIO({
             val bills = App.dataBase.billDao().findByCategoryAndMonth(
-                category, yearMonth.yearMonthString(), type
+                category, yearMonth.yearMonthString(), type, bookId
             ).filter {
                 it.images = App.dataBase.imageDao().findImagesId(it.id)
                 return@filter true
-            }.toMutableList()
+            }
             send(ReportUiState.CategoryList(category, bills))
         })
     }
@@ -86,8 +88,8 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
 
     fun getReportList() {
         launchIO({
-            var data =
-                App.dataBase.billDao().listIncomeExpSurplusByMonth(yearMonth.yearMonthString())
+            val data =
+                App.dataBase.billDao().listIncomeExpSurplusByMonth(yearMonth.yearMonthString(), bookId)
             send(ReportUiState.ReportList(data))
         })
     }
@@ -95,13 +97,13 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
     fun getProportionChart(type: Int = pieDataType) {
         launchIO({
             val list =
-                App.dataBase.billDao().reportCategory(type, yearMonth.yearMonthString()).map {
+                App.dataBase.billDao().reportCategory(type, yearMonth.yearMonthString(), bookId).map {
                     // 支出为负数，收入为正数  money * -1 or money * 1
                     val data = it.money!!.multiply(BigDecimal(type))
                     return@map PieEntry(
                         it.percentage, it.category, data
                     )
-                }.toMutableList()
+                }
             send(ReportUiState.ProportionChart(type, list))
         })
     }
@@ -112,16 +114,16 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
                 val uiStateData = with(ReportUiState.LinChart(type)) {
                     all = arrayListOf(
                         App.dataBase.billDao().sumByMonth(
-                            yearMonth.yearMonthString(), BillType.EXPENDITURE.value
+                            yearMonth.yearMonthString(), BillType.EXPENDITURE.value, bookId
                         ), App.dataBase.billDao().sumByMonth(
-                            yearMonth.yearMonthString(), BillType.INCOME.value
+                            yearMonth.yearMonthString(), BillType.INCOME.value, bookId
                         )
                     )
                     this
                 }
                 send(uiStateData)
             } else {
-                val data = App.dataBase.billDao().sumByMonth(yearMonth.yearMonthString(), type)
+                val data = App.dataBase.billDao().sumByMonth(yearMonth.yearMonthString(), type, bookId)
                 send(ReportUiState.LinChart(type, data))
             }
         })
@@ -130,7 +132,7 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
     private fun total() {
         launchIO({
             val monthIncomeExpenditureData =
-                App.dataBase.billDao().sumMonthIncomeExpenditure(yearMonth.yearMonthString())
+                App.dataBase.billDao().sumMonthIncome(yearMonth.yearMonthString(), bookId)
             send(ReportUiState.Total(monthIncomeExpenditureData))
         })
     }

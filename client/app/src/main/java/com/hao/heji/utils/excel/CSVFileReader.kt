@@ -106,7 +106,7 @@ internal class CSVFileReader : IReader {
                         //判断是否已经存在
                         val exist = it.exist(bill.hashCode()) > 0
                         if (!exist) {
-                            it.install(bill)//记账
+                            it.insert(bill)//记账
                             inputCount++
                         } else {
                             existCount++
@@ -197,7 +197,7 @@ internal class CSVFileReader : IReader {
                         val exist = it.exist(bill.hashCode()) > 0
                         if (!exist) {
                             LogUtils.d(bill)
-                            it.install(bill)//记账
+                            it.insert(bill)//记账
                         }
                     }
                     //记账

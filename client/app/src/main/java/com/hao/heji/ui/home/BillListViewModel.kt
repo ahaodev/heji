@@ -4,6 +4,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.chad.library.adapter.base.entity.node.BaseNode
 import com.hao.heji.App
+import com.hao.heji.config.Config
 import com.hao.heji.ui.adapter.DayBillsNode
 import com.hao.heji.ui.adapter.DayIncome
 import com.hao.heji.ui.adapter.DayIncomeNode
@@ -28,7 +29,7 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
         launchIO({
             //根据月份查询收支的日子
             val monthEveryDayIncome =
-                App.dataBase.billDao().findEveryDayIncomeByMonth(yearMonth = yearMonth)
+                App.dataBase.billDao().findEveryDayIncomeByMonth(Config.book.id, yearMonth)
             //日节点
             val listDayNodes = mutableListOf<BaseNode>()
             monthEveryDayIncome.forEach { dayIncome ->
@@ -46,7 +47,7 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
                 )
                 //日节点下子账单
                 val dayListNodes = mutableListOf<BaseNode>()
-                val dayBills = App.dataBase.billDao().findByDay(dayIncome.time!!)
+                val dayBills = App.dataBase.billDao().findByDay(dayIncome.time!!, Config.book.id)
                 // 批量查询当日所有账单的图片ID
                 val billIds = dayBills.map { it.id }
                 val imageMap = App.dataBase.imageDao().findImagesIdByBillIds(billIds)
@@ -72,7 +73,7 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
     fun getSummary(yearMonth: String) {
         launchIO({
             LogUtils.d("Between by time:$yearMonth")
-            App.dataBase.billDao().sumIncome(yearMonth).distinctUntilChanged().collect {
+            App.dataBase.billDao().sumIncome(yearMonth, Config.book.id).distinctUntilChanged().collect {
                 LogUtils.d(it)
                 send(BillListUiState.Summary(it))
             }

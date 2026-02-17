@@ -134,7 +134,7 @@ private fun lineChartConvertAdapter(bills: List<BillTotal>, yearMonth: YearMonth
 private fun parserBillsType(bills: List<BillTotal>) =
     if (bills.isEmpty()) "收入" else BillType.fromValue(bills[0].type).label
 
-fun ReportFragment.setIncomeLineChartNodes(yearMonth: YearMonth, bills: MutableList<BillTotal>) {
+fun ReportFragment.setIncomeLineChartNodes(yearMonth: YearMonth, bills: List<BillTotal>) {
     lineChartConvertAdapter(bills, yearMonth).apply {
         lineDataSetStyle(this, R.color.income, R.drawable.shape_gradient_income)
         binding.lineChart.data = LineData(this)
@@ -142,7 +142,7 @@ fun ReportFragment.setIncomeLineChartNodes(yearMonth: YearMonth, bills: MutableL
     }
 }
 
-internal fun ReportFragment.setExpenditureLineChartNodes(yearMonth: YearMonth, bills: MutableList<BillTotal>) {
+internal fun ReportFragment.setExpenditureLineChartNodes(yearMonth: YearMonth, bills: List<BillTotal>) {
     lineChartConvertAdapter(bills, yearMonth).apply {
         lineDataSetStyle(this, R.color.expenditure, R.drawable.shape_gradient_expenditure)
         binding.lineChart.data = LineData(this)
@@ -248,7 +248,7 @@ internal fun ReportFragment.pieChartStyle(pieChart: PieChart) {
 /**
  * 饼图数据
  */
-internal fun ReportFragment.setPieChartData(entries: MutableList<PieEntry>) {
+internal fun ReportFragment.setPieChartData(entries: List<PieEntry>) {
 
     // NOTE: The order of the entries when being added to the entries array determines their position around the center of
     // the chart.

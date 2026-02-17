@@ -25,7 +25,7 @@ interface ImageDao {
 
     @Transaction
     fun installBillAndImages(bill: Bill, image: MutableList<Image>): Long {
-        var count = App.dataBase.billDao().install(bill)
+        var count = App.dataBase.billDao().insert(bill)
         install(image)
         return count
     }

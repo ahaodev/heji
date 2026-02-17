@@ -74,7 +74,7 @@ internal class CreateBillViewModel :
                 var count: Long =
                     App.dataBase.billImageDao().installBillAndImage(bill, images)
             } else {
-                App.dataBase.billDao().install(bill)
+                App.dataBase.billDao().insert(bill)
             }
             if (again) {
                 send(CreateBillUIState.SaveAgain)

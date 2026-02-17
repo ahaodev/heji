@@ -84,8 +84,8 @@ class BillListPopup(
         recyclerView.adapter = adapter
     }
 
-    fun show(label: String, bills: MutableList<Bill>) {
-        adapter.setNewInstance(bills)
+    fun show(label: String, bills: List<Bill>) {
+        adapter.setNewInstance(bills.toMutableList())
         title.text = "${label}(${bills.size}条)"
         show()
     }

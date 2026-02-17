@@ -8,7 +8,7 @@ import com.hao.heji.App
 abstract class BillWithImageDao {
     @Transaction
     open suspend fun installBillAndImage(bill: Bill, images: MutableList<Image>): Long {
-        val count = App.dataBase.billDao().install(bill)
+        val count = App.dataBase.billDao().insert(bill)
         if (images.isNotEmpty() && images.size > 0)
             App.dataBase.imageDao().install(images)
         return count

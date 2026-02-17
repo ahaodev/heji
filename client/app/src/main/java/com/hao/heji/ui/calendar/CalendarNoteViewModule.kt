@@ -63,7 +63,7 @@ internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
         LogUtils.d(calendar.toString())
         launchIO({
             val dateTime = TimeUtils.millis2String(calendar.timeInMillis, "yyyy-MM-dd")
-            val dayBills = billDao.findByDay(dateTime)
+            val dayBills = billDao.findByDay(dateTime, Config.book.id)
             var expenditure = "0"
             var income = "0"
             calendar.schemes?.forEach { scheme ->

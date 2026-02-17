@@ -90,7 +90,7 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
                  */
                 val exist = App.dataBase.billDao().exist(bill.hashCode()) > 0
                 if (!exist) {
-                    val count = App.dataBase.billDao().install(bill)
+                    val count = App.dataBase.billDao().insert(bill)
                     LogUtils.d("成功导入${count}条 ", bill)
                 } else {
                     LogUtils.d("ETC账单已存在", bill)
@@ -236,7 +236,7 @@ internal class ETCViewModel : BaseViewModel<ETCUiState>() {
 
         val exist = App.dataBase.billDao().exist(bill.hashCode()) > 0
         if (!exist) {
-            val count = App.dataBase.billDao().install(bill)
+            val count = App.dataBase.billDao().insert(bill)
             LogUtils.d("成功导入${count} ", bill)
         } else {
             LogUtils.d("ETC账单已存在", bill)
