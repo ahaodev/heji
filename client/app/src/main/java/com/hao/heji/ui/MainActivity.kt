@@ -38,7 +38,7 @@ import com.hao.heji.R
 import com.hao.heji.config.LocalUser
 import com.hao.heji.databinding.HeaderMainNavBinding
 import com.hao.heji.sync.SyncService
-import com.hao.heji.ui.home.DrawerListener
+import com.hao.heji.ui.DrawerListener
 import com.hao.heji.ui.user.JWTParse
 import com.hao.heji.ui.user.login.LoginActivity
 import com.hao.heji.utils.permitDiskReads

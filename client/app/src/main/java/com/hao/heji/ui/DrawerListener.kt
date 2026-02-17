@@ -1,4 +1,4 @@
-package com.hao.heji.ui.home
+package com.hao.heji.ui
 
 import android.util.DisplayMetrics
 import android.view.View

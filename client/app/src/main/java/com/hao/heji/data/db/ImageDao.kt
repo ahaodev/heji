@@ -9,6 +9,12 @@ import kotlinx.coroutines.flow.Flow
  * @author: 锅得铁
  * #
  */
+
+data class BillImageId(
+    @androidx.room.ColumnInfo(name = "bill_id") val billId: String,
+    @androidx.room.ColumnInfo(name = "image_id") val imageId: String
+)
+
 @Dao
 interface ImageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -36,6 +42,9 @@ interface ImageDao {
 
     @Query("SELECT image_id FROM image WHERE bill_id =:billID AND deleted !=1")
     fun findImagesId(billID: String): MutableList<String>
+
+    @Query("SELECT bill_id, image_id FROM image WHERE bill_id IN (:billIDs) AND deleted !=1")
+    fun findImagesIdByBillIds(billIDs: List<String>): List<BillImageId>
 
     @Transaction
     @Query("UPDATE image SET deleted = 1 WHERE image_id =:imageID")

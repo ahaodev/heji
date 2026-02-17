@@ -27,13 +27,13 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
     fun getMonthBills(yearMonth: String) {
         launchIO({
             //根据月份查询收支的日子
-            var monthEveryDayIncome =
+            val monthEveryDayIncome =
                 App.dataBase.billDao().findEveryDayIncomeByMonth(yearMonth = yearMonth)
             //日节点
-            var listDayNodes = mutableListOf<BaseNode>()
+            val listDayNodes = mutableListOf<BaseNode>()
             monthEveryDayIncome.forEach { dayIncome ->
-                var yymmdd = dayIncome.time!!.split("-")
-                var incomeNode = DayIncome(
+                val yymmdd = dayIncome.time!!.split("-")
+                val incomeNode = DayIncome(
                     expected = dayIncome.expenditure.toString(),
                     income = dayIncome.income.toString(),
                     year = yymmdd[0].toInt(),
@@ -46,11 +46,16 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
                 )
                 //日节点下子账单
                 val dayListNodes = mutableListOf<BaseNode>()
-                App.dataBase.billDao().findByDay(dayIncome.time!!).forEach {
-                    it.images = App.dataBase.imageDao().findImagesId(it.id)
+                val dayBills = App.dataBase.billDao().findByDay(dayIncome.time!!)
+                // 批量查询当日所有账单的图片ID
+                val billIds = dayBills.map { it.id }
+                val imageMap = App.dataBase.imageDao().findImagesIdByBillIds(billIds)
+                    .groupBy({ it.billId }, { it.imageId })
+                dayBills.forEach {
+                    it.images = (imageMap[it.id] ?: emptyList()).toMutableList()
                     dayListNodes.add(DayBillsNode(it))
                 }
-                var dayItemNode = DayIncomeNode(dayListNodes, incomeNode)
+                val dayItemNode = DayIncomeNode(dayListNodes, incomeNode)
                 listDayNodes.add(dayItemNode)
             }
             LogUtils.d("Select YearMonth:${yearMonth} ${listDayNodes.size}")
