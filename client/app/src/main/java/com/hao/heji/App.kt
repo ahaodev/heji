@@ -29,7 +29,6 @@ class App : Application() {
         SentryAndroid.init(this) { config ->
             config.dsn =
                 "https://77565e76a3ff93fa653f67e77a9bc41d@o4508631282155520.ingest.us.sentry.io/4508922877771776"
-            config.isDebug = true
         }
         LogUtils.d("enableOfflineMode=${Config.enableOfflineMode}", Config.bookOrNull, Config.user)
         switchDataBase(Config.user.id)

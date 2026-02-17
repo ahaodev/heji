@@ -44,14 +44,13 @@ class RegisterFragment : Fragment() {
                     ToastUtils.showLong("两次输入的密码不一致")
                     return@setOnClickListener
                 }
-                val code = editInviteCode.text.toString()
                 val tel = editTEL.text.toString()
                 val username = editUserName.text.toString()
                 try {
                     username.requireNonEmpty("UserName is null!")
                     tel.requireNonEmpty("TEL is null!")
                     password1.requireNonEmpty("password is null!")
-                    viewModel.register(username, tel, code, password1)
+                    viewModel.register(username, tel, password1)
                 } catch (e: Exception) {
                     ToastUtils.showLong(e.message)
                 }

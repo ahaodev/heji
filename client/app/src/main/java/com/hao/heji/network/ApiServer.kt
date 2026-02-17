@@ -4,6 +4,7 @@ import com.hao.heji.data.db.Bill
 import com.hao.heji.data.db.Book
 import com.hao.heji.network.request.CategoryEntity
 import com.hao.heji.network.response.ImageEntity
+import com.hao.heji.ui.user.register.RegisterUser
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -17,7 +18,7 @@ import retrofit2.http.*
 interface ApiServer {
     //----------------------USER---------------------------//
     @POST("/api/v1/Register")
-    fun register(@Body user: Any?): Call<BaseResponse<String>>
+    fun register(@Body user: RegisterUser): Call<BaseResponse<String>>
 
     @POST("/api/v1/Login")
     fun login(@Body map: Map<String,String>): Call<BaseResponse<String>>

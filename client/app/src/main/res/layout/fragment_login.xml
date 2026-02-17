@@ -125,21 +125,6 @@
                     app:layout_constraintEnd_toStartOf="@+id/guideline7"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/btnLogin" />
-
-                <androidx.appcompat.widget.AppCompatTextView
-                    android:id="@+id/textView4"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:minHeight="50dp"
-                    android:text="@string/retrieve_password"
-                    android:textSize="16sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="@+id/guideline7"
-                    app:layout_constraintTop_toBottomOf="@+id/btnLogin" />
-
             </LinearLayout>
 
         </LinearLayout>

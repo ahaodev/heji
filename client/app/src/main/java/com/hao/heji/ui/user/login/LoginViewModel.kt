@@ -2,7 +2,6 @@ package com.hao.heji.ui.user.login
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.blankj.utilcode.util.EncryptUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.config.LocalUser
@@ -25,7 +24,7 @@ internal class LoginViewModel(
         launch({
             var resp = userRepository.login(
                 tel,
-                encodePassword(password)
+                password
             )
             resp.data?.let {
                 val newUser = JWTParse.getUser(it)
@@ -48,9 +47,6 @@ internal class LoginViewModel(
     fun saveServerUrl(address:String) {
         Config.setServerUrl(address)
         httpManager.redirectServer()
-    }
-    private fun encodePassword(password: String): String {
-        return EncryptUtils.encryptSHA512ToString(String(EncryptUtils.encryptSHA512(password.toByteArray())))
     }
 
     /**
