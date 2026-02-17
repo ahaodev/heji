@@ -11,8 +11,6 @@ import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.ui.user.JWTParse
 import com.hao.heji.utils.launch
 import com.hao.heji.utils.launchIO
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 
 internal class LoginViewModel : BaseViewModel<LoginUiState>() {
@@ -38,10 +36,12 @@ internal class LoginViewModel : BaseViewModel<LoginUiState>() {
 
     }
 
-   suspend fun getServerUrl()=DataStoreManager.getServerUrl().collect{
-       send(LoginUiState.ShowServerSetting(it))
+   fun getServerUrl() {
+       launch({
+           send(LoginUiState.ShowServerSetting(DataStoreManager.getServerUrl()))
+       })
     }
-    suspend fun saveServerUrl(address:String)= withContext(Dispatchers.IO){
+    fun saveServerUrl(address:String) {
         Config.setServerUrl(address)
         HttpManager.getInstance().redirectServer()
     }

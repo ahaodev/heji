@@ -1,12 +1,10 @@
 package com.hao.heji.config
 
-import android.content.Context
 import com.hao.heji.App
 import com.hao.heji.BuildConfig
 import com.hao.heji.config.store.DataStoreManager
 import com.hao.heji.data.db.Book
 import com.hao.heji.ui.user.JWTParse
-import kotlinx.coroutines.flow.firstOrNull
 
 /**
  *Date: 2022/11/13
@@ -47,7 +45,7 @@ object Config {
         App.viewModel.notifyConfigChanged(this)
     }
 
-    suspend fun setServerUrl(url: String) {
+    fun setServerUrl(url: String) {
         this._serverUrl = url
         DataStoreManager.saveServerUrl(url)
     }
@@ -58,14 +56,15 @@ object Config {
         App.viewModel.notifyConfigChanged(this)
     }
 
-    suspend fun load(context: Context) {
+    fun load() {
         with(DataStoreManager) {
-            getUseMode(context).firstOrNull()?.let { _enableOfflineMode = it }
-            getBook(context).firstOrNull()?.let { _book = it }
-            getToken(context).firstOrNull()?.let { _user = JWTParse.getUser(jwt = it) }
-            getServerUrl().firstOrNull()?.let { _serverUrl = it }
+            _enableOfflineMode = getUseMode()
+            getBook()?.let { _book = it }
+            getToken().takeIf { it.isNotEmpty() }?.let { _user = JWTParse.getUser(jwt = it) }
+            _serverUrl = getServerUrl()
         }
     }
+
     suspend fun remove() {
         with(DataStoreManager) {
             removeUseMode()

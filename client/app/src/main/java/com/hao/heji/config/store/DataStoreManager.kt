@@ -1,17 +1,9 @@
 package com.hao.heji.config.store
 
-import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import com.hao.heji.App
 import com.hao.heji.BuildConfig
 import com.hao.heji.data.db.Book
-import com.hao.heji.dataStore
 import com.hao.heji.moshi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
+import com.tencent.mmkv.MMKV
 
 /**
  * DataStoreManager
@@ -21,84 +13,55 @@ import kotlinx.coroutines.flow.mapNotNull
  */
 internal object DataStoreManager {
 
-    private val ServerUrl = stringPreferencesKey("server_url")
+    private val mmkv: MMKV by lazy { MMKV.defaultMMKV() }
 
-    /**
-     * 当前登录用户凭证
-     */
-    private val JWT_TOKEN = stringPreferencesKey("jwt_token")
+    private const val KEY_SERVER_URL = "server_url"
+    private const val KEY_JWT_TOKEN = "jwt_token"
+    private const val KEY_USE_MODE = "use_mode"
+    private const val KEY_CURRENT_BOOK = "current_book"
 
-    /**
-     * 当前用户模式
-     */
-    private val USE_MODE = booleanPreferencesKey("use_mode")
-
-    /**
-     * 用户当前账本
-     */
-    private val CURRENT_BOOK = stringPreferencesKey("current_book")
-
-    suspend fun saveServerUrl(url: String) {
-        App.context.dataStore.edit {
-            it[ServerUrl] = url
-        }
+    fun saveServerUrl(url: String) {
+        mmkv.encode(KEY_SERVER_URL, url)
     }
 
-    suspend fun getServerUrl(): Flow<String> {
-        return App.context.dataStore.data.mapNotNull { it[ServerUrl] ?: BuildConfig.HTTP_URL }
+    fun getServerUrl(): String {
+        return mmkv.decodeString(KEY_SERVER_URL, BuildConfig.HTTP_URL) ?: BuildConfig.HTTP_URL
     }
 
-    suspend fun saveUseMode(enableOffline: Boolean, context: Context = App.context) {
-        context.dataStore.edit {
-            it[USE_MODE] = enableOffline
-        }
+    fun saveUseMode(enableOffline: Boolean) {
+        mmkv.encode(KEY_USE_MODE, enableOffline)
     }
 
-    fun getUseMode(context: Context = App.context): Flow<Boolean> {
-        return context.dataStore.data.mapNotNull { it[USE_MODE]?:false }
+    fun getUseMode(): Boolean {
+        return mmkv.decodeBool(KEY_USE_MODE, false)
     }
 
-    suspend fun removeUseMode(context: Context = App.context) {
-        context.dataStore.edit {
-            it.remove(USE_MODE)
-        }
+    fun removeUseMode() {
+        mmkv.removeValueForKey(KEY_USE_MODE)
     }
 
-    suspend fun saveToken(token: String, context: Context = App.context) {
-        context.dataStore.edit {
-            it[JWT_TOKEN] = token
-        }
+    fun saveToken(token: String) {
+        mmkv.encode(KEY_JWT_TOKEN, token)
     }
 
-    suspend fun getToken(context: Context = App.context): Flow<String> {
-        return context.dataStore.data.mapNotNull { it[JWT_TOKEN] ?:""}
+    fun getToken(): String {
+        return mmkv.decodeString(KEY_JWT_TOKEN, "") ?: ""
     }
 
-    suspend fun removeToken(context: Context = App.context) {
-        context.dataStore.edit {
-            it.remove(JWT_TOKEN)
-        }
+    fun removeToken() {
+        mmkv.removeValueForKey(KEY_JWT_TOKEN)
     }
 
-
-    suspend fun saveBook(book: Book, context: Context = App.context) {
-        context.dataStore.edit {
-            it[CURRENT_BOOK] = moshi.adapter(Book::class.java).toJson(book)
-        }
+    fun saveBook(book: Book) {
+        mmkv.encode(KEY_CURRENT_BOOK, moshi.adapter(Book::class.java).toJson(book))
     }
 
-    suspend fun getBook(context: Context = App.context): Flow<Book?> =
-        context.dataStore.data.map { preferences ->
-            val bookJsonStr = preferences[CURRENT_BOOK]
-            bookJsonStr?.let {
-                moshi.adapter(Book::class.java).fromJson(bookJsonStr)
-            }
-        }
-
-    suspend fun removeBook(context: Context = App.context) {
-        context.dataStore.edit {
-            it.remove(CURRENT_BOOK)
-        }
+    fun getBook(): Book? {
+        val bookJsonStr = mmkv.decodeString(KEY_CURRENT_BOOK) ?: return null
+        return moshi.adapter(Book::class.java).fromJson(bookJsonStr)
     }
 
+    fun removeBook() {
+        mmkv.removeValueForKey(KEY_CURRENT_BOOK)
+    }
 }

@@ -1,8 +1,5 @@
 package com.hao.heji
 
-import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.preferencesDataStore
 import com.hao.heji.data.converters.DateConverters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,13 +13,6 @@ import java.util.*
  *@author 锅得铁
  *@constructor default constructor
  */
-/**
- * 扩展 Context 以 dataStore
- * @receiver Context
- */
-val Context.dataStore: DataStore<androidx.datastore.preferences.core.Preferences> by preferencesDataStore(
-    name = "settings"
-)
 
 fun Date.string(): String {
     return DateConverters.date2Str(this)

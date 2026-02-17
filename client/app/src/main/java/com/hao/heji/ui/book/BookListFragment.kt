@@ -13,7 +13,6 @@ import com.hao.heji.R
 import com.hao.heji.data.Result
 import com.hao.heji.data.db.Book
 import com.hao.heji.databinding.FragmentBookListBinding
-import com.hao.heji.config.store.DataStoreManager
 import com.hao.heji.ui.base.BaseFragment
 import com.hao.heji.ui.base.hideRefreshing
 import com.hao.heji.ui.base.swipeRefreshLayout

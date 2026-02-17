@@ -6,6 +6,7 @@ import android.content.Context
 import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.config.Config
 import com.hao.heji.data.AppDatabase
+import com.tencent.mmkv.MMKV
 import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
 import io.sentry.android.core.SentryAndroid
@@ -21,13 +22,14 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         context = this
+        MMKV.initialize(this)
         SentryAndroid.init(this) { config ->
             config.dsn =
                 "https://77565e76a3ff93fa653f67e77a9bc41d@o4508631282155520.ingest.us.sentry.io/4508922877771776"
             config.isDebug = true
         }
         runBlocking {
-            Config.load(context)
+            Config.load()
             LogUtils.d("enableOfflineMode=${Config.enableOfflineMode}", Config.book, Config.user)
         }
         switchDataBase(Config.user.id)

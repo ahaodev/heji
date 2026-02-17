@@ -144,9 +144,8 @@ dependencies {
     // WorkManager
     implementation(libs.androidx.work.runtime)
 
-    // DataStore
-    implementation(libs.androidx.datastore.core)
-    implementation(libs.androidx.datastore.preferences)
+    // MMKV
+    implementation(libs.mmkv)
 
     // Network
     implementation(libs.retrofit.converter.moshi)
