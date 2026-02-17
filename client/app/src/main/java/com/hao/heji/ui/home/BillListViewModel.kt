@@ -4,31 +4,15 @@ import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.chad.library.adapter.base.entity.node.BaseNode
 import com.hao.heji.App
-import com.hao.heji.currentYearMonth
-import com.hao.heji.data.db.BillDao
 import com.hao.heji.ui.adapter.DayBillsNode
 import com.hao.heji.ui.adapter.DayIncome
 import com.hao.heji.ui.adapter.DayIncomeNode
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.utils.MyTimeUtils
-import com.hao.heji.utils.YearMonth
 import com.hao.heji.utils.launchIO
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 internal class BillListViewModel : BaseViewModel<BillListUiState>() {
-//    init {
-//        launchIO({
-//            val dir =
-//                App.context.getExternalFilesDir("alipay_record_20230424_1524_1.csv")
-//            var fileName = dir?.absolutePath
-//            fileName?.let { name->
-//                ReaderFactory.getReader(name)?.readAliPay(name, result = {
-//                    ToastUtils.showLong("it${it}")
-//                })
-//            }
-//
-//        })
-//    }
 
     fun getImages(billId: String) {
         launchIO({

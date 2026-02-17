@@ -84,7 +84,7 @@ class BillListFragment : BaseFragment() {
         render(homeViewModel) {
             when (it) {
                 is BillListUiState.Bills -> {
-                    if (it.nodeList.isEmpty() || it.nodeList.size <= 0) {
+                    if (it.nodeList.isEmpty()) {
                         adapter.setDiffNewData(mutableListOf())//设置DiffCallback使用setDiffNewData避免setList
                         binding.homeRecycler.minimumHeight = getRootViewHeight()//占满一屏
                         stubTotalView.visibility = View.GONE
@@ -200,7 +200,7 @@ class BillListFragment : BaseFragment() {
             }
 
             override fun areContentsTheSame(oldItem: BaseNode, newItem: BaseNode): Boolean {
-                return oldItem == newItem
+                return newItem == oldItem
             }
         })
         adapter.setOnItemClickListener { adapter: BaseQuickAdapter<*, *>, _: View?, position: Int ->
