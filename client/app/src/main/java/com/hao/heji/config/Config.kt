@@ -11,17 +11,13 @@ import com.hao.heji.ui.user.JWTParse
  *#
  */
 internal val LocalUser = JWTParse.User("LocalUser", "user0", "")
-internal val InitBook = Book(
-    name = "个人账本",
-    crtUserId = LocalUser.id,
-    isInitial = true,
-    type = "离线账本",
-)
 
 object Config {
 
     val serverUrl: String get() = DataStoreManager.getServerUrl()
-    val book: Book get() = DataStoreManager.getBook() ?: InitBook
+    val book: Book get() = DataStoreManager.getBook()
+        ?: error("No book selected. Ensure switchModelAndBook() is called before accessing Config.book.")
+    val bookOrNull: Book? get() = DataStoreManager.getBook()
     val user: JWTParse.User
         get() = DataStoreManager.getToken()
             .takeIf { it.isNotEmpty() }

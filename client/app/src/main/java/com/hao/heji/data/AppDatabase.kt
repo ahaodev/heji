@@ -26,7 +26,7 @@ import java.util.concurrent.Executors
         Bill::class,
         Image::class,
     ],
-    version = 1
+    version = 2
 )
 @TypeConverters(DateConverters::class, MoneyConverters::class, BookUsersConverters::class)
 abstract class AppDatabase : RoomDatabase() {

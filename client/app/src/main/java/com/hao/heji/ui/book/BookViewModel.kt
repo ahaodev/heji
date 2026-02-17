@@ -64,7 +64,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
         //network create
     }
 
-    private fun insertDefaultCategories(bookId: String, type: String) {
+    fun insertDefaultCategories(bookId: String, type: String) {
         val bookType = BookType.fromLabel(type) ?: return
         bookType.expenditureCategories.forEachIndexed { index, name ->
             categoryDao.insert(Category(bookId = bookId, name = name, type = BillType.EXPENDITURE.value).apply {
@@ -77,8 +77,6 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
             })
         }
     }
-
-    fun isFirstBook(id: String) = App.dataBase.bookDao().isInitialBook(id)
 
     fun countBook(book_id: String): Int {
         return App.dataBase.billDao().countByBookId(book_id)

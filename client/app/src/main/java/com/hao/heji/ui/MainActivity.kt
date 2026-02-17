@@ -115,6 +115,15 @@ class MainActivity : AppCompatActivity() {
         initDrawerLayout()
         checkLogin()
         setDrawerLayout(Config.user)
+        observeConfigChange()
+    }
+
+    private fun observeConfigChange() {
+        lifecycleScope.launch {
+            App.viewModel.configChange.collect {
+                Config.bookOrNull?.let { book -> setCurrentBook(book.name) }
+            }
+        }
     }
 
     private fun checkLogin() {
@@ -192,7 +201,7 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.nav_user_info)
             drawerLayout.closeDrawers()
         }
-        setCurrentBook(Config.book.name)
+        setCurrentBook(Config.bookOrNull?.name ?: "")
     }
 
     private fun navigationDrawerController() {

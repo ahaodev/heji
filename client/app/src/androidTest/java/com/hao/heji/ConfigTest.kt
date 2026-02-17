@@ -2,7 +2,6 @@ package com.hao.heji
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hao.heji.config.Config
-import com.hao.heji.config.InitBook
 import com.hao.heji.ui.user.JWTParse
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
@@ -19,10 +18,8 @@ import org.junit.runner.RunWith
 class ConfigTest: TestCase(){
     @Test
     fun readWrite(){
-        val book = InitBook
         runBlocking {
-            assert(book == Config.book)
-            val user =JWTParse.User("localUser", "user0","")
+            val user = JWTParse.User("localUser", "user0","")
             assert(user== Config.user)
         }
 

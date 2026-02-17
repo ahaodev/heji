@@ -83,10 +83,6 @@ class BookSettingFragment : BaseFragment() {
 
     private fun deleteBook() {
         binding.tvDeleteBook.setOnClickListener {
-            if (book.isInitial) {
-                ToastUtils.showLong("无法删除初始账本")
-                return@setOnClickListener
-            }
             val count = viewModel.countBook(book.id)
             XPopup.Builder(requireContext())
                 .asConfirm("删除提示", "该账本下有${count}条账单确认删除？") {
@@ -112,10 +108,6 @@ class BookSettingFragment : BaseFragment() {
         //防止多次点击
         val clickListener = object : ClickUtils.OnDebouncingClickListener() {
             override fun onDebouncingClick(v: View?) {
-                if (book.isInitial) {
-                    ToastUtils.showLong("初始账本无法分享！")
-                    return
-                }
                 viewModel.sharedBook(bookId = book.id) {
                     when (it) {
                         is Result.Success -> XPopup.Builder(requireContext())

@@ -4,7 +4,6 @@ import android.os.Parcelable
 import androidx.room.*
 import com.hao.heji.config.Config
 import com.hao.heji.data.Status
-import com.hao.heji.data.converters.LogicConverters
 import com.github.shamil.Xid
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
@@ -54,11 +53,6 @@ data class Book(
     @ColumnInfo(name = "deleted")
     var deleted: Int = Status.NOT_DELETED,
 
-    @SerialName("is_initial")
-    @ColumnInfo(name = COLUMN_FIRST)
-    @param:TypeConverters(LogicConverters::class)
-    var isInitial: Boolean = false//初始账本
-
 ) : Parcelable {
 
     companion object {
@@ -69,7 +63,7 @@ data class Book(
         const val COLUMN_TYPE = "type"
         const val COLUMN_BANNER_URL = "banner_url"
         const val COLUMN_ANCHOR = "anchor"
-        const val COLUMN_FIRST = "is_initial"
+
         const val COLUMN_SYNC_STATUS = "sync_status"
     }
 }
