@@ -3,27 +3,12 @@ package com.hao.heji.utils.excel
 object ReaderFactory {
 
     fun getReader(fileName: String): IReader? {
-        val suffix = fileName.split(".")
-        if (suffix[1] == ("xls")) {
-            return XLSFileReader()
+        val lowerName = fileName.lowercase()
+        return when {
+            lowerName.endsWith(".csv") -> CSVFileReader()
+            lowerName.endsWith(".xlsx") -> XLSXFileReader()
+            lowerName.endsWith(".xls") -> XLSFileReader()
+            else -> null
         }
-        if (suffix[1] == "csv") {
-            return CSVFileReader()
-        }
-        return null
     }
-
-    fun getReader(suffix: SUFFIX): IReader? {
-        if (suffix == SUFFIX.XLS) {
-            return XLSFileReader()
-        }
-        if (suffix == SUFFIX.CSV) {
-            return CSVFileReader()
-        }
-        return null
-    }
-}
-
-enum class SUFFIX {
-    CSV, XLS
 }

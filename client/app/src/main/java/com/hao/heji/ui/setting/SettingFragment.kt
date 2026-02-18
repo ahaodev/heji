@@ -2,19 +2,15 @@ package com.hao.heji.ui.setting
 
 import android.app.Activity
 import android.content.Intent
-import android.os.ParcelFileDescriptor
 import android.view.View
 import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.UriUtils
 import com.lxj.xpopup.XPopup
-import com.hao.heji.App
 import com.hao.heji.R
 import com.hao.heji.databinding.FragmentSettingBinding
 import com.hao.heji.ui.base.render
 import com.hao.heji.ui.base.BaseFragment
-import java.io.FileDescriptor
 
 class SettingFragment : BaseFragment() {
     private val REQ_CODE_ALIPAY = 90001
@@ -42,7 +38,6 @@ class SettingFragment : BaseFragment() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             type = "*/*"
             addCategory(Intent.CATEGORY_OPENABLE)
-            //putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri)
         }
         startActivityForResult(intent, requestCode)
     }
@@ -76,29 +71,33 @@ class SettingFragment : BaseFragment() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQ_CODE_ALIPAY && resultCode == Activity.RESULT_OK) {
-            val fileName = getInputFile(data)
-            viewModel.inputAlipayData(fileName)
-        }
-        if (requestCode == REQ_CODE_WEIXINPAY && resultCode == Activity.RESULT_OK) {
-            val fileName = getInputFile(data)
-            viewModel.inputWeixinData(fileName)
+        if (resultCode != Activity.RESULT_OK || data?.data == null) return
+        val uri = data.data!!
+        try {
+            val inputStream = requireContext().contentResolver.openInputStream(uri)
+            if (inputStream == null) {
+                LogUtils.e("无法打开文件: $uri")
+                return
+            }
+            val fileName = getFileName(uri)
+            when (requestCode) {
+                REQ_CODE_ALIPAY -> viewModel.inputAlipayData(fileName, inputStream)
+                REQ_CODE_WEIXINPAY -> viewModel.inputWeixinData(fileName, inputStream)
+            }
+        } catch (e: Exception) {
+            LogUtils.e("打开文件失败: ${e.message}")
         }
     }
 
-    private fun getInputFile(data: Intent?): String {
-        var fileName = ""
-        data?.data.also { uri ->
-            // Perform operations on the document using its URI.
-            val parcelFileDescriptor: ParcelFileDescriptor =
-                App.context.contentResolver.openFileDescriptor(uri!!, "r")!!
-            val fileDescriptor: FileDescriptor = parcelFileDescriptor.fileDescriptor
-            val csv = UriUtils.uri2File(uri).absolutePath
-            LogUtils.d("cache file", csv)
-            fileName = csv
+    private fun getFileName(uri: android.net.Uri): String {
+        var name = ""
+        requireContext().contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+            if (cursor.moveToFirst() && nameIndex >= 0) {
+                name = cursor.getString(nameIndex)
+            }
         }
-        LogUtils.d(fileName)
-        return fileName
+        return name.ifEmpty { uri.lastPathSegment ?: "unknown" }
     }
 
     override fun layout() = binding.root

@@ -2,8 +2,8 @@ package com.hao.heji.ui.setting
 
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.utils.excel.ReaderFactory
-import com.hao.heji.utils.excel.SUFFIX
 import com.hao.heji.utils.launchIO
+import java.io.InputStream
 
 /**
  *
@@ -12,32 +12,31 @@ import com.hao.heji.utils.launchIO
  * @since v1.0
  */
 class SettingViewModel : BaseViewModel<SettingUiState>() {
-    fun inputAlipayData(fileName: String) {
+    fun inputAlipayData(fileName: String, inputStream: InputStream) {
         reading()
         launchIO({
-            ReaderFactory.getReader(SUFFIX.CSV)?.readAliPay(fileName, result = { success, msg ->
+            ReaderFactory.getReader(fileName)?.readAliPay(inputStream, result = { success, msg ->
                 if (success) {
-                    readEnd()
+                    readEnd(msg)
                 } else {
                     readError(msg)
                 }
-            })
+            }) ?: readError("不支持的文件格式: $fileName")
         }, {
             readError(it.message.toString())
         })
     }
 
-    fun inputWeixinData(fileName: String) {
+    fun inputWeixinData(fileName: String, inputStream: InputStream) {
         reading()
         launchIO({
-
-            ReaderFactory.getReader(SUFFIX.CSV)?.readWeiXinPay(fileName, result = { success, msg ->
+            ReaderFactory.getReader(fileName)?.readWeiXinPay(inputStream, result = { success, msg ->
                 if (success) {
-                    readEnd()
+                    readEnd(msg)
                 } else {
                     readError(msg)
                 }
-            })
+            }) ?: readError("不支持的文件格式: $fileName")
         }, { readError(it.message.toString()) })
     }
 
@@ -49,8 +48,8 @@ class SettingViewModel : BaseViewModel<SettingUiState>() {
         send(SettingUiState.InputError("导入失败:${it}"))
     }
 
-    private fun readEnd() {
-        send(SettingUiState.InputEnd("导入完成"))
+    private fun readEnd(msg: String = "导入完成") {
+        send(SettingUiState.InputEnd(msg))
     }
 
 }
