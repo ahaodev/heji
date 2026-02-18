@@ -169,6 +169,29 @@ class SyncTrigger(private val scope: CoroutineScope) {
         syncedBookIds.add(bookId)
     }
 
+    /**
+     * 确保账单对应的账本在本地数据库已存在。
+     * 如果本地不存在，从服务端拉取该账本并写入，避免 ForeignKey 约束失败。
+     */
+    private suspend fun ensureBookExistsLocally(bookId: String) {
+        if (bookDao.exist(bookId) > 0) return
+        try {
+            val resp = httpManager.findBook(bookId)
+            if (resp.success() && resp.data != null) {
+                val book = resp.data!!.apply {
+                    synced = Status.SYNCED
+                    deleted = Status.NOT_DELETED
+                }
+                bookDao.upsert(book)
+                LogUtils.d("前置拉取账本: $bookId ${book.name}")
+            } else {
+                LogUtils.e("前置拉取账本失败: $bookId, msg=${resp.msg}")
+            }
+        } catch (e: Exception) {
+            LogUtils.e("前置拉取账本异常: $bookId", e)
+        }
+    }
+
     fun register() {
         // 先拉取服务端变更，再启动本地推送观察
         scope.launch(Dispatchers.IO) {
@@ -214,21 +237,24 @@ class SyncTrigger(private val scope: CoroutineScope) {
                         LogUtils.e("拉取账本写入失败: ${book.id} ${book.name}", e)
                     }
                 }
+                LogUtils.d("准备处理账单 count=${data.bills.size}")
                 for (bill in data.bills) {
                     try {
                         if (bill.deletedAt != null) {
                             billDao.deleteById(bill.id)
                             LogUtils.d("拉取删除账单: ${bill.id}")
                         } else {
+                            // 确保 bill 对应的 book 已存在，否则 ForeignKey 约束会失败
+                            ensureBookExistsLocally(bill.bookId)
                             val entity = bill.toBill().apply {
                                 synced = Status.SYNCED
                                 deleted = Status.NOT_DELETED
                             }
                             billDao.upsert(entity)
-                            LogUtils.d("拉取账单: ${bill.id}")
+                            LogUtils.d("拉取账单: ${bill.id} bookId=${bill.bookId}")
                         }
                     } catch (e: Exception) {
-                        LogUtils.e("拉取账单写入失败: ${bill.id}", e)
+                        LogUtils.e("拉取账单写入失败: ${bill.id} bookId=${bill.bookId}", e)
                     }
                 }
 
