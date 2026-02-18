@@ -10,7 +10,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.koin.java.KoinJavaComponent.get
+import java.io.File
 
 /**
  * 同步触发器 (v2 — HTTP 同步)
@@ -22,10 +26,11 @@ import org.koin.java.KoinJavaComponent.get
 class SyncTrigger(private val scope: CoroutineScope) {
     private val billDao = App.dataBase.billDao()
     private val bookDao = App.dataBase.bookDao()
+    private val imageDao = App.dataBase.imageDao()
     private val httpManager: HttpManager = get(HttpManager::class.java)
     private val syncedBookIds = mutableSetOf<String>()
 
-    private val bookJob = scope.launch(Dispatchers.IO) {
+    private val bookJob = scope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
         delay(1000)
         LogUtils.d("观察账本变更（HTTP 同步）")
         var isProcessing = false
@@ -39,7 +44,7 @@ class SyncTrigger(private val scope: CoroutineScope) {
         }
     }
 
-    private val billJob = scope.launch(Dispatchers.IO) {
+    private val billJob = scope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
         delay(2000)
         LogUtils.d("观察账单变更（HTTP 同步）")
         var isProcessing = false
@@ -68,6 +73,56 @@ class SyncTrigger(private val scope: CoroutineScope) {
                 }
             }
             LogUtils.d("本次变更账单处理完成...")
+            isProcessing = false
+        }
+    }
+
+    private val imageJob = scope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
+        delay(3000)
+        LogUtils.d("观察图片变更（HTTP 同步）")
+        var isProcessing = false
+        imageDao.flowNotSynced().collect { images ->
+            if (isProcessing || images.isEmpty()) return@collect
+            isProcessing = true
+            LogUtils.d("开始处理图片 count=${images.size}...")
+            for (image in images) {
+                LogUtils.d("同步图片: ${image.id}, synced=${image.synced}, deleted=${image.deleted}")
+                try {
+                    when {
+                        image.deleted == Status.DELETED -> {
+                            httpManager.imageDelete(image.billID, image.id)
+                            imageDao.deleteById(image.id)
+                            LogUtils.d("图片已删除: ${image.id}")
+                        }
+                        else -> {
+                            val localPath = image.localPath
+                            if (localPath.isNullOrEmpty()) {
+                                LogUtils.w("图片无本地路径，跳过: ${image.id}")
+                                continue
+                            }
+                            val file = File(localPath)
+                            if (!file.exists()) {
+                                LogUtils.w("图片文件不存在，跳过: ${image.id}, path=$localPath")
+                                continue
+                            }
+                            val mediaType = when (image.ext?.lowercase()) {
+                                ".png" -> "image/png"
+                                ".gif" -> "image/gif"
+                                ".webp" -> "image/webp"
+                                else -> "image/jpeg"
+                            }
+                            val requestBody = file.asRequestBody(mediaType.toMediaTypeOrNull())
+                            val part = MultipartBody.Part.createFormData("file", file.name, requestBody)
+                            httpManager.imageUpload(part, image.id, image.billID)
+                            imageDao.updateSyncStatus(image.id, Status.SYNCED)
+                            LogUtils.d("图片已同步: ${image.id}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    LogUtils.e("同步图片失败: ${image.id}", e)
+                }
+            }
+            LogUtils.d("本次变更图片处理完成...")
             isProcessing = false
         }
     }
@@ -120,6 +175,7 @@ class SyncTrigger(private val scope: CoroutineScope) {
             pullAllChanges()
             bookJob.start()
             billJob.start()
+            imageJob.start()
         }
     }
 
@@ -140,37 +196,46 @@ class SyncTrigger(private val scope: CoroutineScope) {
                 }
                 val data = resp.data ?: return
 
+                // 先处理账本，再处理账单（避免 ForeignKey 约束失败）
                 for (book in data.books) {
-                    if (book.deletedAt != null) {
-                        bookDao.deleteById(book.id)
-                        LogUtils.d("拉取删除账本: ${book.id}")
-                    } else {
-                        val entity = book.toBook().apply {
-                            synced = Status.SYNCED
-                            deleted = Status.NOT_DELETED
+                    try {
+                        if (book.deletedAt != null) {
+                            bookDao.deleteById(book.id)
+                            LogUtils.d("拉取删除账本: ${book.id}")
+                        } else {
+                            val entity = book.toBook().apply {
+                                synced = Status.SYNCED
+                                deleted = Status.NOT_DELETED
+                            }
+                            bookDao.upsert(entity)
+                            LogUtils.d("拉取账本: ${book.id} ${book.name}")
                         }
-                        bookDao.upsert(entity)
-                        LogUtils.d("拉取账本: ${book.id} ${book.name}")
+                    } catch (e: Exception) {
+                        LogUtils.e("拉取账本写入失败: ${book.id} ${book.name}", e)
                     }
                 }
                 for (bill in data.bills) {
-                    if (bill.deletedAt != null) {
-                        billDao.deleteById(bill.id)
-                        LogUtils.d("拉取删除账单: ${bill.id}")
-                    } else {
-                        val entity = bill.toBill().apply {
-                            synced = Status.SYNCED
-                            deleted = Status.NOT_DELETED
+                    try {
+                        if (bill.deletedAt != null) {
+                            billDao.deleteById(bill.id)
+                            LogUtils.d("拉取删除账单: ${bill.id}")
+                        } else {
+                            val entity = bill.toBill().apply {
+                                synced = Status.SYNCED
+                                deleted = Status.NOT_DELETED
+                            }
+                            billDao.upsert(entity)
+                            LogUtils.d("拉取账单: ${bill.id}")
                         }
-                        billDao.upsert(entity)
-                        LogUtils.d("拉取账单: ${bill.id}")
+                    } catch (e: Exception) {
+                        LogUtils.e("拉取账单写入失败: ${bill.id}", e)
                     }
                 }
 
                 since = data.nextSince
+                Config.lastSyncTime = since
             } while (data.hasMore)
 
-            Config.lastSyncTime = since
             LogUtils.d("拉取服务端变更完成, nextSince=$since")
         } catch (e: Exception) {
             LogUtils.e("拉取服务端变更失败", e)
@@ -180,5 +245,6 @@ class SyncTrigger(private val scope: CoroutineScope) {
     fun unregister() {
         bookJob.cancel()
         billJob.cancel()
+        imageJob.cancel()
     }
 }

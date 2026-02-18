@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
 import { type Bill } from '../data/schema'
+import { BillImageViewer } from './bill-image-viewer'
 
 export const billsColumns: ColumnDef<Bill>[] = [
   {
@@ -87,6 +88,16 @@ export const billsColumns: ColumnDef<Bill>[] = [
       <LongText className='max-w-48'>
         {row.getValue('remark') || '-'}
       </LongText>
+    ),
+    enableSorting: false,
+  },
+  {
+    id: 'images',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='照片' />
+    ),
+    cell: ({ row }) => (
+      <BillImageViewer billId={row.original._id} />
     ),
     enableSorting: false,
   },

@@ -73,4 +73,11 @@ interface ImageDao {
     @Query("SELECT * FROM image WHERE (local_path ISNULL OR local_path='') AND(online_path!='' OR online_path != NULL)")
     fun observerNotDownloadImages(): Flow<MutableList<Image>>
 
+    @Query("SELECT * FROM image WHERE synced != 1 LIMIT 100")
+    fun flowNotSynced(): Flow<List<Image>>
+
+    @Transaction
+    @Query("UPDATE image SET synced=:status WHERE image_id =:id")
+    fun updateSyncStatus(id: String, status: Int): Int
+
 }

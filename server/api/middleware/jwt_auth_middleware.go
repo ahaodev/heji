@@ -12,10 +12,21 @@ import (
 
 func JwtAuthMiddleware(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		authToken := ""
+
+		// 1. 优先从 Authorization header 获取
 		authHeader := c.Request.Header.Get("Authorization")
 		t := strings.Split(authHeader, " ")
 		if len(t) == 2 {
-			authToken := t[1]
+			authToken = t[1]
+		}
+
+		// 2. 降级从 query parameter 获取（用于 <img> 等无法设置 header 的场景）
+		if authToken == "" {
+			authToken = c.Query("token")
+		}
+
+		if authToken != "" {
 			authorized, err := tokenutil.IsAuthorized(authToken, secret)
 			if authorized {
 				// 提取所有token信息

@@ -24,9 +24,9 @@ object HttpRetrofit {
      * @param client
      */
     fun okHttpClient(
-        connectTimeout: Long = 10L,
-        readTimeout: Long = 10L,
-        writeTimeout: Long = 10L
+        connectTimeout: Long = 15L,
+        readTimeout: Long = 120L,
+        writeTimeout: Long = 120L
     ): OkHttpClient {
 
         val logging = HttpLoggingInterceptor()

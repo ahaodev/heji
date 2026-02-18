@@ -14,3 +14,13 @@ export interface Bill {
   crt_time: string
   upd_time: string
 }
+
+// BillImage 账单图片实体
+export interface BillImage {
+  _id: string
+  bill_id: string
+  key: string
+  ext?: string
+  length?: number
+  md5?: string
+}
