@@ -238,7 +238,7 @@ func (bc *BillController) ExportBills(c *gin.Context) {
 			typeName = "收入"
 		}
 		line := fmt.Sprintf("%s,%s,%s,%.2f,%s\n",
-			bill.Time, typeName, bill.Category, bill.Money, bill.Remark)
+			bill.Time, typeName, bill.Category, float64(bill.Money)/100, bill.Remark)
 		c.Writer.WriteString(line)
 	}
 }

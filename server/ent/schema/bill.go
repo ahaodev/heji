@@ -25,8 +25,8 @@ func (Bill) Fields() []ent.Field {
 			}),
 		field.String("book_id").
 			Comment("所属账本ID"),
-		field.Float("money").
-			Comment("金额"),
+		field.Int64("money").
+			Comment("金额(分)"),
 		field.Int("type").
 			Comment("收入(1)/支出(-1)"),
 		field.String("category").

@@ -9,7 +9,7 @@ import (
 type Bill struct {
 	ID          string     `json:"_id"`
 	BookID      string     `json:"book_id"`
-	Money       float64    `json:"money"`
+	Money       int64      `json:"money"`
 	Type        int        `json:"type"`
 	Category    string     `json:"category,omitempty"`
 	CrtUser     string     `json:"crt_user"`
@@ -26,7 +26,7 @@ type Bill struct {
 type CreateBillRequest struct {
 	ID       string   `json:"_id,omitempty"`
 	BookID   string   `json:"book_id" binding:"required"`
-	Money    float64  `json:"money" binding:"required"`
+	Money    int64    `json:"money" binding:"required"`
 	Type     int      `json:"type" binding:"required"`
 	Category string   `json:"category,omitempty"`
 	Time     string   `json:"time" binding:"required"`
@@ -36,7 +36,7 @@ type CreateBillRequest struct {
 
 // UpdateBillRequest 更新账单请求
 type UpdateBillRequest struct {
-	Money    *float64 `json:"money,omitempty"`
+	Money    *int64   `json:"money,omitempty"`
 	Type     *int     `json:"type,omitempty"`
 	Category *string  `json:"category,omitempty"`
 	Time     *string  `json:"time,omitempty"`
