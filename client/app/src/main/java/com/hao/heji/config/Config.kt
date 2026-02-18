@@ -25,6 +25,9 @@ object Config {
             ?: LocalUser
     val enableOfflineMode: Boolean get() = DataStoreManager.getUseMode()
     val mqttBrokerUrl: String get() = DataStoreManager.getMqttBrokerUrl()
+    var lastSyncTime: Long
+        get() = DataStoreManager.getLastSyncTime()
+        set(value) = DataStoreManager.saveLastSyncTime(value)
 
     fun isInitUser() = (user == LocalUser)
 
@@ -57,6 +60,7 @@ object Config {
             removeToken()
             removeBook()
             removeMqttBrokerUrl()
+            removeLastSyncTime()
         }
         App.viewModel.notifyConfigChanged(this)
     }

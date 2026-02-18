@@ -14,10 +14,10 @@ import org.koin.java.KoinJavaComponent.get
 
 /**
  * 同步触发器 (v2 — HTTP 同步)
- * 观察本地数据库中 synced != SYNCED 的记录，通过 HTTP API 上传到服务端。
- * 成功后标记 SYNCED 或硬删除本地记录。
+ * 1. pullAllChanges: 启动时从服务端增量拉取变更（首次 since=0 全量拉取）
+ * 2. 观察本地数据库中 synced != SYNCED 的记录，通过 HTTP API 上传到服务端。
  *
- * 同步顺序：账本优先于账单，避免 FOREIGN KEY 约束失败。
+ * 同步顺序：先拉后推；账本优先于账单，避免 FOREIGN KEY 约束失败。
  */
 class SyncTrigger(private val scope: CoroutineScope) {
     private val billDao = App.dataBase.billDao()
@@ -115,8 +115,66 @@ class SyncTrigger(private val scope: CoroutineScope) {
     }
 
     fun register() {
-        bookJob.start()
-        billJob.start()
+        // 先拉取服务端变更，再启动本地推送观察
+        scope.launch(Dispatchers.IO) {
+            pullAllChanges()
+            bookJob.start()
+            billJob.start()
+        }
+    }
+
+    /**
+     * 从服务端增量拉取所有变更。
+     * 首次安装时 lastSyncTime=0，相当于全量拉取。
+     * 分页拉取直到 hasMore=false。
+     */
+    private suspend fun pullAllChanges() {
+        try {
+            var since = Config.lastSyncTime
+            LogUtils.d("开始拉取服务端变更, since=$since")
+            do {
+                val resp = httpManager.syncChanges(since)
+                if (!resp.success()) {
+                    LogUtils.e("拉取变更失败: ${resp.msg}")
+                    return
+                }
+                val data = resp.data ?: return
+
+                for (book in data.books) {
+                    if (book.deletedAt != null) {
+                        bookDao.deleteById(book.id)
+                        LogUtils.d("拉取删除账本: ${book.id}")
+                    } else {
+                        val entity = book.toBook().apply {
+                            synced = Status.SYNCED
+                            deleted = Status.NOT_DELETED
+                        }
+                        bookDao.upsert(entity)
+                        LogUtils.d("拉取账本: ${book.id} ${book.name}")
+                    }
+                }
+                for (bill in data.bills) {
+                    if (bill.deletedAt != null) {
+                        billDao.deleteById(bill.id)
+                        LogUtils.d("拉取删除账单: ${bill.id}")
+                    } else {
+                        val entity = bill.toBill().apply {
+                            synced = Status.SYNCED
+                            deleted = Status.NOT_DELETED
+                        }
+                        billDao.upsert(entity)
+                        LogUtils.d("拉取账单: ${bill.id}")
+                    }
+                }
+
+                since = data.nextSince
+            } while (data.hasMore)
+
+            Config.lastSyncTime = since
+            LogUtils.d("拉取服务端变更完成, nextSince=$since")
+        } catch (e: Exception) {
+            LogUtils.e("拉取服务端变更失败", e)
+        }
     }
 
     fun unregister() {

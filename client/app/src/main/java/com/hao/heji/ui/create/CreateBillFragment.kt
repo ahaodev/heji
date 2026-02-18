@@ -1,6 +1,5 @@
 package com.hao.heji.ui.create
 
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.app.TimePickerDialog
@@ -11,7 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.DatePicker
 import android.widget.TimePicker
-import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
@@ -33,12 +32,9 @@ import com.hao.heji.ui.category.manager.CategoryManagerFragmentArgs
 import com.hao.heji.ui.create.*
 import com.hao.heji.ui.popup.SelectImagePopup
 import com.hao.heji.utils.YearMonth
-import com.hao.heji.utils.matisse.MatisseUtils
 import com.hao.heji.widget.KeyBoardView.OnKeyboardListener
-import com.zhihu.matisse.Matisse
 import java.math.BigDecimal
 import java.util.*
-import java.util.function.Consumer
 
 /**
  * 添加账单（支出/收入）
@@ -68,7 +64,37 @@ class CreateBillFragment : BaseFragment() {
         )
     }
 
-    //图片弹窗
+    // 使用 Android PhotoPicker API 选择图片
+    private val pickMultipleMedia = registerForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(SelectImagePopup.SELECT_MAX_COUNT)
+    ) { uris: List<Uri> ->
+        if (uris.isEmpty()) return@registerForActivityResult
+        LogUtils.d("PhotoPicker selected ${uris.size} items")
+
+        val mSelected = uris.map { uri ->
+            UriUtils.uri2File(uri).absolutePath
+        }
+
+        val popup = _popupSelectImage
+        if (popup != null && popup.getImages().size > 0) {
+            mSelected.forEach { localPath: String ->
+                popup.getImages().forEach { image ->
+                    if (image.localPath == localPath) {
+                    }
+                }
+            }
+        } else {
+            popup?.setImages(mSelected.map { selectPath ->
+                Image(billID = mBill.id).apply {
+                    localPath = selectPath
+                }
+            }.toMutableList())
+        }
+    }
+
+    private var _popupSelectImage: SelectImagePopup? = null
+
+//图片弹窗
     val popupSelectImage by lazy {
         SelectImagePopup(requireActivity()).apply {
             deleteListener = {
@@ -78,50 +104,12 @@ class CreateBillFragment : BaseFragment() {
             selectedImagesCall = {
                 getImagesPath()
             }
-            selectListener = { maxCount ->
-                MatisseUtils.selectMultipleImage(
-                    requireActivity(),
-                    maxCount,
-                    launcher = registerForActivityResult(
-                        ActivityResultContracts.StartActivityForResult(),
-                        ActivityResultCallback { result ->
-                            if (result.resultCode != Activity.RESULT_OK) {
-                                return@ActivityResultCallback
-                            }
-                            val obtainResult = Matisse.obtainResult(result.data)
-                            val obtainPathResult = Matisse.obtainPathResult(result.data)
-                            LogUtils.d("OnActivityResult ${Matisse.obtainOriginalState(result.data)}")
-
-                            val mSelected: MutableList<String> = ArrayList()
-                            obtainResult.forEach(Consumer { uri: Uri ->
-                                val imgUrl = UriUtils.uri2File(uri).absolutePath
-                                mSelected.add(imgUrl)
-                            })
-
-                            if (getImages().size > 0) {
-                                mSelected.forEach { localPath: String ->
-                                    getImages().forEach { image ->
-                                        /**
-                                         * 包含的话就删除重新加
-                                         */
-                                        /**
-                                         * 包含的话就删除重新加
-                                         */
-                                        if (image.localPath == localPath) {
-                                        }
-                                    }
-                                }
-                            } else {
-                                setImages(mSelected.map { selectPath ->
-                                    Image(billID = mBill.id).apply {
-                                        localPath = selectPath
-                                    }
-                                }.toMutableList())
-                            }
-                        })
+            selectListener = { _ ->
+                pickMultipleMedia.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 )
             }
-        }
+        }.also { _popupSelectImage = it }
     }
 
     /**
@@ -444,7 +432,6 @@ class CreateBillFragment : BaseFragment() {
             mBill.money = BigDecimal(binding.tvMoney.text.toString())
             //check value is false throw error
             check(mBill.bookId != "") { "账本ID异常" }
-            check(mBill.time != null) { "时间异常" }
             check(mBill.money != ZERO_00()) { "金额不能为 ${ZERO_00().toPlainString()}" }
             check(mBill.money != BigDecimal.ZERO) { "金额不能为 ${BigDecimal.ZERO.toPlainString()}" }
             check(mBill.category != null) { "未选类别" }

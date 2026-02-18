@@ -20,6 +20,7 @@ internal object DataStoreManager {
     private const val KEY_USE_MODE = "use_mode"
     private const val KEY_CURRENT_BOOK = "current_book"
     private const val KEY_MQTT_BROKER_URL = "mqtt_broker_url"
+    private const val KEY_LAST_SYNC_TIME = "last_sync_time"
 
     fun saveServerUrl(url: String) {
         mmkv.encode(KEY_SERVER_URL, url)
@@ -76,5 +77,17 @@ internal object DataStoreManager {
 
     fun removeMqttBrokerUrl() {
         mmkv.removeValueForKey(KEY_MQTT_BROKER_URL)
+    }
+
+    fun saveLastSyncTime(time: Long) {
+        mmkv.encode(KEY_LAST_SYNC_TIME, time)
+    }
+
+    fun getLastSyncTime(): Long {
+        return mmkv.decodeLong(KEY_LAST_SYNC_TIME, 0L)
+    }
+
+    fun removeLastSyncTime() {
+        mmkv.removeValueForKey(KEY_LAST_SYNC_TIME)
     }
 }

@@ -188,7 +188,7 @@ dependencies {
     // Third-party
     implementation(libs.brvah)
     implementation(libs.permissionx)
-    implementation(libs.matisse)
+
     implementation(libs.utilcodex)
     implementation(libs.xpopup)
     implementation(libs.calendarview)

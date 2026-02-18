@@ -54,7 +54,7 @@ espresso = "3.7.0"
 # Third-party
 brvah = "3.0.6"
 permissionx = "1.8.0"
-matisse = "0.5.3-20220115"
+
 utilcodex = "1.31.1"
 xpopup = "2.10.0"
 calendarView = "3.7.1.37"
@@ -127,7 +127,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 # Third-party
 brvah = { group = "com.github.CymChad", name = "BaseRecyclerViewAdapterHelper", version.ref = "brvah" }
 permissionx = { group = "com.guolindev.permissionx", name = "permissionx", version.ref = "permissionx" }
-matisse = { group = "com.github.lwj1994", name = "Matisse", version.ref = "matisse" }
+
 utilcodex = { group = "com.blankj", name = "utilcodex", version.ref = "utilcodex" }
 xpopup = { group = "com.github.li-xiaojun", name = "XPopup", version.ref = "xpopup" }
 calendarview = { group = "com.github.angcyo", name = "CalendarView", version.ref = "calendarView" }

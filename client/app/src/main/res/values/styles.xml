@@ -42,10 +42,6 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="CustomMatisseStyle" parent="Matisse.Zhihu">
-        <item name="colorPrimaryDark">@color/colorPrimary</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-    </style>
 
     <style name="NumberKeyBoardStyle2">
         <item name="android:layout_width">0dp</item>
