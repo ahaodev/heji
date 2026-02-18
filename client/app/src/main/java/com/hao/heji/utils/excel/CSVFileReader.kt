@@ -79,6 +79,7 @@ internal class CSVFileReader : IReader {
                     val bill = Bill().apply {
                         id = Xid.string()
                         bookId = Config.book.id
+                        crtUser = Config.user.id
                         money = aliPay.money.toBigDecimal()
                         type = aliPayType
                         time = TimeUtils.string2Date(aliPay.transactionTime, "yyyy-MM-dd HH:mm:ss")
@@ -161,6 +162,7 @@ internal class CSVFileReader : IReader {
                         money = weiMoney.toBigDecimal()
                         type = weiPayType
                         time = TimeUtils.string2Date(weiPay.transactionTime, "yyyy-MM-dd HH:mm:ss")
+                        crtUser = Config.user.id
                         category = "微信"
                         remark = "${weiPay.counterparty}${weiPay.remark}"
                     }

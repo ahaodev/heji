@@ -61,6 +61,15 @@ class PopupBillInfo(
                 tvType.text = mBill.category
                 tvRecordTime.text = Date(mBill.crtTime).string()
                 tvTicketTime.text = mBill.time.string()
+                rePeople.text = mBill.crtUser
+                if (!mBill.remark.isNullOrBlank()) {
+                    textViewRemarkLabel.visibility = View.VISIBLE
+                    tvRemark.visibility = View.VISIBLE
+                    tvRemark.text = mBill.remark
+                } else {
+                    textViewRemarkLabel.visibility = View.GONE
+                    tvRemark.visibility = View.GONE
+                }
             }
         }
     }

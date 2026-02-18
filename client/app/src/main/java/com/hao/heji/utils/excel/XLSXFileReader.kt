@@ -84,6 +84,7 @@ internal class XLSXFileReader : IReader {
                     val bill = Bill().apply {
                         id = Xid.string()
                         bookId = Config.book.id
+                        crtUser = Config.user.id
                         money = moneyStr.toBigDecimal()
                         type = weiPayType
                         time = TimeUtils.string2Date(weiPay.transactionTime, "yyyy-MM-dd HH:mm:ss")
