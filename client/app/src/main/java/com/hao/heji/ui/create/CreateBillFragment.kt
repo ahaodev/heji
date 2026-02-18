@@ -430,8 +430,12 @@ class CreateBillFragment : BaseFragment() {
 
     private fun save(again: Boolean) {
         try {
-            if (isModify){
-                mBill.synced = Status.SYNCED
+            if (isModify) {
+                if (mBill.crtUser != Config.user.id) {
+                    ToastUtils.showLong("非本人创建的账单，无权修改")
+                    return
+                }
+                mBill.synced = Status.UPDATED
             }
             mBill.bookId = Config.book.id
             mBill.remark = binding.eidtRemark.text.toString()

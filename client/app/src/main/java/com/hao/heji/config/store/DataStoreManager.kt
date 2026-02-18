@@ -19,6 +19,7 @@ internal object DataStoreManager {
     private const val KEY_JWT_TOKEN = "jwt_token"
     private const val KEY_USE_MODE = "use_mode"
     private const val KEY_CURRENT_BOOK = "current_book"
+    private const val KEY_MQTT_BROKER_URL = "mqtt_broker_url"
 
     fun saveServerUrl(url: String) {
         mmkv.encode(KEY_SERVER_URL, url)
@@ -63,5 +64,17 @@ internal object DataStoreManager {
 
     fun removeBook() {
         mmkv.removeValueForKey(KEY_CURRENT_BOOK)
+    }
+
+    fun saveMqttBrokerUrl(url: String) {
+        mmkv.encode(KEY_MQTT_BROKER_URL, url)
+    }
+
+    fun getMqttBrokerUrl(): String {
+        return mmkv.decodeString(KEY_MQTT_BROKER_URL, "") ?: ""
+    }
+
+    fun removeMqttBrokerUrl() {
+        mmkv.removeValueForKey(KEY_MQTT_BROKER_URL)
     }
 }

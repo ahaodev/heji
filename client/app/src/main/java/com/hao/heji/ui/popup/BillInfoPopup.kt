@@ -112,6 +112,7 @@ class PopupBillInfo(
             context as MainActivity
             if (mBill.crtUser != Config.user.id) {
                 ToastUtils.showLong("只有账单创建人有权删除该账单")
+                return@asConfirm
             }
             //状态删除
             App.dataBase.billDao().preDelete(mBill.id,Config.user.id)

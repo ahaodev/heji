@@ -174,6 +174,9 @@ dependencies {
     // Xid
     implementation(libs.xid)
 
+    // MQTT
+    implementation(libs.paho.mqtt.android)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

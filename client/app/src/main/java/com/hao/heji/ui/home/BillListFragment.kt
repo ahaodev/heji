@@ -80,6 +80,7 @@ class BillListFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val yearMonthString = mainActivity.viewModel.globalYearMonth.yearMonthString()
+        homeViewModel.getMonthBills(yearMonthString)
         homeViewModel.getSummary(yearMonthString)
         render(homeViewModel) {
             when (it) {
@@ -97,9 +98,8 @@ class BillListFragment : BaseFragment() {
                     hideRefreshing(binding.refreshLayout)
                 }
 
-                is BillListUiState.Summary -> {//tip: 当统计数额发生变更刷新列表
+                is BillListUiState.Summary -> {
                     totalIncomeExpense(it.income)
-                    homeViewModel.getMonthBills(yearMonthString)
                 }
 
                 is BillListUiState.Error -> {

@@ -31,12 +31,24 @@ internal class LoginViewModel(
                 Config.setUser(newUser)
                 Config.enableOfflineMode(false)
                 App.switchDataBase(newUser.id)
+                fetchMqttBroker()
                 send(LoginUiState.LoginSuccess(it))
             }
         }, {
             send(LoginUiState.LoginError(it))
         })
 
+    }
+
+    private suspend fun fetchMqttBroker() {
+        try {
+            val resp = httpManager.getMqttBroker()
+            resp.data?.let { broker ->
+                Config.setMqttBrokerUrl(broker.toTcpUrl())
+            }
+        } catch (e: Exception) {
+            com.blankj.utilcode.util.LogUtils.w("Failed to fetch MQTT broker: ${e.message}")
+        }
     }
 
    fun getServerUrl() {

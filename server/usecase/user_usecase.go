@@ -3,11 +3,14 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"heji-server/domain"
 	"heji-server/internal/get"
 	"heji-server/internal/tokenutil"
 	"heji-server/pkg"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userUserCase struct {
@@ -21,7 +24,7 @@ func (uc *userUserCase) Login(c context.Context, request *domain.LoginRequest) (
 	if err != nil {
 		return "", errors.New("用户不存在")
 	}
-	if user.Password != request.Password {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return "", errors.New("密码不正确")
 	}
 	jwt := get.Config().Jwt
@@ -30,8 +33,12 @@ func (uc *userUserCase) Login(c context.Context, request *domain.LoginRequest) (
 }
 
 func (uc *userUserCase) Register(c context.Context, user *domain.User) error {
-	err := uc.userRepository.Register(c, user)
-	return err
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+	user.Password = string(hashedPassword)
+	return uc.userRepository.Register(c, user)
 }
 
 func NewLoginUseCase(userRepository domain.UserRepository, timeout time.Duration) domain.UserUseCase {

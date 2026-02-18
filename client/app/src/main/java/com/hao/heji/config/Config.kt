@@ -24,6 +24,7 @@ object Config {
             ?.let { JWTParse.getUser(jwt = it) }
             ?: LocalUser
     val enableOfflineMode: Boolean get() = DataStoreManager.getUseMode()
+    val mqttBrokerUrl: String get() = DataStoreManager.getMqttBrokerUrl()
 
     fun isInitUser() = (user == LocalUser)
 
@@ -46,11 +47,16 @@ object Config {
         App.viewModel.notifyConfigChanged(this)
     }
 
+    fun setMqttBrokerUrl(url: String) {
+        DataStoreManager.saveMqttBrokerUrl(url)
+    }
+
     fun remove() {
         with(DataStoreManager) {
             removeUseMode()
             removeToken()
             removeBook()
+            removeMqttBrokerUrl()
         }
         App.viewModel.notifyConfigChanged(this)
     }

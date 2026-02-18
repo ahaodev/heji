@@ -45,7 +45,7 @@ class CategoryRepository(private val httpManager: HttpManager) {
 
     suspend fun updateCategory(category: Category) {
         categoryDao.update(category)
-        val response = httpManager.categoryUpdate()
+        val response = httpManager.categoryPull()
         if (response.code == 0) {
             category.synced = Status.SYNCED
             categoryDao.update(category)

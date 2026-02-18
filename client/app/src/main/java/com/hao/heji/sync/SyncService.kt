@@ -19,20 +19,16 @@ import com.hao.heji.config.Config
  */
 class SyncService : Service(), Observer<Config> {
     private val binder = SyncBinder()
-
-//    private val job = SupervisorJob()
-//    private val scope = CoroutineScope(Dispatchers.IO + job)
-    private val syncWebSocket = WebSocketClient.getInstance()
+    private val mqttClient = MqttSyncClient.getInstance()
 
     private var networkMonitor: NetworkMonitor? = null
     private val configLiveData = App.viewModel.configChange.asLiveData()
     override fun onCreate() {
         super.onCreate()
         LogUtils.d("onCreate")
-        // 监听网络变化
         networkMonitor = NetworkMonitor(this) {
             if (it) {
-                if (syncWebSocket.isClose() || syncWebSocket.isError()) {
+                if (mqttClient.isDisconnected() || mqttClient.isError()) {
                     connectSync()
                 }
             }
@@ -42,13 +38,17 @@ class SyncService : Service(), Observer<Config> {
     }
 
     private fun connectSync() {
-        val address = Config.serverUrl.split("://")[1]
+        val brokerUrl = Config.mqttBrokerUrl
+        if (brokerUrl.isEmpty()) {
+            LogUtils.w("MQTT broker URL not configured")
+            return
+        }
         val token = Config.user.token
-        syncWebSocket.connect(wsUrl = "ws://${address}/api/v1/ws", token)
+        mqttClient.connect(context = this, brokerUrl = brokerUrl, token = token)
     }
 
     private fun closeSync() {
-        syncWebSocket.close()
+        mqttClient.close()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -64,8 +64,6 @@ class SyncService : Service(), Observer<Config> {
         super.onDestroy()
         LogUtils.d("onDestroy")
         closeSync()
-//        job.cancel()
-//        scope.cancel()
         networkMonitor?.stopNetworkCallback()
         configLiveData.removeObserver(this)
     }
@@ -75,7 +73,7 @@ class SyncService : Service(), Observer<Config> {
     }
 
     override fun onChanged(value: Config) {
-        if (syncWebSocket.isClose()) {
+        if (mqttClient.isDisconnected()) {
             connectSync()
         }
     }

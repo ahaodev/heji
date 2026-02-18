@@ -44,7 +44,7 @@ interface BillDao {
     @Query("SELECT synced FROM bill WHERE bill_id=:billId")
     fun getSyncStatus(billId: String): Int
 
-    @Query("UPDATE bill SET deleted =:deleted WHERE bill_id=:billId AND crt_user=:uid")
+    @Query("UPDATE bill SET deleted =:deleted, synced = 0 WHERE bill_id=:billId AND crt_user=:uid")
     fun preDelete(billId: String, uid: String, deleted: Int = Status.DELETED): Int
 
     @Query("UPDATE bill SET synced = :status WHERE bill_id=:billId")
@@ -62,8 +62,8 @@ interface BillDao {
     @Query("SELECT count(*)  FROM bill WHERE book_id =:bookId")
     fun countByBookId(bookId: String): Int
 
-    @Query("SELECT * FROM bill WHERE book_id=:bookId AND synced !=:status LIMIT 100")
-    fun flowNotSynced(bookId: String, status: Int = Status.SYNCED): Flow<List<Bill>>
+    @Query("SELECT * FROM bill WHERE book_id=:bookId AND synced NOT IN (1, 3) LIMIT 100")
+    fun flowNotSynced(bookId: String): Flow<List<Bill>>
 
     /**
      * 按日期查询账单

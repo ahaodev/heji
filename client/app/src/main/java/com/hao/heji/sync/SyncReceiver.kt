@@ -9,7 +9,6 @@ import com.hao.heji.sync.handler.DeleteBookHandler
 import com.hao.heji.sync.handler.IMessageHandler
 import com.hao.heji.sync.handler.UpdateBillHandler
 import com.hao.heji.sync.handler.UpdateBookHandler
-import okhttp3.WebSocket
 
 class SyncReceiver {
     private val handlers = mutableListOf<IMessageHandler>()
@@ -40,12 +39,12 @@ class SyncReceiver {
         handlers.clear()
     }
 
-    fun onReceiver(webSocket: WebSocket, text: String) {
+    fun onReceiver(text: String) {
         val message = json.decodeFromString(SyncMessage.serializer(), text)
         for (i in handlers) {
             if (i.canHandle(message)) {
                 LogUtils.d("handle by ${i.javaClass.simpleName}", message)
-                i.handleMessage(webSocket, message)
+                i.handleMessage(message)
             }
         }
     }
