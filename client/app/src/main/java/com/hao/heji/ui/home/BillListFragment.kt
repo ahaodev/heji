@@ -159,10 +159,8 @@ class BillListFragment : BaseFragment() {
      * @param month 月
      */
     private fun totalIncomeExpense(incomeExpense: Income) {
-        val income = incomeExpense.income.toString()
-        val expenses = incomeExpense.expenditure.toString()
-        val none = (income == "0" && expenses == "0") || (income == "0.00" && expenses == "0.00")
-        if (none) {
+        val noData = incomeExpense.income.signum() == 0 && incomeExpense.expenditure.signum() == 0
+        if (noData) {
             stubTotalView.visibility = View.GONE
             return
         }

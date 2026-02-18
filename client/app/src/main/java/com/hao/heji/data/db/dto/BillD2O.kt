@@ -7,10 +7,10 @@ data class BillTotal(val money: BigDecimal, val time: String, val type: Int)
 /**
  * 收入支出
  */
-class Income {
-    var income: BigDecimal = BigDecimal.ZERO
-    var expenditure: BigDecimal = BigDecimal.ZERO
-}
+data class Income(
+    var income: BigDecimal = BigDecimal.ZERO,
+    var expenditure: BigDecimal = BigDecimal.ZERO,
+)
 
 
 /**

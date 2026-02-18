@@ -16,6 +16,11 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import com.github.shamil.Xid
 
+/**
+ * MQTT 客户端 (v2 — 纯订阅模式)
+ * 只订阅服务端推送的通知主题 heji/notify/{userId}/，不再发布任何消息。
+ * 数据同步通过 HTTP API 完成（SyncTrigger 独立运行）。
+ */
 class MqttSyncClient {
     private var mqttClient: MqttAndroidClient? = null
     private var brokerUrl = ""
@@ -30,11 +35,12 @@ class MqttSyncClient {
     private val syncScope = CoroutineScope(Dispatchers.Main + syncJob)
 
     private val syncReceiver by lazy { SyncReceiver() }
-    private val syncTrigger by lazy { SyncTrigger(syncScope) }
 
     companion object {
-        private const val TOPIC_BOOK_SYNC = "heji/book/%s/sync"
-        private const val TOPIC_USER_SYNC = "heji/user/%s/sync"
+        // 下行通知主题：服务端 → 客户端
+        private const val TOPIC_NOTIFY_BOOK  = "heji/notify/%s/book"
+        private const val TOPIC_NOTIFY_BILL  = "heji/notify/%s/bill"
+        private const val TOPIC_NOTIFY_IMAGE = "heji/notify/%s/image"
 
         @Volatile
         private var instance: MqttSyncClient? = null
@@ -47,24 +53,6 @@ class MqttSyncClient {
                 }
             }
             return instance!!
-        }
-    }
-
-    fun send(message: SyncMessage): Boolean {
-        val mqttMessage = MqttMessage().apply {
-            payload = message.toJson().toByteArray()
-            qos = 1
-            isRetained = false
-        }
-        return try {
-            val bookId = Config.book.id
-            val topic = String.format(TOPIC_BOOK_SYNC, bookId)
-            mqttClient?.publish(topic, mqttMessage)
-            LogUtils.d("MQTT published to $topic")
-            true
-        } catch (e: Exception) {
-            LogUtils.e("MQTT publish failed", e)
-            false
         }
     }
 
@@ -101,20 +89,18 @@ class MqttSyncClient {
                     status = Status.CONNECTED
                     subscribeTopics()
                     syncReceiver.register()
-                    syncTrigger.register()
                 }
 
                 override fun connectionLost(cause: Throwable?) {
                     LogUtils.w("MQTT connection lost: ${cause?.message}")
                     status = Status.DISCONNECTED
                     syncReceiver.unregister()
-                    syncTrigger.unregister()
                 }
 
                 override fun messageArrived(topic: String?, message: MqttMessage?) {
                     message?.let {
                         val text = String(it.payload)
-                        LogUtils.d("MQTT message from $topic: $text")
+                        LogUtils.d("MQTT notify from $topic: $text")
                         syncScope.launch(Dispatchers.IO) {
                             syncReceiver.onReceiver(text)
                         }
@@ -152,16 +138,16 @@ class MqttSyncClient {
     private fun subscribeTopics() {
         try {
             val userId = Config.user.id
-            val userTopic = String.format(TOPIC_USER_SYNC, userId)
-            mqttClient?.subscribe(userTopic, 1)
-            LogUtils.d("MQTT subscribed: $userTopic")
-
-            val bookId = Config.book.id
-            val bookTopic = String.format(TOPIC_BOOK_SYNC, bookId)
+            val bookTopic = String.format(TOPIC_NOTIFY_BOOK, userId)
+            val billTopic = String.format(TOPIC_NOTIFY_BILL, userId)
+            val imageTopic = String.format(TOPIC_NOTIFY_IMAGE, userId)
             mqttClient?.subscribe(bookTopic, 1)
-            LogUtils.d("MQTT subscribed: $bookTopic")
+            mqttClient?.subscribe(billTopic, 1)
+            mqttClient?.subscribe(imageTopic, 1)
+            LogUtils.d("MQTT subscribed: $bookTopic, $billTopic, $imageTopic")
         } catch (e: Exception) {
             LogUtils.e("MQTT subscribe error", e)
         }
     }
 }
+

@@ -10,16 +10,22 @@ import androidx.lifecycle.asLiveData
 import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 
 /**
- * 同步服务
- * @date 2022/6/20
- * @author 锅得铁
- * @since v1.0
+ * 同步服务 (v2)
+ * - SyncTrigger: 观察本地变更 → HTTP API 上传（独立于 MQTT）
+ * - MqttSyncClient: 纯订阅服务端推送通知
  */
 class SyncService : Service(), Observer<Config> {
     private val binder = SyncBinder()
     private val mqttClient = MqttSyncClient.getInstance()
+
+    private val syncJob = Job()
+    private val syncScope = CoroutineScope(Dispatchers.IO + syncJob)
+    private val syncTrigger by lazy { SyncTrigger(syncScope) }
 
     private var networkMonitor: NetworkMonitor? = null
     private val configLiveData = App.viewModel.configChange.asLiveData()
@@ -28,6 +34,7 @@ class SyncService : Service(), Observer<Config> {
         LogUtils.d("onCreate")
         networkMonitor = NetworkMonitor(this) {
             if (it) {
+                syncTrigger.register()
                 if (mqttClient.isDisconnected() || mqttClient.isError()) {
                     connectSync()
                 }
@@ -49,6 +56,8 @@ class SyncService : Service(), Observer<Config> {
 
     private fun closeSync() {
         mqttClient.close()
+        syncTrigger.unregister()
+        syncJob.cancel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

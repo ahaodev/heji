@@ -1,9 +1,11 @@
 package com.hao.heji.network
 
+import com.hao.heji.data.db.Bill
 import com.hao.heji.data.db.Book
 import com.hao.heji.network.request.CategoryEntity
 import com.hao.heji.network.response.ImageEntity
 import com.hao.heji.ui.user.register.RegisterUser
+import kotlinx.serialization.json.JsonElement
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -27,7 +29,7 @@ interface ApiServer {
 
     //----------------------BOOK---------------------------//
     @POST("/api/v1/book/")
-    fun createBook(@Body book: Book): Call<BaseResponse<String>>
+    fun createBook(@Body book: Book): Call<BaseResponse<JsonElement>>
 
     @GET("/api/v1/book/{id}")
     fun findBook(@Path("id") bookId: String): Call<BaseResponse<Book>>
@@ -40,20 +42,36 @@ interface ApiServer {
 
     @PUT("/api/v1/book/{id}")
     fun updateBook(@Path("id") bookId: String,
-                   @Body body: Map<String, String>): Call<BaseResponse<String>>
+                   @Body body: Map<String, String>): Call<BaseResponse<JsonElement>>
 
     @DELETE("/api/v1/book/{id}")
-    fun deleteBook(@Path("id") bookId: String): Call<BaseResponse<String>>
+    fun deleteBook(@Path("id") bookId: String): Call<BaseResponse<JsonElement>>
 
     @GET("/api/v1/book/")
     fun bookList(): Call<BaseResponse<MutableList<Book>>>
 
     //----------------------BILL---------------------------//
+    @POST("/api/v1/bill/")
+    fun createBill(@Body bill: Bill): Call<BaseResponse<JsonElement>>
+
+    @PUT("/api/v1/bill/{id}")
+    fun updateBill(@Path("id") billId: String, @Body bill: Bill): Call<BaseResponse<JsonElement>>
+
+    @DELETE("/api/v1/bill/{id}")
+    fun deleteBill(@Path("id") billId: String): Call<BaseResponse<JsonElement>>
+
     @Streaming
     @GET("/api/v1/bill/export")
     fun exportBills(@Query("book_id") bookId: String,
                     @Query("year") year: String?,
                     @Query("month") month: String?): Call<ResponseBody>
+
+    //----------------------SYNC---------------------------//
+    @GET("/api/v1/sync/changes")
+    fun syncChanges(
+        @Query("since") since: Long,
+        @Query("limit") limit: Int = 100,
+    ): Call<BaseResponse<SyncChangesResponse>>
 
     //----------------------CATEGORY---------------------------//
     @POST("/api/v1/category/batch")

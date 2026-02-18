@@ -435,7 +435,7 @@ class CreateBillFragment : BaseFragment() {
                     ToastUtils.showLong("非本人创建的账单，无权修改")
                     return
                 }
-                mBill.synced = Status.UPDATED
+                mBill.synced = Status.NOT_SYNCED
             }
             mBill.bookId = Config.book.id
             mBill.remark = binding.eidtRemark.text.toString()

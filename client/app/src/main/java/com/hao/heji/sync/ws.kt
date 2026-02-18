@@ -5,26 +5,18 @@ import com.github.shamil.Xid
 
 fun createSyncMessage(
     type: String,
+    bookId: String,
     content: String,
     id: String = Xid.string(),
-    toUsers: List<String> = emptyList()
 ): SyncMessage {
     return SyncMessage(
         id = id,
         type = type,
-        senderId = com.hao.heji.config.Config.user.id,
+        bookId = bookId,
         content = content,
-        receiverIds = toUsers,
     )
 }
 
 fun SyncMessage.toJson(): String {
     return json.encodeToString(SyncMessage.serializer(), this)
-}
-
-fun SyncMessage.convertToAck(
-    type: String,
-    content: String,
-): SyncMessage {
-    return createSyncMessage(type, content, id, listOf(senderId))
 }

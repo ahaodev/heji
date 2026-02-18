@@ -179,7 +179,7 @@ class ReportFragment : BaseFragment() {
             tvDayAVGValue.text =
                 balance.divide(BigDecimal(dayCount), 2, RoundingMode.DOWN).toPlainString()
         }
-        showEmptyView()
+        showEmptyView(money)
 
         //----列表标题年/月平均值
         var avg = if (viewModel.yearMonth.isYear()) {
@@ -286,8 +286,9 @@ class ReportFragment : BaseFragment() {
     /**
      * 没有数据时显示空视图
      */
-    private fun showEmptyView() {
-        if (binding.tvDayAVGValue.text.equals("0.00")) {
+    private fun showEmptyView(money: Income) {
+        val noData = money.income.signum() == 0 && money.expenditure.signum() == 0
+        if (noData) {
             emptyStubView.visibility = View.VISIBLE
             binding.nestedSccrollView.visibility = View.GONE
         } else {

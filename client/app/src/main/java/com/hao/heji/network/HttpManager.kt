@@ -1,6 +1,7 @@
 package com.hao.heji.network
 
 import com.hao.heji.config.Config
+import com.hao.heji.data.db.Bill
 import com.hao.heji.data.db.Book
 import com.hao.heji.network.request.CategoryEntity
 import com.hao.heji.ui.user.register.RegisterUser
@@ -43,6 +44,15 @@ class HttpManager {
         server().updateBook(bid, mapOf("name" to bookName, "type" to bookType)).await()
 
     suspend fun joinBook(code: String) = server().joinBook(code).await()
+
+    // Bill CRUD
+    suspend fun createBill(bill: Bill) = server().createBill(bill).await()
+    suspend fun updateBill(billId: String, bill: Bill) = server().updateBill(billId, bill).await()
+    suspend fun deleteBill(billId: String) = server().deleteBill(billId).await()
+
+    // Sync
+    suspend fun syncChanges(since: Long, limit: Int = 100) =
+        server().syncChanges(since, limit).await()
 
     suspend fun imageUpload(
         @Part part: MultipartBody.Part,
