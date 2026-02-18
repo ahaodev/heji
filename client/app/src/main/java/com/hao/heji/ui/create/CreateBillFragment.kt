@@ -75,21 +75,17 @@ class CreateBillFragment : BaseFragment() {
             UriUtils.uri2File(uri).absolutePath
         }
 
-        val popup = _popupSelectImage
-        if (popup != null && popup.getImages().size > 0) {
-            mSelected.forEach { localPath: String ->
-                popup.getImages().forEach { image ->
-                    if (image.localPath == localPath) {
-                    }
-                }
+        val popup = _popupSelectImage ?: return@registerForActivityResult
+        val existingImages = popup.getImages()
+        val existingPaths = existingImages.map { it.localPath }.toSet()
+        // 去重后追加新选择的图片
+        val newImages = mSelected.filter { it !in existingPaths }.map { selectPath ->
+            Image(billID = mBill.id).apply {
+                localPath = selectPath
             }
-        } else {
-            popup?.setImages(mSelected.map { selectPath ->
-                Image(billID = mBill.id).apply {
-                    localPath = selectPath
-                }
-            }.toMutableList())
         }
+        val allImages = (existingImages + newImages).toMutableList()
+        popup.setImages(allImages)
     }
 
     private var _popupSelectImage: SelectImagePopup? = null
@@ -98,7 +94,6 @@ class CreateBillFragment : BaseFragment() {
     val popupSelectImage by lazy {
         SelectImagePopup(requireActivity()).apply {
             deleteListener = {
-                ToastUtils.showLong(it.toString())
                 viewModel.deleteImage(it.id)
             }
             selectedImagesCall = {
@@ -225,7 +220,7 @@ class CreateBillFragment : BaseFragment() {
             setTime(time)
             category?.let { setSelectCategory(it, type) }
             setMoney(money)
-            images?.let {
+            images.let {
                 viewModel.getImages(it)
             }
         }
