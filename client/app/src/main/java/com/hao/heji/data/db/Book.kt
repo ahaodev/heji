@@ -4,6 +4,8 @@ import android.os.Parcelable
 import androidx.room.*
 import com.hao.heji.config.Config
 import com.hao.heji.data.Status
+import com.hao.heji.data.converters.Iso8601ToLongSerializer
+import com.hao.heji.data.converters.NullableIso8601ToLongSerializer
 import com.github.shamil.Xid
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
@@ -38,9 +40,10 @@ data class Book(
 
     var type: String? = null,//账本类型
     @SerialName("crt_time")
-
+    @kotlinx.serialization.Serializable(with = Iso8601ToLongSerializer::class)
     var crtTime: Long = System.currentTimeMillis(),
     @SerialName("upd_time")
+    @kotlinx.serialization.Serializable(with = NullableIso8601ToLongSerializer::class)
     var updTime: Long? = 0,
 
     @SerialName("banner")

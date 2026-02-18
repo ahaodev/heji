@@ -26,12 +26,13 @@ internal class CreateBillViewModel :
     }
 
     fun getCategories(type: Int) {
+        val book = Config.bookOrNull ?: return
         LogUtils.d(
             "TimeTest",
             TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
         )
         val categories = App.dataBase.categoryDao()
-            .findParentCategories(Config.book.id, type)
+            .findParentCategories(book.id, type)
         send(CreateBillUIState.Categories(type, categories))
         LogUtils.d(
             "TimeTest",

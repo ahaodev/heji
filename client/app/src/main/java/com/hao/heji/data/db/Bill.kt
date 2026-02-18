@@ -13,7 +13,9 @@ import com.hao.heji.data.Status
 import com.hao.heji.data.converters.BigDecimalSerializer
 import com.hao.heji.data.converters.DateConverters
 import com.hao.heji.data.converters.DateSerializer
+import com.hao.heji.data.converters.Iso8601ToLongSerializer
 import com.hao.heji.data.converters.MoneyConverters
+import com.hao.heji.data.converters.NullableIso8601ToLongSerializer
 import com.github.shamil.Xid
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
@@ -81,6 +83,7 @@ data class Bill(
      */
     @SerialName("upd_time")
     @ColumnInfo(name = "upd_time")
+    @Serializable(with = NullableIso8601ToLongSerializer::class)
     var updTime: Long? = 0,
 
     @SerialName("crt_user")
@@ -89,6 +92,7 @@ data class Bill(
 
     @SerialName("crt_time")
     @ColumnInfo(name = "crt_time")
+    @Serializable(with = Iso8601ToLongSerializer::class)
     var crtTime: Long = System.currentTimeMillis(),
 
     /**

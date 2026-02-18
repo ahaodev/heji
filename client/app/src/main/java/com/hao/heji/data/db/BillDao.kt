@@ -62,8 +62,8 @@ interface BillDao {
     @Query("SELECT count(*)  FROM bill WHERE book_id =:bookId")
     fun countByBookId(bookId: String): Int
 
-    @Query("SELECT * FROM bill WHERE book_id=:bookId AND synced != 1 LIMIT 100")
-    fun flowNotSynced(bookId: String): Flow<List<Bill>>
+    @Query("SELECT * FROM bill WHERE crt_user=:userId AND synced != 1 LIMIT 100")
+    fun flowNotSynced(userId: String): Flow<List<Bill>>
 
     /**
      * 按日期查询账单

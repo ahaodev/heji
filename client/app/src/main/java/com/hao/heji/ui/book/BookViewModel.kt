@@ -148,10 +148,11 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
         launch({
             call(Result.Loading)
             val response = bookRepository.joinBook(code)
-            response.data?.let {
-                call(Result.Success(it))
+            if (response.success()) {
+                call(Result.Success(response.msg ?: "OK"))
+            } else {
+                call(Result.Error(RuntimeException(response.msg ?: "加入账本失败")))
             }
-
         }, { call(Result.Error(it)) })
 
     }

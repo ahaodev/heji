@@ -4,6 +4,7 @@ import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.data.Status
+import com.hao.heji.data.db.Book
 import com.hao.heji.network.HttpManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,46 +23,29 @@ class SyncTrigger(private val scope: CoroutineScope) {
     private val billDao = App.dataBase.billDao()
     private val bookDao = App.dataBase.bookDao()
     private val httpManager: HttpManager = get(HttpManager::class.java)
+    private val syncedBookIds = mutableSetOf<String>()
 
     private val bookJob = scope.launch(Dispatchers.IO) {
         delay(1000)
         LogUtils.d("观察账本变更（HTTP 同步）")
         var isProcessing = false
-        bookDao.flowNotSynced(Config.user.id, Config.book.id).collect { books ->
+        bookDao.flowNotSynced(Config.user.id).collect { books ->
             if (isProcessing || books.isEmpty()) return@collect
             isProcessing = true
             for (b in books) {
-                LogUtils.d("同步账本: ${b.id}, synced=${b.synced}, deleted=${b.deleted}")
-                try {
-                    when {
-                        b.deleted == Status.DELETED -> {
-                            httpManager.deleteBook(b.id)
-                            bookDao.deleteById(b.id)
-                            LogUtils.d("账本已删除: ${b.id}")
-                        }
-                        else -> {
-                            httpManager.createBook(b)
-                            bookDao.updateSyncStatus(b.id, Status.SYNCED)
-                            LogUtils.d("账本已同步: ${b.id}")
-                        }
-                    }
-                } catch (e: Exception) {
-                    LogUtils.e("同步账本失败: ${b.id}", e)
-                }
+                syncBook(b)
             }
             isProcessing = false
         }
     }
 
     private val billJob = scope.launch(Dispatchers.IO) {
-        delay(2000) // 延迟比 bookJob 更久，确保账本先同步
+        delay(2000)
         LogUtils.d("观察账单变更（HTTP 同步）")
         var isProcessing = false
-        billDao.flowNotSynced(Config.book.id).collect { bills ->
+        billDao.flowNotSynced(Config.user.id).collect { bills ->
             if (isProcessing || bills.isEmpty()) return@collect
             isProcessing = true
-            // 先确保所有未同步账本已上传
-            syncPendingBooks()
             LogUtils.d("开始处理账单 count=${bills.size}...")
             for (bill in bills) {
                 LogUtils.d("同步账单: ${bill.id}, synced=${bill.synced}, deleted=${bill.deleted}")
@@ -73,6 +57,7 @@ class SyncTrigger(private val scope: CoroutineScope) {
                             LogUtils.d("账单已删除: ${bill.id}")
                         }
                         else -> {
+                            ensureBookSynced(bill.bookId)
                             httpManager.createBill(bill)
                             billDao.updateSyncStatus(bill.id, Status.SYNCED)
                             LogUtils.d("账单已同步: ${bill.id}")
@@ -87,26 +72,46 @@ class SyncTrigger(private val scope: CoroutineScope) {
         }
     }
 
-    /**
-     * 同步所有待上传的账本，确保账单的外键约束不会失败
-     */
-    private suspend fun syncPendingBooks() {
-        val pendingBooks = bookDao.listNotSynced(Config.user.id)
-        if (pendingBooks.isEmpty()) return
-        LogUtils.d("账单同步前先上传 ${pendingBooks.size} 个未同步账本")
-        for (b in pendingBooks) {
-            try {
-                if (b.deleted == Status.DELETED) {
+    private suspend fun syncBook(b: Book) {
+        LogUtils.d("同步账本: ${b.id}, synced=${b.synced}, deleted=${b.deleted}")
+        try {
+            when {
+                b.deleted == Status.DELETED -> {
                     httpManager.deleteBook(b.id)
                     bookDao.deleteById(b.id)
-                } else {
+                    LogUtils.d("账本已删除: ${b.id}")
+                }
+                else -> {
                     httpManager.createBook(b)
                     bookDao.updateSyncStatus(b.id, Status.SYNCED)
+                    syncedBookIds.add(b.id)
+                    LogUtils.d("账本已同步: ${b.id}")
                 }
+            }
+        } catch (e: Exception) {
+            LogUtils.e("同步账本失败: ${b.id}", e)
+        }
+    }
+
+    /**
+     * 确保账单对应的账本已在服务端存在。
+     * 即使本地标记为 SYNCED，也可能服务端数据丢失（如重建数据库），
+     * 因此首次遇到该 bookId 时主动上传一次（服务端 upsert 保证幂等）。
+     */
+    private suspend fun ensureBookSynced(bookId: String) {
+        if (syncedBookIds.contains(bookId)) return
+        val books = bookDao.findBook(bookId)
+        if (books.isNotEmpty()) {
+            val book = books[0]
+            try {
+                httpManager.createBook(book)
+                bookDao.updateSyncStatus(book.id, Status.SYNCED)
+                LogUtils.d("前置同步账本: ${book.id}")
             } catch (e: Exception) {
-                LogUtils.e("前置账本同步失败: ${b.id}", e)
+                LogUtils.e("前置同步账本失败: ${book.id}", e)
             }
         }
+        syncedBookIds.add(bookId)
     }
 
     fun register() {

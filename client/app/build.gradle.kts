@@ -182,6 +182,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    // QR Code
+    implementation(libs.zxing.core)
+
     // Third-party
     implementation(libs.brvah)
     implementation(libs.permissionx)

@@ -67,6 +67,7 @@ subsamplingScaleImageView = "3.10.0"
 sentry = "5.12.2"
 mmkv = "2.3.0"
 koin = "4.1.1"
+zxingCore = "3.5.3"
 
 [libraries]
 # AndroidX
@@ -139,6 +140,7 @@ opencsv = { group = "com.opencsv", name = "opencsv", version.ref = "opencsv" }
 subsampling-scale-image-view = { group = "com.davemorrissey.labs", name = "subsampling-scale-image-view-androidx", version.ref = "subsamplingScaleImageView" }
 mmkv = { group = "com.tencent", name = "mmkv", version.ref = "mmkv" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxingCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

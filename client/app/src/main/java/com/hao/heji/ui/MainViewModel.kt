@@ -35,15 +35,19 @@ class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
         launch({
             val bookDao = App.dataBase.bookDao()
             if (!Config.enableOfflineMode) {
-                bookRepository.bookList().data?.let {
-                    it.forEach { book ->
-                        book.synced = Status.SYNCED
-                        val exist = bookDao.exist(book.id) > 0
-                        if (exist)
-                            bookDao.update(book)
-                        else
-                            bookDao.insert(book)
+                try {
+                    bookRepository.bookList().data?.let {
+                        it.forEach { book ->
+                            book.synced = Status.SYNCED
+                            val exist = bookDao.exist(book.id) > 0
+                            if (exist)
+                                bookDao.update(book)
+                            else
+                                bookDao.insert(book)
+                        }
                     }
+                } catch (e: Exception) {
+                    LogUtils.e("拉取远程账本列表失败，使用本地数据", e)
                 }
             }
 
