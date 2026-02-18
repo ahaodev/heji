@@ -1,6 +1,0 @@
-// 枚举错误码
-enum StatusCode {
-    OK = 0;
-    FAIL = 1;
-    INTERNAL_ERROR = 2;
-}

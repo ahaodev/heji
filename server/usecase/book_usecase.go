@@ -2,64 +2,98 @@ package usecase
 
 import (
 	"context"
-	"errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"heji-server/domain"
+	"fmt"
+	"shadmin/domain"
 	"time"
 )
 
-type bookUseCase struct {
-	repository       domain.BookRepository
-	sharedRepository domain.SharedRepository
+type bookUsecase struct {
+	bookRepo domain.BookRepository
+	timeout  time.Duration
 }
 
-func (b bookUseCase) BookList(c context.Context, userId string) (*[]domain.Book, error) {
-	return b.repository.List(c, userId)
+// NewBookUsecase creates a new book usecase
+func NewBookUsecase(bookRepo domain.BookRepository, timeout time.Duration) domain.BookUseCase {
+	return &bookUsecase{bookRepo: bookRepo, timeout: timeout}
 }
 
-func (b bookUseCase) CreateBook(c context.Context, book *domain.Book) error {
-	return b.repository.CreateOne(c, book)
-}
+func (uc *bookUsecase) CreateBook(c context.Context, userID string, req *domain.CreateBookRequest) (*domain.Book, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
 
-func (b bookUseCase) DeleteBook(c context.Context, bookId string) error {
-	oid, err := primitive.ObjectIDFromHex(bookId)
-	if err != nil {
-		return err
+	book := &domain.Book{
+		ID:        req.ID,
+		Name:      req.Name,
+		Type:      req.Type,
+		Banner:    req.Banner,
+		CrtUserID: userID,
+		IsInitial: req.IsInitial,
 	}
-	return b.repository.Delete(c, oid)
-}
 
-func (b bookUseCase) JoinBook(c context.Context, code string, userId string) error {
-	//b.repository.JoinBook(c, code)
-	bookId, err := b.sharedRepository.FindBookId(c, code)
-	if err != nil {
-		errors.New("加入账本失败,邀请码不存在或已过期！")
+	if err := uc.bookRepo.Create(ctx, book); err != nil {
+		return nil, fmt.Errorf("failed to create book: %w", err)
 	}
-	return b.repository.AddBookUser(c, bookId, userId)
+	return book, nil
 }
 
-func (b bookUseCase) UpdateBook(c context.Context, book *domain.Book) error {
-	//TODO implement me
-	panic("implement me")
+func (uc *bookUsecase) GetBook(c context.Context, id string) (*domain.Book, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+	return uc.bookRepo.GetByID(ctx, id)
 }
 
-func (b bookUseCase) SharedBook(c context.Context, bookId string) (string, error) {
-	hexID, err := primitive.ObjectIDFromHex(bookId)
+func (uc *bookUsecase) ListBooks(c context.Context, userID string) ([]*domain.Book, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+	return uc.bookRepo.ListByUser(ctx, userID)
+}
+
+func (uc *bookUsecase) UpdateBook(c context.Context, id string, req *domain.UpdateBookRequest) (*domain.Book, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+
+	book, err := uc.bookRepo.GetByID(ctx, id)
 	if err != nil {
-		return "", errors.New("book_id Param Error")
+		return nil, err
 	}
-	_, err = b.repository.FindOne(c, hexID)
+
+	if req.Name != nil {
+		book.Name = *req.Name
+	}
+	if req.Type != nil {
+		book.Type = *req.Type
+	}
+	if req.Banner != nil {
+		book.Banner = *req.Banner
+	}
+
+	if err := uc.bookRepo.Update(ctx, book); err != nil {
+		return nil, fmt.Errorf("failed to update book: %w", err)
+	}
+	return book, nil
+}
+
+func (uc *bookUsecase) DeleteBook(c context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+	return uc.bookRepo.Delete(ctx, id)
+}
+
+func (uc *bookUsecase) JoinBook(c context.Context, bookID, userID string) error {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+	return uc.bookRepo.AddMember(ctx, bookID, userID)
+}
+
+func (uc *bookUsecase) ShareBook(c context.Context, bookID string) (string, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+
+	// 验证账本存在
+	_, err := uc.bookRepo.GetByID(ctx, bookID)
 	if err != nil {
-		return "", errors.New("账本不存在或未同步")
+		return "", fmt.Errorf("book not found: %w", err)
 	}
-	return b.sharedRepository.CreateOne(c, bookId)
-}
-
-func (b bookUseCase) Create(c context.Context, book *domain.Book) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func NewBookUseCase(br domain.BookRepository, sr domain.SharedRepository, timeout time.Duration) domain.BookUseCase {
-	return &bookUseCase{br, sr}
+	// 返回账本ID作为分享码
+	return bookID, nil
 }

@@ -1,0 +1,461 @@
+[
+  {
+    "id": 1,
+    "label": "系统管理",
+    "disabled": false,
+    "children": [
+      {
+        "id": 100,
+        "label": "用户管理",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1000,
+            "label": "用户查询",
+            "disabled": false
+          },
+          {
+            "id": 1001,
+            "label": "用户新增",
+            "disabled": false
+          },
+          {
+            "id": 1002,
+            "label": "用户修改",
+            "disabled": false
+          },
+          {
+            "id": 1003,
+            "label": "用户删除",
+            "disabled": false
+          },
+          {
+            "id": 1004,
+            "label": "用户导出",
+            "disabled": false
+          },
+          {
+            "id": 1005,
+            "label": "用户导入",
+            "disabled": false
+          },
+          {
+            "id": 1006,
+            "label": "重置密码",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 101,
+        "label": "角色管理",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1007,
+            "label": "角色查询",
+            "disabled": false
+          },
+          {
+            "id": 1008,
+            "label": "角色新增",
+            "disabled": false
+          },
+          {
+            "id": 1009,
+            "label": "角色修改",
+            "disabled": false
+          },
+          {
+            "id": 1010,
+            "label": "角色删除",
+            "disabled": false
+          },
+          {
+            "id": 1011,
+            "label": "角色导出",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 102,
+        "label": "菜单管理",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1012,
+            "label": "菜单查询",
+            "disabled": false
+          },
+          {
+            "id": 1013,
+            "label": "菜单新增",
+            "disabled": false
+          },
+          {
+            "id": 1014,
+            "label": "菜单修改",
+            "disabled": false
+          },
+          {
+            "id": 1015,
+            "label": "菜单删除",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 103,
+        "label": "部门管理",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1016,
+            "label": "部门查询",
+            "disabled": false
+          },
+          {
+            "id": 1017,
+            "label": "部门新增",
+            "disabled": false
+          },
+          {
+            "id": 1018,
+            "label": "部门修改",
+            "disabled": false
+          },
+          {
+            "id": 1019,
+            "label": "部门删除",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 104,
+        "label": "岗位管理",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1020,
+            "label": "岗位查询",
+            "disabled": false
+          },
+          {
+            "id": 1021,
+            "label": "岗位新增",
+            "disabled": false
+          },
+          {
+            "id": 1022,
+            "label": "岗位修改",
+            "disabled": false
+          },
+          {
+            "id": 1023,
+            "label": "岗位删除",
+            "disabled": false
+          },
+          {
+            "id": 1024,
+            "label": "岗位导出",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 105,
+        "label": "字典管理",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1025,
+            "label": "字典查询",
+            "disabled": false
+          },
+          {
+            "id": 1026,
+            "label": "字典新增",
+            "disabled": false
+          },
+          {
+            "id": 1027,
+            "label": "字典修改",
+            "disabled": false
+          },
+          {
+            "id": 1028,
+            "label": "字典删除",
+            "disabled": false
+          },
+          {
+            "id": 1029,
+            "label": "字典导出",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 106,
+        "label": "参数设置",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1030,
+            "label": "参数查询",
+            "disabled": false
+          },
+          {
+            "id": 1031,
+            "label": "参数新增",
+            "disabled": false
+          },
+          {
+            "id": 1032,
+            "label": "参数修改",
+            "disabled": false
+          },
+          {
+            "id": 1033,
+            "label": "参数删除",
+            "disabled": false
+          },
+          {
+            "id": 1034,
+            "label": "参数导出",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 107,
+        "label": "通知公告",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1035,
+            "label": "公告查询",
+            "disabled": false
+          },
+          {
+            "id": 1036,
+            "label": "公告新增",
+            "disabled": false
+          },
+          {
+            "id": 1037,
+            "label": "公告修改",
+            "disabled": false
+          },
+          {
+            "id": 1038,
+            "label": "公告删除",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 108,
+        "label": "日志管理",
+        "disabled": false,
+        "children": [
+          {
+            "id": 500,
+            "label": "操作日志",
+            "disabled": false,
+            "children": [
+              {
+                "id": 1039,
+                "label": "操作查询",
+                "disabled": false
+              },
+              {
+                "id": 1040,
+                "label": "操作删除",
+                "disabled": false
+              },
+              {
+                "id": 1041,
+                "label": "日志导出",
+                "disabled": false
+              }
+            ]
+          },
+          {
+            "id": 501,
+            "label": "登录日志",
+            "disabled": false,
+            "children": [
+              {
+                "id": 1042,
+                "label": "登录查询",
+                "disabled": false
+              },
+              {
+                "id": 1043,
+                "label": "登录删除",
+                "disabled": false
+              },
+              {
+                "id": 1044,
+                "label": "日志导出",
+                "disabled": false
+              },
+              {
+                "id": 1045,
+                "label": "账户解锁",
+                "disabled": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "label": "系统监控",
+    "disabled": false,
+    "children": [
+      {
+        "id": 109,
+        "label": "在线用户",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1046,
+            "label": "在线查询",
+            "disabled": false
+          },
+          {
+            "id": 1047,
+            "label": "批量强退",
+            "disabled": false
+          },
+          {
+            "id": 1048,
+            "label": "单条强退",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 110,
+        "label": "定时任务",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1049,
+            "label": "任务查询",
+            "disabled": false
+          },
+          {
+            "id": 1050,
+            "label": "任务新增",
+            "disabled": false
+          },
+          {
+            "id": 1051,
+            "label": "任务修改",
+            "disabled": false
+          },
+          {
+            "id": 1052,
+            "label": "任务删除",
+            "disabled": false
+          },
+          {
+            "id": 1053,
+            "label": "状态修改",
+            "disabled": false
+          },
+          {
+            "id": 1054,
+            "label": "任务导出",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 111,
+        "label": "数据监控",
+        "disabled": false
+      },
+      {
+        "id": 112,
+        "label": "服务监控",
+        "disabled": false
+      },
+      {
+        "id": 113,
+        "label": "缓存监控",
+        "disabled": false
+      },
+      {
+        "id": 114,
+        "label": "缓存列表",
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "label": "系统工具",
+    "disabled": false,
+    "children": [
+      {
+        "id": 115,
+        "label": "表单构建",
+        "disabled": false
+      },
+      {
+        "id": 116,
+        "label": "代码生成",
+        "disabled": false,
+        "children": [
+          {
+            "id": 1055,
+            "label": "生成查询",
+            "disabled": false
+          },
+          {
+            "id": 1056,
+            "label": "生成修改",
+            "disabled": false
+          },
+          {
+            "id": 1057,
+            "label": "生成删除",
+            "disabled": false
+          },
+          {
+            "id": 1058,
+            "label": "导入代码",
+            "disabled": false
+          },
+          {
+            "id": 1059,
+            "label": "预览代码",
+            "disabled": false
+          },
+          {
+            "id": 1060,
+            "label": "生成代码",
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "id": 117,
+        "label": "系统接口",
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "label": "若依官网",
+    "disabled": false
+  }
+]

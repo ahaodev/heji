@@ -2,46 +2,63 @@ package domain
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
-//var (
-//	Types = flag.String("types", "", "struct types")
-//	Tags  = flag.String("tags", "", "preset tags")
-//)
-
-const (
-	CollBook = "books" //mongo collection users
-)
-
-//go:generate go run github.com/wolfogre/gtag/cmd/gtag -types Book -tags bson .
+// Book 账本实体
 type Book struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-	Name      string             `bson:"name" json:"name"`
-	Type      string             `bson:"type" json:"type"`
-	Banner    string             `bson:"banner" json:"banner"`
-	CrtUserId string             `bson:"crt_user_id" json:"crt_user_id"`
-	CrtTime   int64              `bson:"crt_time" json:"crt_time"`
-	UpdTime   int64              `bson:"upd_time" json:"upd_time"`
-	Users     []string           `bson:"users" json:"users"`
-	IsInitial bool               `bson:"is_initial" json:"is_initial"`
+	ID        string     `json:"_id"`
+	Name      string     `json:"name"`
+	Type      string     `json:"type,omitempty"`
+	Banner    string     `json:"banner,omitempty"`
+	CrtUserID string     `json:"crt_user_id"`
+	IsInitial bool       `json:"is_initial"`
+	Members   []string   `json:"members,omitempty"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	CreatedAt time.Time  `json:"crt_time"`
+	UpdatedAt time.Time  `json:"upd_time"`
 }
 
-type BookUseCase interface {
-	CreateBook(c context.Context, book *Book) error
-	BookList(c context.Context, userId string) (*[]Book, error)
-	DeleteBook(c context.Context, bookId string) error
-	JoinBook(c context.Context, code string, userId string) error
-	UpdateBook(c context.Context, book *Book) error
-	SharedBook(c context.Context, bookId string) (string, error)
+// CreateBookRequest 创建账本请求
+type CreateBookRequest struct {
+	ID        string `json:"_id,omitempty"`
+	Name      string `json:"name" binding:"required"`
+	Type      string `json:"type,omitempty"`
+	Banner    string `json:"banner,omitempty"`
+	IsInitial bool   `json:"is_initial,omitempty"`
 }
 
+// UpdateBookRequest 更新账本请求
+type UpdateBookRequest struct {
+	Name   *string `json:"name,omitempty"`
+	Type   *string `json:"type,omitempty"`
+	Banner *string `json:"banner,omitempty"`
+}
+
+// BookQueryFilter 账本查询过滤器
+type BookQueryFilter struct {
+	UserID string `json:"-"`
+	QueryParams
+}
+
+// BookRepository 账本数据访问接口
 type BookRepository interface {
-	CreateOne(c context.Context, book *Book) error
-	FindOne(c context.Context, id primitive.ObjectID) (Book, error)
-	FindInitialBook(c context.Context, tel string) (Book, error)
-	List(c context.Context, userId string) (*[]Book, error)
-	Update(c context.Context, book *Book) (*Book, error)
-	Delete(c context.Context, id primitive.ObjectID) error
-	AddBookUser(c context.Context, bookId string, userId string) error
+	Create(c context.Context, book *Book) error
+	GetByID(c context.Context, id string) (*Book, error)
+	ListByUser(c context.Context, userID string) ([]*Book, error)
+	Update(c context.Context, book *Book) error
+	Delete(c context.Context, id string) error
+	AddMember(c context.Context, bookID, userID string) error
+	RemoveMember(c context.Context, bookID, userID string) error
+}
+
+// BookUseCase 账本业务逻辑接口
+type BookUseCase interface {
+	CreateBook(c context.Context, userID string, req *CreateBookRequest) (*Book, error)
+	GetBook(c context.Context, id string) (*Book, error)
+	ListBooks(c context.Context, userID string) ([]*Book, error)
+	UpdateBook(c context.Context, id string, req *UpdateBookRequest) (*Book, error)
+	DeleteBook(c context.Context, id string) error
+	JoinBook(c context.Context, bookID, userID string) error
+	ShareBook(c context.Context, bookID string) (string, error)
 }

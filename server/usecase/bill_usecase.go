@@ -2,29 +2,91 @@ package usecase
 
 import (
 	"context"
-	"heji-server/domain"
+	"fmt"
+	"shadmin/domain"
+	"time"
 )
 
-type billUseCase struct {
-	repository domain.BillRepository
+type billUsecase struct {
+	billRepo domain.BillRepository
+	timeout  time.Duration
 }
 
-func (b billUseCase) SaveBill(c context.Context, bill *domain.Bill) error {
-	return b.repository.Save(c, bill)
+// NewBillUsecase creates a new bill usecase
+func NewBillUsecase(billRepo domain.BillRepository, timeout time.Duration) domain.BillUseCase {
+	return &billUsecase{billRepo: billRepo, timeout: timeout}
 }
 
-func (b billUseCase) BillList(c context.Context, bookId string, pageNumber, pageSize int64, bill *[]domain.Bill) error {
-	return b.repository.List(c, bookId, pageNumber, pageSize, bill)
+func (uc *billUsecase) CreateBill(c context.Context, userID string, req *domain.CreateBillRequest) (*domain.Bill, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+
+	bill := &domain.Bill{
+		ID:       req.ID,
+		BookID:   req.BookID,
+		Money:    req.Money,
+		Type:     req.Type,
+		Category: req.Category,
+		CrtUser:  userID,
+		Time:     req.Time,
+		Remark:   req.Remark,
+		Images:   req.Images,
+	}
+
+	if err := uc.billRepo.Create(ctx, bill); err != nil {
+		return nil, fmt.Errorf("failed to create bill: %w", err)
+	}
+	return bill, nil
 }
 
-func (b billUseCase) DeleteBill(c context.Context, billId string) error {
-	return b.repository.Delete(c, billId)
+func (uc *billUsecase) GetBill(c context.Context, id string) (*domain.Bill, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+	return uc.billRepo.GetByID(ctx, id)
 }
 
-func (b billUseCase) UpdateBill(c context.Context, bill *domain.Bill) error {
-	return b.repository.Update(c, bill)
+func (uc *billUsecase) ListBills(c context.Context, filter domain.BillQueryFilter) (*domain.PagedResult[*domain.Bill], error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+	return uc.billRepo.Query(ctx, filter)
 }
 
-func NewBillUseCase(br domain.BillRepository) domain.BillUseCase {
-	return &billUseCase{br}
+func (uc *billUsecase) UpdateBill(c context.Context, id string, req *domain.UpdateBillRequest) (*domain.Bill, error) {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+
+	bill, err := uc.billRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.Money != nil {
+		bill.Money = *req.Money
+	}
+	if req.Type != nil {
+		bill.Type = *req.Type
+	}
+	if req.Category != nil {
+		bill.Category = *req.Category
+	}
+	if req.Time != nil {
+		bill.Time = *req.Time
+	}
+	if req.Remark != nil {
+		bill.Remark = *req.Remark
+	}
+	if req.Images != nil {
+		bill.Images = req.Images
+	}
+
+	if err := uc.billRepo.Update(ctx, bill); err != nil {
+		return nil, fmt.Errorf("failed to update bill: %w", err)
+	}
+	return bill, nil
+}
+
+func (uc *billUsecase) DeleteBill(c context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(c, uc.timeout)
+	defer cancel()
+	return uc.billRepo.Delete(ctx, id)
 }

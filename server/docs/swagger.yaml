@@ -1,0 +1,2689 @@
+basePath: /api/v1
+definitions:
+  controller.RoleInfo:
+    properties:
+      id:
+        description: 角色ID
+        type: string
+      name:
+        description: 角色显示名称
+        type: string
+      type:
+        description: 角色类型
+        type: string
+    type: object
+  domain.ApiResource:
+    properties:
+      created_at:
+        type: string
+      handler:
+        type: string
+      id:
+        description: 'format: "method:path"'
+        type: string
+      is_public:
+        type: boolean
+      method:
+        type: string
+      module:
+        type: string
+      path:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.ApiResourcePagedResult:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/domain.ApiResource'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  domain.CreateBillRequest:
+    properties:
+      _id:
+        type: string
+      book_id:
+        type: string
+      category:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      money:
+        type: number
+      remark:
+        type: string
+      time:
+        type: string
+      type:
+        type: integer
+    required:
+    - book_id
+    - money
+    - time
+    - type
+    type: object
+  domain.CreateBookRequest:
+    properties:
+      _id:
+        type: string
+      banner:
+        type: string
+      is_initial:
+        type: boolean
+      name:
+        type: string
+      type:
+        type: string
+    required:
+    - name
+    type: object
+  domain.CreateCategoryRequest:
+    properties:
+      _id:
+        type: string
+      book_id:
+        type: string
+      index:
+        type: integer
+      level:
+        type: integer
+      name:
+        type: string
+      parentId:
+        type: string
+      type:
+        type: integer
+    required:
+    - book_id
+    - name
+    - type
+    type: object
+  domain.CreateDictItemRequest:
+    properties:
+      color:
+        description: 颜色标识
+        type: string
+      is_default:
+        description: 是否默认项
+        type: boolean
+      label:
+        description: 显示标签
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 排序，默认0
+        type: integer
+      status:
+        description: active, inactive，默认active
+        type: string
+      type_id:
+        description: 字典类型ID
+        type: string
+      value:
+        description: 实际值
+        type: string
+    required:
+    - label
+    - type_id
+    - value
+    type: object
+  domain.CreateDictTypeRequest:
+    properties:
+      code:
+        description: 唯一标识
+        type: string
+      name:
+        description: 显示名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      status:
+        description: active, inactive，默认active
+        type: string
+    required:
+    - code
+    - name
+    type: object
+  domain.CreateMenuRequest:
+    properties:
+      apiResources:
+        description: Extended properties
+        items:
+          type: string
+        type: array
+      component:
+        type: string
+      icon:
+        type: string
+      is_frame:
+        type: boolean
+      name:
+        type: string
+      parent_id:
+        type: string
+      path:
+        type: string
+      permissions:
+        type: string
+      query:
+        type: string
+      route_name:
+        type: string
+      sequence:
+        type: integer
+      status:
+        description: active/inactive
+        type: string
+      type:
+        description: menu/button
+        type: string
+      visible:
+        description: show/hide
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  domain.CreateRoleRequest:
+    properties:
+      menu_ids:
+        description: Menu permissions managed through Casbin
+        items:
+          type: string
+        type: array
+      name:
+        maxLength: 100
+        type: string
+      sequence:
+        type: integer
+      status:
+        type: string
+    required:
+    - name
+    type: object
+  domain.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role_ids:
+        description: 用户角色ID列表
+        items:
+          type: string
+        type: array
+      status:
+        description: active, inactive, invited, suspended
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  domain.DictItem:
+    properties:
+      color:
+        description: 颜色标识
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      is_default:
+        description: 是否默认项，默认false
+        type: boolean
+      label:
+        description: 显示标签
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 排序，默认0
+        type: integer
+      status:
+        description: active, inactive
+        type: string
+      type_id:
+        description: 字典类型ID
+        type: string
+      updated_at:
+        type: string
+      value:
+        description: 实际值
+        type: string
+    type: object
+  domain.DictItemPagedResult:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/domain.DictItem'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  domain.DictType:
+    properties:
+      code:
+        description: 唯一标识
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        description: 显示名称
+        type: string
+      remark:
+        type: string
+      status:
+        description: active, inactive
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.DictTypePagedResult:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/domain.DictType'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  domain.InviteUserRequest:
+    properties:
+      email:
+        type: string
+      message:
+        description: 可选的邀请消息
+        type: string
+      role_ids:
+        description: 角色ID列表
+        items:
+          type: string
+        type: array
+    required:
+    - email
+    type: object
+  domain.LoginLog:
+    properties:
+      browser:
+        type: string
+      device:
+        type: string
+      failure_reason:
+        type: string
+      id:
+        type: string
+      login_ip:
+        type: string
+      login_time:
+        type: string
+      os:
+        type: string
+      status:
+        description: success, failed
+        type: string
+      user_agent:
+        type: string
+      username:
+        type: string
+    type: object
+  domain.LoginLogPagedResult:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/domain.LoginLog'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  domain.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  domain.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  domain.LogoutRequest:
+    properties:
+      refresh_token:
+        description: 可选的刷新令牌，用于更完整的登出处理
+        type: string
+    type: object
+  domain.Menu:
+    properties:
+      apiResources:
+        items:
+          type: string
+        type: array
+      children:
+        description: Related data
+        items:
+          $ref: '#/definitions/domain.Menu'
+        type: array
+      component:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      icon:
+        type: string
+      id:
+        type: string
+      is_frame:
+        type: boolean
+      name:
+        type: string
+      parent_id:
+        type: string
+      path:
+        type: string
+      permissions:
+        type: string
+      query:
+        type: string
+      route_name:
+        type: string
+      sequence:
+        type: integer
+      status:
+        description: active/inactive
+        type: string
+      type:
+        description: menu/button
+        type: string
+      updated_at:
+        type: string
+      visible:
+        description: show/hide
+        type: string
+    type: object
+  domain.MenuTreeNode:
+    properties:
+      apiResources:
+        items:
+          type: string
+        type: array
+      children:
+        items:
+          $ref: '#/definitions/domain.MenuTreeNode'
+        type: array
+      component:
+        type: string
+      icon:
+        type: string
+      id:
+        type: string
+      is_frame:
+        type: boolean
+      name:
+        type: string
+      parent_id:
+        type: string
+      path:
+        type: string
+      permissions:
+        type: string
+      properties:
+        type: string
+      query:
+        type: string
+      roles:
+        items:
+          type: string
+        type: array
+      route_name:
+        type: string
+      sequence:
+        type: integer
+      status:
+        type: string
+      type:
+        type: string
+      visible:
+        type: string
+    type: object
+  domain.PagedResult-domain_Menu:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/domain.Menu'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  domain.PasswordUpdate:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        type: string
+    type: object
+  domain.Profile:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_admin:
+        type: boolean
+      phone:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  domain.ProfileUpdate:
+    properties:
+      avatar:
+        type: string
+      name:
+        type: string
+    type: object
+  domain.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  domain.RefreshTokenResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  domain.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+  domain.Role:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      menus:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      sequence:
+        type: integer
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  domain.UpdateBillRequest:
+    properties:
+      category:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      money:
+        type: number
+      remark:
+        type: string
+      time:
+        type: string
+      type:
+        type: integer
+    type: object
+  domain.UpdateBookRequest:
+    properties:
+      banner:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  domain.UpdateCategoryRequest:
+    properties:
+      index:
+        type: integer
+      level:
+        type: integer
+      name:
+        type: string
+      parentId:
+        type: string
+      type:
+        type: integer
+    type: object
+  domain.UpdateDictItemRequest:
+    properties:
+      color:
+        type: string
+      is_default:
+        type: boolean
+      label:
+        type: string
+      remark:
+        type: string
+      sort:
+        type: integer
+      status:
+        type: string
+      value:
+        type: string
+    type: object
+  domain.UpdateDictTypeRequest:
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+      remark:
+        type: string
+      status:
+        type: string
+    type: object
+  domain.UpdateMenuRequest:
+    properties:
+      apiResources:
+        items:
+          type: string
+        type: array
+      code:
+        type: string
+      component:
+        type: string
+      icon:
+        type: string
+      is_frame:
+        type: boolean
+      name:
+        type: string
+      parent_id:
+        type: string
+      path:
+        type: string
+      permissions:
+        type: string
+      properties:
+        description: Extended properties
+        type: string
+      query:
+        type: string
+      remark:
+        type: string
+      route_name:
+        type: string
+      sequence:
+        type: integer
+      status:
+        description: active/inactive
+        type: string
+      type:
+        description: menu/button
+        type: string
+      visible:
+        description: show/hide
+        type: string
+    type: object
+  domain.UpdateRoleRequest:
+    properties:
+      menu_ids:
+        description: Menu permissions managed through Casbin
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      sequence:
+        type: integer
+      status:
+        type: string
+    type: object
+  domain.User:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      invited_at:
+        type: string
+      invited_by:
+        type: string
+      is_active:
+        description: 用户是否活跃
+        type: boolean
+      is_admin:
+        type: boolean
+      password:
+        type: string
+      phone:
+        type: string
+      role:
+        description: 用户的角色
+        items:
+          type: string
+        type: array
+      status:
+        description: active, inactive, invited, suspended
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  domain.UserUpdateRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role_ids:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:55667
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: admin dashboard system with RBAC
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: ShadMIN API
+  version: "1.0"
+paths:
+  /api-resources:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of API resources with optional filtering
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by HTTP method
+        in: query
+        name: method
+        type: string
+      - description: Filter by module
+        in: query
+        name: module
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Filter by public status
+        in: query
+        name: is_public
+        type: boolean
+      - description: Search keyword
+        in: query
+        name: keyword
+        type: string
+      - description: Filter by path
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.ApiResourcePagedResult'
+              type: object
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      summary: Get API resources with pagination
+      tags:
+      - API Resources
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user and invalidate tokens
+      parameters:
+      - description: Logout request (optional)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/domain.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "401":
+          description: Not authorized
+          schema:
+            $ref: '#/definitions/domain.Response'
+      summary: User logout
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh access token using refresh token
+      parameters:
+      - description: Refresh token request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token refreshed successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.RefreshTokenResponse'
+              type: object
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "401":
+          description: Invalid refresh token
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /bill:
+    get:
+      parameters:
+      - description: 账本ID
+        in: query
+        name: book_id
+        required: true
+        type: string
+      - description: 账单类型
+        in: query
+        name: type
+        type: integer
+      - description: 分类
+        in: query
+        name: category
+        type: string
+      - description: 起始日期
+        in: query
+        name: time_from
+        type: string
+      - description: 结束日期
+        in: query
+        name: time_to
+        type: string
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 查询账单列表
+      tags:
+      - bill
+    post:
+      parameters:
+      - description: 创建账单请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateBillRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建账单
+      tags:
+      - bill
+  /bill/{id}:
+    delete:
+      parameters:
+      - description: 账单ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除账单
+      tags:
+      - bill
+    get:
+      parameters:
+      - description: 账单ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取账单详情
+      tags:
+      - bill
+    put:
+      parameters:
+      - description: 账单ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新账单请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateBillRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新账单
+      tags:
+      - bill
+  /book:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户的账本列表
+      tags:
+      - book
+    post:
+      parameters:
+      - description: 创建账本请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateBookRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建账本
+      tags:
+      - book
+  /book/{id}:
+    delete:
+      parameters:
+      - description: 账本ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除账本
+      tags:
+      - book
+    get:
+      parameters:
+      - description: 账本ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取账本详情
+      tags:
+      - book
+    put:
+      parameters:
+      - description: 账本ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新账本请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateBookRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新账本
+      tags:
+      - book
+  /book/{id}/join:
+    post:
+      parameters:
+      - description: 账本ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 加入账本
+      tags:
+      - book
+  /category:
+    get:
+      parameters:
+      - description: 账本ID
+        in: query
+        name: book_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取账本下的分类列表
+      tags:
+      - category
+    post:
+      parameters:
+      - description: 创建分类请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateCategoryRequest'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 创建分类
+      tags:
+      - category
+  /category/{id}:
+    delete:
+      parameters:
+      - description: 分类ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 删除分类
+      tags:
+      - category
+    get:
+      parameters:
+      - description: 分类ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 获取分类详情
+      tags:
+      - category
+    put:
+      parameters:
+      - description: 分类ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新分类请求
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateCategoryRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: 更新分类
+      tags:
+      - category
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT tokens with brute force protection
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginResponse'
+              type: object
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "423":
+          description: Account temporarily locked due to too many failed attempts
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      summary: User login
+      tags:
+      - Authentication
+  /menu:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of menus with filtering and pagination
+      parameters:
+      - description: Filter by menu type (menu/button/api)
+        in: query
+        name: type
+        type: string
+      - description: Filter by status (active/inactive)
+        in: query
+        name: status
+        type: string
+      - description: Filter by parent menu ID
+        in: query
+        name: parent_id
+        type: string
+      - description: Search in name or code
+        in: query
+        name: search
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 20)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved menus
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.PagedResult-domain_Menu'
+              type: object
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get menus
+      tags:
+      - Menus
+    post:
+      consumes:
+      - application/json
+      description: Create a new menu item
+      parameters:
+      - description: Menu information
+        in: body
+        name: menu
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created menu
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Menu'
+              type: object
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "409":
+          description: Conflict - menu code already exists
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Create menu
+      tags:
+      - Menus
+  /menu/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific menu by its ID
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted menu
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Menu not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete menu
+      tags:
+      - Menus
+    get:
+      consumes:
+      - application/json
+      description: Get a specific menu by its ID
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved menu
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Menu'
+              type: object
+        "404":
+          description: Menu not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get menu by ID
+      tags:
+      - Menus
+    put:
+      consumes:
+      - application/json
+      description: Update a specific menu by its ID
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated menu information
+        in: body
+        name: menu
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated menu
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Menu'
+              type: object
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Menu not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Update menu
+      tags:
+      - Menus
+  /menu/tree:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve menus in hierarchical tree structure
+      parameters:
+      - description: Filter by status (active/inactive)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved menu tree
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/domain.MenuTreeNode'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get menu tree
+      tags:
+      - Menus
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: Get profile information for the currently authenticated user including
+        roles and permissions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Profile'
+              type: object
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - Profile
+    put:
+      consumes:
+      - application/json
+      description: Update profile information for the currently authenticated user
+      parameters:
+      - description: Profile update data
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ProfileUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Update current user profile
+      tags:
+      - Profile
+  /profile/password:
+    put:
+      consumes:
+      - application/json
+      description: Update password for the currently authenticated user
+      parameters:
+      - description: Password update data
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/domain.PasswordUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password updated successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Invalid request data or incorrect current password
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Update current user password
+      tags:
+      - Profile
+  /resources:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve menu tree and button permissions filtered by user permissions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved user resources with permissions
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  properties:
+                    menus:
+                      items:
+                        $ref: '#/definitions/domain.MenuTreeNode'
+                      type: array
+                    permissions:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user accessible resources
+      tags:
+      - Resources
+  /system/dict/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve dictionary items with optional filtering and pagination
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by dictionary type ID
+        in: query
+        name: type_id
+        type: string
+      - description: Filter by dictionary type code
+        in: query
+        name: type_code
+        type: string
+      - description: Filter by item label
+        in: query
+        name: label
+        type: string
+      - description: Filter by item value
+        in: query
+        name: value
+        type: string
+      - description: Filter by status (active, inactive)
+        in: query
+        name: status
+        type: string
+      - description: Search by label or value
+        in: query
+        name: search
+        type: string
+      - description: Sort by field (label, value, sort, created_at)
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order (asc, desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary items retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.DictItemPagedResult'
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dictionary items with pagination
+      tags:
+      - Dictionary
+    post:
+      consumes:
+      - application/json
+      description: Create a new dictionary item
+      parameters:
+      - description: Dictionary item creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateDictItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Dictionary item created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.DictItem'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "409":
+          description: Dictionary item value already exists or default conflict
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new dictionary item
+      tags:
+      - Dictionary
+  /system/dict/items/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a dictionary item by ID
+      parameters:
+      - description: Dictionary item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary item deleted successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Dictionary item not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete dictionary item
+      tags:
+      - Dictionary
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a dictionary item by its ID
+      parameters:
+      - description: Dictionary item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary item retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.DictItem'
+              type: object
+        "404":
+          description: Dictionary item not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dictionary item by ID
+      tags:
+      - Dictionary
+    put:
+      consumes:
+      - application/json
+      description: Update a dictionary item by ID
+      parameters:
+      - description: Dictionary item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dictionary item update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateDictItemRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary item updated successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Dictionary item not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "409":
+          description: Dictionary item value already exists or default conflict
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Update dictionary item
+      tags:
+      - Dictionary
+  /system/dict/types:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve dictionary types with optional filtering and pagination
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by type code
+        in: query
+        name: code
+        type: string
+      - description: Filter by type name
+        in: query
+        name: name
+        type: string
+      - description: Filter by status (active, inactive)
+        in: query
+        name: status
+        type: string
+      - description: Search by code or name
+        in: query
+        name: search
+        type: string
+      - description: Sort by field (code, name, created_at)
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order (asc, desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary types retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.DictTypePagedResult'
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dictionary types with pagination
+      tags:
+      - Dictionary
+    post:
+      consumes:
+      - application/json
+      description: Create a new dictionary type
+      parameters:
+      - description: Dictionary type creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateDictTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Dictionary type created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.DictType'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "409":
+          description: Dictionary type code already exists
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new dictionary type
+      tags:
+      - Dictionary
+  /system/dict/types/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a dictionary type by ID
+      parameters:
+      - description: Dictionary type ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary type deleted successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Dictionary type has items, cannot delete
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Dictionary type not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete dictionary type
+      tags:
+      - Dictionary
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a dictionary type by its ID
+      parameters:
+      - description: Dictionary type ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary type retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.DictType'
+              type: object
+        "404":
+          description: Dictionary type not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dictionary type by ID
+      tags:
+      - Dictionary
+    put:
+      consumes:
+      - application/json
+      description: Update a dictionary type by ID
+      parameters:
+      - description: Dictionary type ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Dictionary type update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateDictTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary type updated successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Dictionary type not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "409":
+          description: Dictionary type code already exists
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Update dictionary type
+      tags:
+      - Dictionary
+  /system/dict/types/code/{code}/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve active dictionary items by type code (convenience API)
+      parameters:
+      - description: Dictionary type code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Dictionary items retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/domain.DictItem'
+                  type: array
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get dictionary items by type code
+      tags:
+      - Dictionary
+  /system/login-logs:
+    delete:
+      consumes:
+      - application/json
+      description: Clear all login logs (admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login logs cleared successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Clear all login logs
+      tags:
+      - System
+    get:
+      consumes:
+      - application/json
+      description: Retrieve login logs with pagination and optional filtering (admin
+        only)
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 20)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by username
+        in: query
+        name: username
+        type: string
+      - description: Filter by login IP
+        in: query
+        name: login_ip
+        type: string
+      - description: Filter by status (success, failed)
+        in: query
+        name: status
+        type: string
+      - description: Filter by browser
+        in: query
+        name: browser
+        type: string
+      - description: Filter by operating system
+        in: query
+        name: os
+        type: string
+      - description: Start time (RFC3339 format, e.g., 2023-01-01T00:00:00Z)
+        in: query
+        name: start_time
+        type: string
+      - description: End time (RFC3339 format, e.g., 2023-01-31T23:59:59Z)
+        in: query
+        name: end_time
+        type: string
+      - description: Sort by field (login_time, username, login_ip, status)
+        in: query
+        name: sort_by
+        type: string
+      - description: 'Sort order (asc, desc, default: desc)'
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login logs retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.LoginLogPagedResult'
+              type: object
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get login logs
+      tags:
+      - System
+  /system/role:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all available roles in the system
+      parameters:
+      - description: Search roles by name
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved roles
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controller.RoleInfo'
+                  type: array
+              type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all roles
+      tags:
+      - Roles
+    post:
+      consumes:
+      - application/json
+      description: Create a new custom role in the system
+      parameters:
+      - description: Role creation information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created role
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Role'
+              type: object
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "409":
+          description: Role code already exists
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new custom role
+      tags:
+      - Roles
+  /system/role/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully deleted role
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete role
+      tags:
+      - Roles
+    get:
+      consumes:
+      - application/json
+      description: Get a specific role by its ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved role
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Role'
+              type: object
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get role by ID
+      tags:
+      - Roles
+    put:
+      consumes:
+      - application/json
+      description: Update an existing role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role update information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated role
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.Role'
+              type: object
+        "400":
+          description: Bad request - invalid parameters
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "409":
+          description: Role code already exists
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Update role
+      tags:
+      - Roles
+  /system/role/menus/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get menu permissions assigned to a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved role menu permissions
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "400":
+          description: Bad request - Role ID is required
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get role menu permissions
+      tags:
+      - Roles
+  /system/user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all user with pagination and optional filtering (admin
+        only)
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 20)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Filter by username or email
+        in: query
+        name: search
+        type: string
+      - description: Filter by user status (active, inactive, invited, suspended)
+        in: query
+        name: status
+        type: string
+      - description: Filter by user role
+        in: query
+        name: role
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user retrieved successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get all user
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with optional creation (admin only)
+      parameters:
+      - description: User creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.User'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - user
+  /system/user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user from the system
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Missing user ID parameter
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - user
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.User'
+              type: object
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Update a specific user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/domain.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.User'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Update user
+      tags:
+      - user
+  /system/user/{id}/roles:
+    get:
+      consumes:
+      - application/json
+      description: Get roles of a specific user in the system
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User roles retrieved successfully
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "400":
+          description: Missing user ID parameter
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Get user roles
+      tags:
+      - user
+  /system/user/invite:
+    post:
+      consumes:
+      - application/json
+      description: Send invitation to a user to join a specific  with a role
+      parameters:
+      - description: User invitation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/domain.InviteUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User invitation sent successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/domain.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.User'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "401":
+          description: Unauthorized - user information not found
+          schema:
+            $ref: '#/definitions/domain.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/domain.Response'
+      security:
+      - BearerAuth: []
+      summary: Invite user to
+      tags:
+      - user
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

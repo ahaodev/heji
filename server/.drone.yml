@@ -1,0 +1,40 @@
+kind: pipeline
+type: docker
+name: rolling
+trigger:
+  branch:
+    - dev
+    - main
+    - rbac-crud
+    - single
+node:
+  runner: msa2
+steps:
+  - name: all_in_docker
+    image: docker:dind
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    environment:
+      DOCKER_BUILDKIT: 1
+      DOCKER_USER:
+        from_secret: DOCKER_USER
+      DOCKER_PWD:
+        from_secret: DOCKER_PWD
+    commands:
+      - docker --version
+      - docker stop shadmin || true # 停止旧容器
+      - docker rm shadmin || true   # 删除旧容器
+      - docker images | grep 'hao88' | awk '{print $3}' | xargs -r -I{} sh -c 'docker rmi -f {} || true'  # 清理旧镜像
+      - docker images | grep '52927295' | awk '{print $3}' | xargs -r -I{} sh -c 'docker rmi -f {} || true'  # 清理旧镜像
+      - echo "$DOCKER_PWD" | docker login -u "$DOCKER_USER" --password-stdin
+      - docker buildx create --name aBuildX --use      # Create and use a Buildx builder
+      - docker buildx build --platform linux/amd64 -f Dockerfile -t hao88/shadmin:rolling --push . # Build and push multi-arch images
+      - docker buildx rm aBuildX  # Remove the Buildx builder
+      - docker run -d --name shadmin --restart unless-stopped -p 55667:55667 -v /mnt/user/test/shadmin/database:/app/.database -v /mnt/user/test/shadmin/uploads:/app/.uploads -v /mnt/user/test/shadmin/logs:/app/logs hao88/shadmin:rolling
+      - docker ps | grep shadmin # 检查容器状态
+
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[pre-commit] Formatting, vetting, testing..."
+
+# Go formatting and static checks
+gofmt -s -w .
+go vet ./...
+
+# Go tests
+go test ./...
+
+# Frontend lint/format (if dependencies installed)
+if [ -f "web/package.json" ]; then
+  if command -v npm >/dev/null 2>&1 && [ -d "web/node_modules" ]; then
+    echo "[pre-commit] Running web lint and format checks"
+    (cd web && npm run -s lint && npm run -s format:check)
+  else
+    echo "[pre-commit] Skipping web lint: npm not available or dependencies not installed"
+  fi
+fi
+
+echo "[pre-commit] All checks passed."
+

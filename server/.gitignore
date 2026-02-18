@@ -1,23 +1,86 @@
-# Build output
-/build/*
+# Binaries for programs and plugins
 *.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-# Logs
-/logs/
-/cmd/logs/
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
 *.log
-*.log_symlink
 
-# IDE
+# Upload directories
+uploads/
+files/
+storage/
+
+# Temporary files
+tmp/
+temp/
+
+# IDE files
+.vscode/
 .idea/
-*.iml
+*.swp
+*.swo
+*~
 
-# Binaries
-/bin/
-/dist/
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Vendor (if not committing dependencies)
-# vendor/
+# Build artifacts
+dist/
+build/
 
-# Config with secrets (use config.example.yml)
-# config.yml
+# Node.js (for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build
+web/dist/
+web/build/
+
+# Auto-generated route files
+web/src/routeTree.gen.ts
+
+ent/*
+# 但保留 schema 和 gen 目录
+!ent/schema/
+!ent/schema/**
+!ent/generate.go
+nul
+shadmin
+shadmin.exe
+.uploads
+.logs
+.database
+.examples

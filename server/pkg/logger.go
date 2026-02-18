@@ -3,15 +3,16 @@ package pkg
 import (
 	"bytes"
 	"fmt"
-	rotatelogs "github.com/lestrrat/go-file-rotatelogs"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"time"
+
+	rotatelogs "github.com/lestrrat/go-file-rotatelogs"
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
 )
 
-const logPath = "logs/"
+const logPath = ".logs/"
 
 var Log *logrus.Logger
 

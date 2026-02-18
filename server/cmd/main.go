@@ -1,45 +1,46 @@
 package cmd
 
 import (
-	"github.com/getsentry/sentry-go"
-	"heji-server/api"
-	"heji-server/config"
-	"heji-server/internal/get"
-	"heji-server/pkg"
-	"time"
-
-	"os"
+	"shadmin/api"
+	bootstrap "shadmin/bootstrap"
+	"shadmin/pkg"
 )
 
-var log = pkg.Log
+// 构建时注入的版本信息
+var (
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
+)
 
-const appName = "heji"
-const appAbout = "                                           \n    _/    _/  _/_/_/_/        _/  _/_/_/   \n   _/    _/  _/              _/    _/      \n  _/_/_/_/  _/_/_/          _/    _/       \n _/    _/  _/        _/    _/    _/        \n_/    _/  _/_/_/_/    _/_/    _/_/_/       \n                                           "
-const appEdition = "v0.0.1"
-const appDescription = "合記服务节点\t去中心化|多人同时记账|账单统计可视化|账单区分权限|账单导入|账单导出"
-const appCopyright = "(c) 2023-2024 hao88.cloud. All rights reserved."
+func Run() {
+	// 记录版本信息
+	pkg.Log.Infof("starting - Version: %s, Commit: %s, Built: %s", version, commit, date)
 
-var version = "development"
+	app := bootstrap.App()
+	app.Version = version
+	defer app.CloseDBConnection()
 
-func Main(args []string, conf *config.Config) {
-	defer func() {
-		if r := recover(); r != nil {
-			sentry.CaptureException(r.(error))
-			log.Error(r)
-			os.Exit(1)
-		}
-	}()
-	get.SetConfig(conf)
-	mongo := NewMongoDatabase(conf)
-	database := mongo.Database(conf.Mongo.Database)
-	start := time.Now()
-	log.Info(args)
-	log.Info(conf)
-	log.Info(start)
-	log.Info(appName)
-	log.Info(appAbout)
-	log.Info(appEdition)
-	log.Info(appDescription)
-	log.Info(appCopyright)
-	api.Setup(conf, database)
+	// 先设定路由
+	api.SetupRoutes(app)
+
+	// 扫描路由入库
+	bootstrap.InitApiResources(app)
+
+	// 初始化默认管理员用户（包含菜单初始化）
+	bootstrap.InitDefaultAdmin(app)
+
+	// 初始化默认用户角色（heji 客户端 API 权限）
+	bootstrap.InitDefaultUserRole(app)
+
+	// 初始化字典数据
+	bootstrap.InitDictData(app)
+
+	// 初始化完成后，执行一次全量同步并注册Hook
+	bootstrap.InitCasbinHooks(app)
+
+	err := api.Run(app)
+	if err != nil {
+		pkg.Log.Error(err)
+	}
 }

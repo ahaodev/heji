@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(swag init:*)",
+      "Bash(sqlite3:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(DB_TYPE=postgres go run ./main.go)",
+      "Bash(npm run lint)",
+      "Bash(rm:*)",
+      "Bash(npx tsc:*)",
+      "WebSearch",
+      "Bash(go mod:*)",
+      "Bash(go generate:*)",
+      "Bash(touch:*)",
+      "Bash(go run:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(taskkill:*)",
+      "Bash(gh pr list:*)",
+      "Bash(cd web && pnpm run build)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_wait_for",
+      "Bash(timeout 10 go run main.go)",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(tsc:*)",
+      "Bash(pnpm run lint:*)"
+    ],
+    "deny": [],
+    "defaultMode": "acceptEdits"
+  },
+  "outputStyle": "default",
+  "mcpServers": {
+    "playwright": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "mcp/playwright"
+      ]
+    }
+  }
+}

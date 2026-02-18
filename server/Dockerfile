@@ -1,43 +1,41 @@
-# 第一阶段：使用 golang 镜像作为基础镜像进行编译
-FROM golang:1.23-alpine AS builder
+#---------------------build web------------------------
+FROM docker.io/library/node:22-alpine AS build_web
+WORKDIR /app/web
+COPY web/package.json web/package-lock.json ./
+RUN npm install -g pnpm && pnpm install
+COPY web/ ./
+RUN pnpm run build
 
-# 设置工作目录
+# ---------------------build go--------------------
+FROM golang:1.24-bullseye AS builder_go
 WORKDIR /app
-
-# 将当前目录的 go.mod 和 go.sum 复制到工作目录
-COPY go.mod .
-COPY go.sum .
-
-# 下载依赖
-RUN go mod download
-
-# 将其他源代码文件复制到工作目录
+COPY go.mod go.sum ./
+RUN go mod tidy
 COPY . .
+COPY --from=build_web /app/web/dist /app/web/dist
 
-# 编译 Go 应用，使用静态链接
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o runner
-# 安装upx压缩工具
-RUN apk add --no-cache upx
-# 压缩运行文件
-RUN upx --best --lzma runner
+# 安装 ent 与 swagger（swag）
+RUN go install entgo.io/ent/cmd/ent@latest
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN go generate ./...
 
-# 第二阶段：使用轻量级的 alpine 镜像作为基础镜像
-FROM alpine:3.19.0 AS runner
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=rolling" -o shadmin-runner
 
-LABEL name="heji-server"
-LABEL org.opencontainers.image.source=https://github.com/RUANHAOANDROID/heji
-LABEL org.opencontainers.image.authors="hao88"
-LABEL version="1.0"
-LABEL description="heji server"
-# 设置工作目录
+#-----------------upx shadmin-runner -----------------
+FROM backplane/upx:latest AS compressor
 WORKDIR /app
+COPY --from=builder_go /app/.env.example .
+COPY --from=builder_go /app/shadmin-runner .
+RUN upx --best --lzma shadmin-runner
 
-# 从第一阶段复制编译好的二进制文件到当前阶段
-COPY --from=builder /app/runner .
-COPY --from=builder /app/config.yml .
+#-------------------runner on debian (sqlite)--------------------------
+FROM debian:bookworm-slim AS runner
+WORKDIR /app
+COPY --from=compressor /app/shadmin-runner .
+COPY --from=builder_go /app/.env.example .
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+EXPOSE 55667
+CMD ["./shadmin-runner"]
 
-# 运行应用
-CMD ["./runner"]
-
-# 暴露应用运行时需要的端口
-EXPOSE 8080
