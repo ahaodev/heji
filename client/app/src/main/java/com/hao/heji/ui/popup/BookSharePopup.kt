@@ -13,6 +13,8 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.lxj.xpopup.core.BottomPopupView
 import com.lxj.xpopup.util.XPopupUtils
 import com.hao.heji.R
+import androidx.core.graphics.set
+import androidx.core.graphics.createBitmap
 
 /**
  * 邀请码 Popup
@@ -50,10 +52,10 @@ class BookSharePopup(context: Context, val code: String) : BottomPopupView(conte
 
     private fun generateQrCode(content: String, size: Int = 512): Bitmap {
         val bitMatrix = QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, size, size)
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
+        val bitmap = createBitmap(size, size, Bitmap.Config.RGB_565)
         for (x in 0 until size) {
             for (y in 0 until size) {
-                bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+                bitmap[x, y] = if (bitMatrix[x, y]) Color.BLACK else Color.WHITE
             }
         }
         return bitmap
