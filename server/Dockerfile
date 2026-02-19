@@ -7,7 +7,7 @@ COPY web/ ./
 RUN pnpm run build
 
 # ---------------------build go--------------------
-FROM golang:1.24.11-trixie AS builder_go
+FROM golang:1.24.13-trixie AS builder_go
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod tidy
