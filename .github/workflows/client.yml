@@ -35,16 +35,19 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleLocalDebug --no-daemon
 
       - name: Run unit tests
-        run: ./gradlew testDebugUnitTest --no-daemon
+        run: ./gradlew testLocalDebugUnitTest --no-daemon
+
+      - name: Lint
+        run: ./gradlew lintLocalDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: client/app/build/outputs/apk/debug/*.apk
+          path: client/app/build/outputs/apk/local/debug/*.apk
           retention-days: 7
 
   release:
@@ -69,7 +72,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleLocalRelease assembleCloudRelease --no-daemon
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -83,7 +86,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: client/app/build/outputs/apk/release/*.apk
+          files: client/app/build/outputs/apk/*/release/*.apk
           tag_name: ${{ steps.version.outputs.VERSION }}
           generate_release_notes: true
         env:
