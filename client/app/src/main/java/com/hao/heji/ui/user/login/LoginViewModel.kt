@@ -2,6 +2,8 @@ package com.hao.heji.ui.user.login
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.viewModelScope
+import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.config.LocalUser
@@ -10,7 +12,6 @@ import com.hao.heji.data.repository.UserRepository
 import com.hao.heji.network.HttpManager
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.ui.user.JWTParse
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 
@@ -49,7 +50,7 @@ internal class LoginViewModel(
                 Config.setMqttBrokerUrl(broker.toTcpUrl())
             }
         } catch (e: Exception) {
-            com.blankj.utilcode.util.LogUtils.w("Failed to fetch MQTT broker: ${e.message}")
+            LogUtils.w("Failed to fetch MQTT broker: ${e.message}")
         }
     }
 

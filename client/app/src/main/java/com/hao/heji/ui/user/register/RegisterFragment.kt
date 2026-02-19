@@ -92,7 +92,7 @@ class RegisterFragment : Fragment() {
             toolbar.title = getString(R.string.register)
             toolbar.setNavigationIcon(R.drawable.ic_back_white_24)
             toolbar.setNavigationOnClickListener {
-                Navigation.findNavController(binding.root).popBackStack()
+                binding.root.findNavController().popBackStack()
             }
             this
         }

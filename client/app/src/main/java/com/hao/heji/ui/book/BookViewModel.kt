@@ -75,8 +75,8 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
         }
     }
 
-    fun countBook(book_id: String): Int {
-        return App.dataBase.billDao().countByBookId(book_id)
+    fun countBook(id: String): Int {
+        return App.dataBase.billDao().countByBookId(id)
     }
 
     fun bookList(): LiveData<MutableList<Book>> {
@@ -87,7 +87,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
         viewModelScope.launch {
             val response = bookRepository.bookList()
             response.data?.let {
-                if (it.isNullOrEmpty()) {
+                if (it.isEmpty()) {
                     ToastUtils.showLong("没有更多账本")
                     return@launch
                 }

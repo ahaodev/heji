@@ -16,6 +16,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.*
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.lxj.xpopup.XPopup
 import com.hao.heji.*
 import com.hao.heji.config.Config
@@ -54,6 +55,7 @@ class CreateBillFragment : BaseFragment() {
     private val pagerAdapter: FragmentViewPagerAdapter by lazy {
         FragmentViewPagerAdapter(
             childFragmentManager,
+            lifecycle,
             listOf(
                 CategoryFragment.newInstance(BillType.EXPENDITURE),
                 CategoryFragment.newInstance(BillType.INCOME)
@@ -131,8 +133,7 @@ class CreateBillFragment : BaseFragment() {
         //内容页绘制完成后选中类别
         binding.vpContent.post {
             val index = if (type == BillType.EXPENDITURE.value) 0 else 1
-            val categoryFragment = pagerAdapter.getItem(index) as CategoryFragment
-            binding.tab.getTabAt(index)
+            val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
             categoryFragment.setSelectCategory(category)
         }
     }
@@ -149,8 +150,7 @@ class CreateBillFragment : BaseFragment() {
             TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
         )
         val index = if (type == BillType.EXPENDITURE.value) 0 else 1
-        val categoryFragment = pagerAdapter.getItem(index) as CategoryFragment
-        binding.tab.getTabAt(index)
+        val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
         categoryFragment.setCategories(categories)
         val billType = BillType.fromValue(type)
         binding.keyboard.setType(billType)
@@ -170,36 +170,26 @@ class CreateBillFragment : BaseFragment() {
     }
 
     private fun showPager() {
-        binding.vpContent.apply {
-            adapter = pagerAdapter
-            //TabLayout+ViewPager联动 1
-            addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(binding.tab))
-        }
-        with(binding.tab) {
-            setupWithViewPager(binding.vpContent)
-            //TabLayout+ViewPager联动 2
-            addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(binding.vpContent))
-            getTabAt(0)!!.select()
-            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(tab: TabLayout.Tab) {
-                    LogUtils.d("onTabSelected", tab.position)
-                    val type =
-                        if (tab.position == 0) BillType.EXPENDITURE.value else BillType.INCOME.value
-                    viewModel.getCategories(type)
+        binding.vpContent.adapter = pagerAdapter
+        TabLayoutMediator(binding.tab, binding.vpContent) { tab, position ->
+            tab.text = pagerAdapter.textList[position]
+        }.attach()
+        binding.tab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                LogUtils.d("onTabSelected", tab.position)
+                val type =
+                    if (tab.position == 0) BillType.EXPENDITURE.value else BillType.INCOME.value
+                viewModel.getCategories(type)
+            }
 
-                }
+            override fun onTabUnselected(tab: TabLayout.Tab) {
+                LogUtils.d("onTabUnselected", tab.position)
+            }
 
-                override fun onTabUnselected(tab: TabLayout.Tab) {
-                    LogUtils.d("onTabUnselected", tab.position)
-                }
-
-                override fun onTabReselected(tab: TabLayout.Tab) {
-                    LogUtils.d("onTabReselected", tab.position)
-                }
-            })
-            getTabAt(0)!!.select()
-        }
-
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                LogUtils.d("onTabReselected", tab.position)
+            }
+        })
     }
 
     override fun initView(rootView: View) {
@@ -263,7 +253,7 @@ class CreateBillFragment : BaseFragment() {
 
                 is CreateBillUIState.SubCategories -> {
                     val index = if (uiState.type == BillType.EXPENDITURE.value) 0 else 1
-                    val categoryFragment = pagerAdapter.getItem(index) as CategoryFragment
+                    val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
                     categoryFragment.setSubCategories(uiState.children)
                 }
             }

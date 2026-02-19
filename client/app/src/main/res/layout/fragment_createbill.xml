@@ -50,7 +50,7 @@
             app:srcCompat="@drawable/ic_baseline_add_box_24" />
     </androidx.appcompat.widget.Toolbar>
 
-    <androidx.viewpager.widget.ViewPager
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/vpContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"

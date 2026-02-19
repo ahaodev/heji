@@ -131,6 +131,7 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.legacy.support)
     implementation(libs.androidx.cardview)
+    implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.core.ktx)
 
     // Lifecycle
