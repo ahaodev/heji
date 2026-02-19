@@ -237,7 +237,9 @@ func restoreMenuApiResourceAssociations(ctx context.Context, client *ent.Client,
 	if err != nil {
 		return 0, fmt.Errorf("failed to start transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func(tx *ent.Tx) {
+		_ = tx.Rollback()
+	}(tx)
 
 	restoredCount := 0
 
