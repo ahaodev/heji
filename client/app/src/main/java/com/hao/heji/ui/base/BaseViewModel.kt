@@ -7,8 +7,8 @@ import kotlinx.coroutines.launch
 
 /**
  * @author 锅得铁
- * @param I a intent action
- * @param O a data
+ * @param I  intent action
+ * @param O  data
  */
 abstract class BaseViewModel< O : IUiState> : ViewModel() {
     /**

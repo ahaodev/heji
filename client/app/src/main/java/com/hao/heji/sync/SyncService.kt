@@ -1,6 +1,5 @@
 package com.hao.heji.sync
 
-import NetworkMonitor
 import android.app.Service
 import android.content.Intent
 import android.os.Binder

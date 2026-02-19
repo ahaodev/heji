@@ -1,5 +1,6 @@
 package com.hao.heji.ui.base
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,7 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.KeyboardUtils
@@ -130,10 +132,10 @@ abstract class BaseFragment : Fragment() {
         return height //占满一屏
     }
 
-    fun blackDrawable(): Drawable = resources.getDrawable(
+    fun blackDrawable(): Drawable = ResourcesCompat.getDrawable(resources,
         androidx.appcompat.R.drawable.abc_ic_ab_back_material,
         mainActivity.theme
-    )
+    )!!
 
 
     /**
@@ -150,6 +152,7 @@ abstract class BaseFragment : Fragment() {
     /**
      * 该Menu属于全局所以在这里控制
      */
+    @SuppressLint("SetTextI18n")
     fun showYearMonthTitle(
         year: Int = Calendar.getInstance().get(Calendar.YEAR),
         month: Int = Calendar.getInstance().get(Calendar.MONTH) + 1,
@@ -161,10 +164,11 @@ abstract class BaseFragment : Fragment() {
                 visibility = View.VISIBLE
                 compoundDrawablePadding = 8
                 text = "$year.$month"
+                val drawable= ResourcesCompat.getDrawable(resources,R.drawable.ic_baseline_arrow_down_white_32,null)
                 setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
-                    resources.getDrawable(R.drawable.ic_baseline_arrow_down_white_32, null),
+                    drawable,
                     null
                 )
                 setOnClickListener {
