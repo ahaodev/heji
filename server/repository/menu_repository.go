@@ -199,7 +199,9 @@ func (mr *entMenuRepository) CreateMenu(ctx context.Context, req *domain.CreateM
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer func(tx *ent.Tx) {
+		_ = tx.Rollback()
+	}(tx)
 
 	createQuery := tx.Menu.
 		Create().
@@ -241,7 +243,9 @@ func (mr *entMenuRepository) UpdateMenu(ctx context.Context, id string, req *dom
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer func(tx *ent.Tx) {
+		_ = tx.Rollback()
+	}(tx)
 
 	updateQuery := tx.Menu.
 		UpdateOneID(id).

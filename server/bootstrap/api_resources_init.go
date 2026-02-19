@@ -107,7 +107,9 @@ func bulkCreateApiResources(ctx context.Context, client *ent.Client, apiResource
 	if err != nil {
 		return 0, fmt.Errorf("failed to start transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func(tx *ent.Tx) {
+		_ = tx.Rollback()
+	}(tx)
 
 	now := time.Now()
 	createdCount := 0
