@@ -1,13 +1,13 @@
 #---------------------build web------------------------
 FROM docker.io/library/node:22-alpine AS build_web
 WORKDIR /app/web
-COPY web/package.json web/package-lock.json ./
-RUN npm install -g pnpm && pnpm install
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 COPY web/ ./
 RUN pnpm run build
 
 # ---------------------build go--------------------
-FROM golang:1.24-bullseye AS builder_go
+FROM golang:1.24.11-bullseye AS builder_go
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod tidy
