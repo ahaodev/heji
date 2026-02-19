@@ -29,7 +29,7 @@ COPY --from=builder_go /app/shadmin-runner .
 RUN upx --best --lzma shadmin-runner
 
 #-------------------runner on debian (sqlite)--------------------------
-FROM debian:bookworm-slim AS runner
+FROM debian:trixie-slim AS runner
 WORKDIR /app
 COPY --from=compressor /app/shadmin-runner .
 COPY --from=builder_go /app/.env.example .
