@@ -15,7 +15,7 @@ on:
       - '.github/workflows/client.yml'
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,26 +33,17 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Run unit tests
-        run: ./gradlew testDebugUnitTest --no-daemon
 
       - name: Lint
         run: ./gradlew lintDebug --no-daemon
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apk
-          path: client/app/build/outputs/apk/local/debug/*.apk
-          retention-days: 7
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon
 
   release:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build]
+    needs: [check]
     defaults:
       run:
         working-directory: client
