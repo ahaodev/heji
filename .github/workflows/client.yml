@@ -33,15 +33,14 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
       - name: Build with Gradle
-        run: ./gradlew assembleLocalDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Run unit tests
-        run: ./gradlew testLocalDebugUnitTest --no-daemon
+        run: ./gradlew testDebugUnitTest --no-daemon
 
       - name: Lint
-        run: ./gradlew lintLocalDebug --no-daemon
+        run: ./gradlew lintDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -72,7 +71,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Release APK
-        run: ./gradlew assembleLocalRelease assembleCloudRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
