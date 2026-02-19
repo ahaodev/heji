@@ -1,16 +1,29 @@
 package com.hao.heji.data
 
 import android.content.Context
-import androidx.room.*
+import android.util.Log
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.App
 import com.hao.heji.BuildConfig
 import com.hao.heji.data.converters.BookUsersConverters
 import com.hao.heji.data.converters.DateConverters
 import com.hao.heji.data.converters.MoneyConverters
-import com.hao.heji.data.db.*
+import com.hao.heji.data.db.Bill
+import com.hao.heji.data.db.BillDao
+import com.hao.heji.data.db.BillWithImageDao
+import com.hao.heji.data.db.Book
+import com.hao.heji.data.db.BookDao
+import com.hao.heji.data.db.BookUSerDao
+import com.hao.heji.data.db.BookUser
+import com.hao.heji.data.db.Category
+import com.hao.heji.data.db.CategoryDao
+import com.hao.heji.data.db.Image
+import com.hao.heji.data.db.ImageDao
 import java.util.concurrent.Executors
 
 /**
@@ -41,15 +54,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         @Volatile
-        private var INSTANCE: AppDatabase? = null//暴力丢弃强插升级
-
-        //.addMigrations(MIGRATION_1_2)
-//        //默认数据库名称
-//        @Deprecated("")
-//        fun getInstance(context: Context = App.context): AppDatabase =
-//            INSTANCE ?: synchronized(this) {
-//                INSTANCE ?: buildDatabase(context, "heji.db").also { INSTANCE = it }
-//            }
+        private var INSTANCE: AppDatabase? = null
 
         //默认数据库名称
         fun getInstance(userName: String, context: Context = App.context): AppDatabase =
@@ -64,10 +69,17 @@ abstract class AppDatabase : RoomDatabase() {
             context,
             AppDatabase::class.java, dbName
         )
-            .fallbackToDestructiveMigration() //暴力丢弃强插升级
+            .fallbackToDestructiveMigration(dropAllTables = true) //暴力丢弃强插升级
             .setQueryCallback({ sqlQuery, bindArgs ->
                 if (BuildConfig.DEBUG) {
-                    LogUtils.d(sqlQuery, bindArgs)
+                    val filledSql = bindArgs.fold(sqlQuery) { sql, arg ->
+                        sql.replaceFirst("?", when (arg) {
+                            is String -> "'$arg'"
+                            null -> "NULL"
+                            else -> arg.toString()
+                        })
+                    }
+                    Log.d("SQL", filledSql)
                 }
             }, Executors.newSingleThreadExecutor())
             .allowMainThreadQueries() //.addMigrations(MIGRATION_1_2)
