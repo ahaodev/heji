@@ -21,7 +21,6 @@ internal class SelectCategoryAdapter(data: MutableList<Category>) :
         itemBinding = ItemCategoryBinding.bind(holder.itemView)
         val bgColor =
             context.getColor(if (item.isSelected) R.color.category_ico_selected else R.color.category_ico)
-//        val bgColor =if (!label.selected) ColorUtils.groupColors()[holder.adapterPosition] else context.getColor( R.color.category_ico)
         if (TextUtils.isEmpty(item.name)) return
         val drawable = TextDrawable.builder().buildRound(item.name.substring(0, 1), bgColor)
         itemBinding.roundImageView.setImageDrawable(drawable)
@@ -38,23 +37,13 @@ internal class SelectCategoryAdapter(data: MutableList<Category>) :
         }
     }
 
-    fun setSelectCategory(any: Any) {
-        data.filter {
-            if (it.isSelected) {
-                it.isSelected = false
-            }
-            if (any is String) {
-                if (it.name == any) {
-                    it.isSelected=true
-                }
-            } else if (any is Category) {
-                if (it == any) {
-                    it.isSelected=true
-                }
-            }
+    fun setSelectCategory(name: String) {
+        data.forEach { it.isSelected = it.name == name }
+        notifyDataSetChanged()
+    }
 
-            return@filter true
-        }.toMutableList()
+    fun setSelectCategory(category: Category) {
+        data.forEach { it.isSelected = it == category }
         notifyDataSetChanged()
     }
 

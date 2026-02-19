@@ -1,11 +1,8 @@
 package com.hao.heji.ui.create
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
-import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.TimeUtils
 import com.hao.heji.data.BillType
 import com.hao.heji.data.db.Category
 import com.hao.heji.databinding.FragmentCategoryContentBinding
@@ -24,11 +21,11 @@ internal class CategoryFragment : BaseFragment() {
     private val categoryAdapter by lazy {
         CategoryWithSubAdapter().apply {
             onParentClick = { category ->
-                createBillFragment.selectedCategory(type.value, category)
-                createBillFragment.viewModel.getChildCategories(type.value, category.id)
+                createBillFragment?.selectedCategory(type.value, category)
+                createBillFragment?.viewModel?.getChildCategories(type.value, category.id)
             }
             onSubCategoryClick = { subCategory ->
-                createBillFragment.selectedCategory(type.value, subCategory)
+                createBillFragment?.selectedCategory(type.value, subCategory)
             }
             setOnItemClickListener { _, _, position ->
                 val item = getItem(position)
@@ -39,39 +36,28 @@ internal class CategoryFragment : BaseFragment() {
         }
     }
 
-    private val createBillFragment by lazy {
-        (parentFragment) as CreateBillFragment
-    }
+    private val createBillFragment: CreateBillFragment?
+        get() = parentFragment as? CreateBillFragment
 
-    //选中的标签、默认选择第一个、没有时为空
     private var selectCategory: Category? = null
+    private var pendingCategoryName: String? = null
 
-    //类型 支出 或 收入
     lateinit var type: BillType
 
     override fun layout() = binding.root
 
-    @SuppressLint("UseRequireInsteadOfGet")
     override fun onAttach(context: Context) {
         super.onAttach(context)
-       binding.root.post {
-            arguments?.let {
-                type = CategoryFragmentArgs.fromBundle(it).type
-                if (type == BillType.INCOME)//预加载一次
-                    createBillFragment.viewModel.getCategories(type.value)
-            }
+        arguments?.let {
+            type = CategoryFragmentArgs.fromBundle(it).type
         }
     }
 
     override fun onResume() {
         super.onResume()
-        binding.root.post {
-            with(createBillFragment) {
-                viewModel.getCategories(type.value)
-            }
-            createBillFragment.selectedCategory(type.value, selectCategory)
-            LogUtils.d(selectCategory)
-            LogUtils.d(type)
+        createBillFragment?.let { parent ->
+            parent.viewModel.getCategories(type.value)
+            parent.selectedCategory(type.value, selectCategory)
         }
     }
 
@@ -84,28 +70,31 @@ internal class CategoryFragment : BaseFragment() {
         categoryAdapter.setupSpanSizeLookup(gridLayoutManager)
     }
 
-
-    /**
-     *
-     *  @see TypeTabFragment.setCategories
-     * @param categories
-     */
     fun setCategories(categories: MutableList<Category>) {
-        LogUtils.d(
-            "TimeTest", type,
-            TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
-        )
         categoryAdapter.setParentCategories(categories)
-        defSelected()
+        val pending = pendingCategoryName
+        if (pending != null) {
+            categoryAdapter.setSelectCategoryByName(pending)
+            pendingCategoryName = null
+        } else {
+            defSelected()
+        }
     }
 
     fun setSubCategories(children: MutableList<Category>) {
         categoryAdapter.showSubCategories(children)
     }
 
-    /**
-     * 默认第一个为选中
-     */
+    fun setSelectCategory(category: String? = null) {
+        if (category.isNullOrEmpty()) return
+        pendingCategoryName = category
+        if (isAdded) {
+            binding.root.post {
+                categoryAdapter.setSelectCategoryByName(category)
+            }
+        }
+    }
+
     private fun defSelected() {
         if (selectCategory != null) return
         val parents = categoryAdapter.data.filterIsInstance<CategoryWithSubAdapter.CategoryItem.ParentItem>()
@@ -119,27 +108,11 @@ internal class CategoryFragment : BaseFragment() {
         }
     }
 
-    fun setSelectCategory(category: String? = null) {
-        if (!category.isNullOrEmpty()) {
-            binding.root.post {
-                categoryAdapter.setSelectCategoryByName(category)
-            }
-        }
-    }
-
     companion object {
-        /**
-         * 收\支
-         *
-         * @param type Income : Expenditure
-         * @return
-         */
         @JvmStatic
         fun newInstance(type: BillType): CategoryFragment {
-            LogUtils.d(type)
             val categoryFragment = CategoryFragment()
-            categoryFragment.arguments =
-                CategoryFragmentArgs(type).toBundle()
+            categoryFragment.arguments = CategoryFragmentArgs(type).toBundle()
             return categoryFragment
         }
     }

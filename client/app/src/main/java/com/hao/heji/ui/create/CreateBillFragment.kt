@@ -3,7 +3,6 @@ package com.hao.heji.ui.create
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.app.TimePickerDialog
-import android.app.TimePickerDialog.OnTimeSetListener
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -30,7 +29,6 @@ import com.hao.heji.ui.base.BaseFragment
 import com.hao.heji.ui.base.FragmentViewPagerAdapter
 import com.hao.heji.ui.base.render
 import com.hao.heji.ui.category.manager.CategoryManagerFragmentArgs
-import com.hao.heji.ui.create.*
 import com.hao.heji.ui.popup.SelectImagePopup
 import com.hao.heji.utils.YearMonth
 import com.hao.heji.widget.KeyBoardView.OnKeyboardListener
@@ -66,41 +64,12 @@ class CreateBillFragment : BaseFragment() {
         )
     }
 
-    // 使用 Android PhotoPicker API 选择图片
-    private val pickMultipleMedia = registerForActivityResult(
-        ActivityResultContracts.PickMultipleVisualMedia(SelectImagePopup.SELECT_MAX_COUNT)
-    ) { uris: List<Uri> ->
-        if (uris.isEmpty()) return@registerForActivityResult
-        LogUtils.d("PhotoPicker selected ${uris.size} items")
-
-        val mSelected = uris.map { uri ->
-            UriUtils.uri2File(uri).absolutePath
-        }
-
-        val popup = _popupSelectImage ?: return@registerForActivityResult
-        val existingImages = popup.getImages()
-        val existingPaths = existingImages.map { it.localPath }.toSet()
-        // 去重后追加新选择的图片
-        val newImages = mSelected.filter { it !in existingPaths }.map { selectPath ->
-            Image(billID = mBill.id).apply {
-                localPath = selectPath
-            }
-        }
-        val allImages = (existingImages + newImages).toMutableList()
-        popup.setImages(allImages)
-    }
-
     private var _popupSelectImage: SelectImagePopup? = null
 
-//图片弹窗
     val popupSelectImage by lazy {
         SelectImagePopup(requireActivity()).apply {
-            deleteListener = {
-                viewModel.deleteImage(it.id)
-            }
-            selectedImagesCall = {
-                getImagesPath()
-            }
+            deleteListener = { viewModel.deleteImage(it.id) }
+            selectedImagesCall = { getImagesPath() }
             selectListener = { _ ->
                 pickMultipleMedia.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -116,60 +85,95 @@ class CreateBillFragment : BaseFragment() {
      */
     private var isModify = false
 
-    /**
-     * 使用 bill控制页面（TODO 优化为vm托管bill，页面回复后根据vm bill重建）
-     */
     private lateinit var mBill: Bill
 
     override fun layout() = binding.root
 
-    /**
-     * 修改时预先选中类别
-     *
-     * @param category
-     * @param type
-     */
-    private fun setSelectCategory(category: String, type: Int) {
-        //内容页绘制完成后选中类别
-        binding.vpContent.post {
-            val index = if (type == BillType.EXPENDITURE.value) 0 else 1
-            val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
-            categoryFragment.setSelectCategory(category)
-        }
-    }
-
-    /**
-     *
-     * @see CategoryFragment.setCategories
-     * @param type
-     * @param categories
-     */
-    private fun setCategories(type: Int, categories: MutableList<Category>) {
-        LogUtils.d(
-            "TimeTest",
-            TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
-        )
-        val index = if (type == BillType.EXPENDITURE.value) 0 else 1
-        val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
-        categoryFragment.setCategories(categories)
-        val billType = BillType.fromValue(type)
-        binding.keyboard.setType(billType)
-        val color = if (billType == BillType.EXPENDITURE) R.color.expenditure else R.color.income
-        binding.tvMoney.setTextColor(resources.getColor(color, null))
-    }
+    // region Lifecycle
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        /**
-         * 选择照片
-         */
         val mArgs = CreateBillFragmentArgs.fromBundle(requireArguments()).argAddBill
         isModify = mArgs.isModify
         mBill = mArgs.bill ?: Bill(time = Date(), bookId = Config.book.id)
         LogUtils.d(mBill.toString())
     }
 
-    private fun showPager() {
+    override fun initView(rootView: View) {
+        setupToolbarAction()
+        setupPager()
+        setupImagePicker()
+        setupKeyboard()
+        if (isModify) {
+            restoreBillFields()
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        render(viewModel) { uiState ->
+            when (uiState) {
+                is CreateBillUIState.BillChange -> LogUtils.d(uiState.bill)
+
+                is CreateBillUIState.Images -> {
+                    LogUtils.d(uiState.images)
+                    popupSelectImage.setImage(uiState.images)
+                }
+
+                is CreateBillUIState.Error -> ToastUtils.showLong(uiState.throws.message)
+
+                is CreateBillUIState.Finish -> findNavController().popBackStack()
+
+                is CreateBillUIState.SaveAgain -> resetForNewBill()
+
+                is CreateBillUIState.Categories -> {
+                    applyCategories(uiState.type, uiState.categories)
+                }
+
+                is CreateBillUIState.SubCategories -> {
+                    val index = if (uiState.type == BillType.EXPENDITURE.value) 0 else 1
+                    val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
+                    categoryFragment.setSubCategories(uiState.children)
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val stack: Stack<String>? = viewModel.keyBoardStack
+        if (!stack.isNullOrEmpty()) {
+            binding.keyboard.post { binding.keyboard.stack = stack }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.keyBoardStack = binding.keyboard.stack
+    }
+
+    override fun setUpToolBar() {
+        super.setUpToolBar()
+        binding.toolbar.setNavigationIcon(R.drawable.ic_baseline_close_24)
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
+    }
+
+    // endregion
+
+    // region Setup
+
+    private fun setupToolbarAction() {
+        binding.imgAddCategory.setOnClickListener {
+            findNavController().navigate(
+                R.id.nav_category_manager,
+                CategoryManagerFragmentArgs(mBill.type).toBundle()
+            )
+        }
+    }
+
+    private fun setupPager() {
         binding.vpContent.adapter = pagerAdapter
         TabLayoutMediator(binding.tab, binding.vpContent) { tab, position ->
             tab.text = pagerAdapter.textList[position]
@@ -182,118 +186,36 @@ class CreateBillFragment : BaseFragment() {
                 viewModel.getCategories(type)
             }
 
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-                LogUtils.d("onTabUnselected", tab.position)
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-                LogUtils.d("onTabReselected", tab.position)
-            }
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
         })
     }
 
-    override fun initView(rootView: View) {
-        binding.imgAddCategory.setOnClickListener {
-            findNavController().navigate(
-                R.id.nav_category_manager,
-                CategoryManagerFragmentArgs(mBill.type).toBundle()
-            )
-        }
-        showPager()
+    // 使用 Android PhotoPicker API 选择图片
+    private val pickMultipleMedia = registerForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(SelectImagePopup.SELECT_MAX_COUNT)
+    ) { uris: List<Uri> ->
+        if (uris.isEmpty()) return@registerForActivityResult
+        LogUtils.d("PhotoPicker selected ${uris.size} items")
+
+        val popup = _popupSelectImage ?: return@registerForActivityResult
+        val existingPaths = popup.getImages().map { it.localPath }.toSet()
+        val newImages = uris
+            .map { UriUtils.uri2File(it).absolutePath }
+            .filter { it !in existingPaths }
+            .map { path -> Image(billID = mBill.id).apply { localPath = path } }
+        popup.setImages((popup.getImages() + newImages).toMutableList())
+    }
+
+    private fun setupImagePicker() {
         binding.imgTicket.setOnClickListener {
             XPopup.Builder(requireContext())
                 .asCustom(popupSelectImage)
                 .show()
         }
-        keyboardListener()
-        with(mBill) {
-            setTime(time)
-            category?.let { setSelectCategory(it, type) }
-            setMoney(money)
-            images.let {
-                viewModel.getImages(it)
-            }
-        }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        render(viewModel) { uiState ->
-            when (uiState) {
-                is CreateBillUIState.BillChange -> {
-                    val bill = uiState.bill
-                    LogUtils.d(bill)
-                }
-
-                is CreateBillUIState.Images -> {
-                    val images = uiState.images
-                    LogUtils.d(uiState.images)
-                    popupSelectImage.setImage(images)
-                }
-
-                is CreateBillUIState.Error -> {
-                    ToastUtils.showLong(uiState.throws.message)
-                }
-
-                is CreateBillUIState.Finish -> {
-                    findNavController().popBackStack()
-                }
-
-                is CreateBillUIState.SaveAgain -> {
-                    mBill = Bill()
-                    binding.keyboard.clear()
-                    binding.eidtRemark.setText("")
-                    binding.tvMoney.text = "0"
-                    popupSelectImage.clear()
-                }
-
-                is CreateBillUIState.Categories -> {
-                    setCategories(uiState.type, uiState.categories)
-                }
-
-                is CreateBillUIState.SubCategories -> {
-                    val index = if (uiState.type == BillType.EXPENDITURE.value) 0 else 1
-                    val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
-                    categoryFragment.setSubCategories(uiState.children)
-                }
-            }
-        }
-    }
-
-    override fun setUpToolBar() {
-        super.setUpToolBar()
-        binding.toolbar.setNavigationIcon(R.drawable.ic_baseline_close_24)
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().popBackStack()
-        }
-    }
-
-    /**
-     * 选择小时和分钟
-     *
-     * @param yearTime 年份-月份
-     */
-    private fun selectHourAndMinute(
-        year: Int,
-        month: Int,
-        dayOfMonth: Int,
-        hourOfDay: Int,
-        minute: Int
-    ) {
-        val onTimeSetListener =
-            OnTimeSetListener { _: TimePicker?, hourOfDay: Int, minute: Int ->
-                if (hourOfDay == 0 && minute == 0) return@OnTimeSetListener
-                val selectTime =
-                    "$year-$month-$dayOfMonth $hourOfDay:$minute:00"//yyyy-MM-dd hh:mm:00
-                setTime(DateConverters.str2Date(selectTime))
-            }
-        val timePickerDialog =
-            TimePickerDialog(mainActivity, onTimeSetListener, hourOfDay, minute, true)
-        timePickerDialog.show()
-    }
-
-
-    private fun keyboardListener() {
+    private fun setupKeyboard() {
         binding.keyboard.keyboardListener = object : OnKeyboardListener {
             override fun save(result: String) {
                 ToastUtils.showLong(result)
@@ -312,94 +234,125 @@ class CreateBillFragment : BaseFragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        val stack: Stack<String>? = viewModel.keyBoardStack
-        if (!stack.isNullOrEmpty()) {
-            binding.keyboard.post {
-                binding.keyboard.stack = stack
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        viewModel.keyBoardStack = binding.keyboard.stack
-    }
-
-    /**
-     * @param type 首先返回Type保证页面响应
-     * @param category
-     */
-    fun selectedCategory(type: Int, category: Category?) {
-        LogUtils.d("selectedCategory : type=$type category= $category")
-        val billType = BillType.fromValue(type)
-        mBill.type = billType.value
-        if (null != category) {
-            mBill.category = category.name
-        } else {
-            mBill.category = null
-        }
-    }
-
-    private fun setMoney(money: BigDecimal) {
-        //填充money到键盘，抹0再输入到键盘
-        with(money.toPlainString()) {
-            if (contains(".00"))
-                replace(".00", "")
-            else
-                this
-        }.forEach { element ->
-            binding.keyboard.input(element.toString())
-        }
-        //填充输入信息
-        binding.apply {
-            tvMoney.text = mBill.money.toString()
-            tvBillTime.text = mBill.time.string()
-            mBill.remark?.let { remark ->
-                eidtRemark.setText(remark)
-            }
-            val existImages = mBill.images.isNotEmpty()
-            if (existImages) {
-                imgTicket.text = "图片(x${mBill.images.size})"
-            }
-        }
-    }
-
-
-    private fun setTime(selectTime: Date) {
-        binding.tvBillTime.text = DateConverters.date2Str(selectTime)
-        mBill.time = selectTime
-        LogUtils.d(selectTime)
-        binding.tvBillTime.text = mBill.time.string() //设置日历初始选中时间
+    private fun setupDatePicker() {
         binding.tvBillTime.setOnClickListener {
+            val yearMonth = YearMonth.format(mBill.time)
             val onDateSetListener =
-                OnDateSetListener { datePicker: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+                OnDateSetListener { _: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
                     val selectCalendar = mBill.time.calendar()
                     selectCalendar[year, month] = dayOfMonth
                     binding.tvBillTime.text = selectCalendar.time.string()
-                    mBill.time = selectTime
+                    mBill.time = selectCalendar.time
                     selectHourAndMinute(
                         year = year,
-                        month = month + 1,//实际保存时，选择的时间需要+1（month：0-11 ）
+                        month = month + 1,
                         dayOfMonth = dayOfMonth,
                         hourOfDay = selectCalendar[Calendar.HOUR_OF_DAY],
                         minute = selectCalendar[Calendar.MINUTE]
                     )
                 }
-            val yearMonth = YearMonth.format(mBill.time)
-            val dialog = DatePickerDialog(
+            DatePickerDialog(
                 mainActivity,
                 onDateSetListener,
                 yearMonth.year,
                 yearMonth.month - 1,
                 yearMonth.day
-            )
-            dialog.setOnDateSetListener(onDateSetListener)
-            dialog.show()
+            ).show()
         }
     }
 
+    // endregion
+
+    // region 账单数据回写（编辑模式）
+
+    /**
+     * 编辑模式下回写所有账单字段到 UI
+     */
+    private fun restoreBillFields() {
+        updateTimeDisplay(mBill.time)
+        mBill.category?.let { setSelectCategory(it, mBill.type) }
+        val tabIndex = if (mBill.type == BillType.EXPENDITURE.value) 0 else 1
+        binding.tab.post { binding.tab.getTabAt(tabIndex)?.select() }
+        restoreMoney(mBill.money)
+        binding.apply {
+            tvBillTime.text = mBill.time.string()
+            mBill.remark?.let { eidtRemark.setText(it) }
+            if (mBill.images.isNotEmpty()) {
+                imgTicket.text = "图片(x${mBill.images.size})"
+            }
+        }
+        viewModel.getImages(mBill.images)
+    }
+
+    private fun updateTimeDisplay(time: Date) {
+        mBill.time = time
+        binding.tvBillTime.text = time.string()
+        setupDatePicker()
+    }
+
+    private fun restoreMoney(money: BigDecimal) {
+        val text = money.toPlainString().removeSuffix(".00")
+        text.forEach { binding.keyboard.input(it.toString()) }
+        binding.tvMoney.text = mBill.money.toString()
+    }
+
+    /**
+     * 修改时预先选中类别
+     */
+    private fun setSelectCategory(category: String, type: Int) {
+        binding.vpContent.post {
+            val index = if (type == BillType.EXPENDITURE.value) 0 else 1
+            val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
+            categoryFragment.setSelectCategory(category)
+        }
+    }
+
+    // endregion
+
+    // region 分类与类型
+
+    private fun applyCategories(type: Int, categories: MutableList<Category>) {
+        val index = if (type == BillType.EXPENDITURE.value) 0 else 1
+        val categoryFragment = pagerAdapter.getFragment(index) as CategoryFragment
+        categoryFragment.setCategories(categories)
+        val billType = BillType.fromValue(type)
+        binding.keyboard.setType(billType)
+        val color = if (billType == BillType.EXPENDITURE) R.color.expenditure else R.color.income
+        binding.tvMoney.setTextColor(resources.getColor(color, null))
+    }
+
+    fun selectedCategory(type: Int, category: Category?) {
+        mBill.type = BillType.fromValue(type).value
+        mBill.category = category?.name
+    }
+
+    // endregion
+
+    // region 时间选择
+
+    private fun selectHourAndMinute(
+        year: Int,
+        month: Int,
+        dayOfMonth: Int,
+        hourOfDay: Int,
+        minute: Int
+    ) {
+        TimePickerDialog(
+            mainActivity,
+            { _: TimePicker?, h: Int, m: Int ->
+                if (h == 0 && m == 0) return@TimePickerDialog
+                val selectTime = "$year-$month-$dayOfMonth $h:$m:00"
+                updateTimeDisplay(DateConverters.str2Date(selectTime))
+            },
+            hourOfDay,
+            minute,
+            true
+        ).show()
+    }
+
+    // endregion
+
+    // region 保存
 
     private fun save(again: Boolean) {
         try {
@@ -413,9 +366,7 @@ class CreateBillFragment : BaseFragment() {
             mBill.bookId = Config.book.id
             mBill.remark = binding.eidtRemark.text.toString()
             mBill.crtUser = Config.user.id
-//            mBill.type = pagerAdapter.getItem()
             mBill.money = BigDecimal(binding.tvMoney.text.toString())
-            //check value is false throw error
             check(mBill.bookId != "") { "账本ID异常" }
             check(mBill.money != ZERO_00()) { "金额不能为 ${ZERO_00().toPlainString()}" }
             check(mBill.money != BigDecimal.ZERO) { "金额不能为 ${BigDecimal.ZERO.toPlainString()}" }
@@ -427,5 +378,15 @@ class CreateBillFragment : BaseFragment() {
             ToastUtils.showLong(e.message)
         }
     }
+
+    private fun resetForNewBill() {
+        mBill = Bill()
+        binding.keyboard.clear()
+        binding.eidtRemark.setText("")
+        binding.tvMoney.text = "0"
+        popupSelectImage.clear()
+    }
+
+    // endregion
 
 }

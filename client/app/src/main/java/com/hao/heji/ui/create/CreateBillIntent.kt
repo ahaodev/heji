@@ -6,18 +6,11 @@ import com.hao.heji.data.db.Image
 import com.hao.heji.ui.base.IUiState
 
 /**
- * Popup基础
+ * 创建账单页 UI 状态
  * @date 2022/8/26
  * @author 锅得铁
- * @since v1.0
  */
 internal sealed class CreateBillUIState : IUiState {
-//    class Remark(remark: String?) : AddBillUIState()
-//    class Money(money: BigDecimal) : AddBillUIState()
-
-
-//    class Time(time: Date) : AddBillUIState()
-
     data object Finish : CreateBillUIState()
     data object SaveAgain : CreateBillUIState()
     class BillChange(val bill: Bill) : CreateBillUIState()
