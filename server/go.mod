@@ -1,6 +1,6 @@
 module shadmin
 
-go 1.24.11
+go 1.24.13
 
 require (
 	entgo.io/ent v0.14.5
