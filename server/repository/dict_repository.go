@@ -302,7 +302,7 @@ func (dr *entDictRepository) CreateItem(ctx context.Context, dictItem *domain.Di
 	}
 	defer func() {
 		if v := recover(); v != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			panic(v)
 		}
 	}()
@@ -313,7 +313,7 @@ func (dr *entDictRepository) CreateItem(ctx context.Context, dictItem *domain.Di
 		return tx.Rollback()
 	}
 	if !typeExists {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return domain.ErrDictTypeNotFound
 	}
 
@@ -325,7 +325,7 @@ func (dr *entDictRepository) CreateItem(ctx context.Context, dictItem *domain.Di
 		return tx.Rollback()
 	}
 	if valueExists {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return domain.ErrDictItemValueExists
 	}
 
@@ -489,7 +489,7 @@ func (dr *entDictRepository) UpdateItem(ctx context.Context, id string, updates 
 	}
 	defer func() {
 		if v := recover(); v != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			panic(v)
 		}
 	}()
@@ -498,7 +498,7 @@ func (dr *entDictRepository) UpdateItem(ctx context.Context, id string, updates 
 	currentItem, err := tx.DictItem.Query().Where(dictitem.ID(id)).First(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return domain.ErrDictItemNotFound
 		}
 		return tx.Rollback()
@@ -519,7 +519,7 @@ func (dr *entDictRepository) UpdateItem(ctx context.Context, id string, updates 
 			return tx.Rollback()
 		}
 		if valueExists {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return domain.ErrDictItemValueExists
 		}
 		updateQuery = updateQuery.SetValue(*updates.Value)
