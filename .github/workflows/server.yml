@@ -45,6 +45,9 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+
       - name: Generate code (ent & swagger)
         run: go generate ./...
 
@@ -89,6 +92,9 @@ jobs:
       - name: Download dependencies
         working-directory: server
         run: go mod download
+
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
 
       - name: Generate code (ent & swagger)
         working-directory: server
