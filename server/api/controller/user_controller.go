@@ -56,7 +56,7 @@ func (uc *UserController) GetUsers(c *gin.Context) {
 	filter.IncludeRoles = c.Query("include_roles") == "true"
 
 	// 验证和设置默认参数
-	domain.ValidateQueryParams(&filter.QueryParams)
+	_ = domain.ValidateQueryParams(&filter.QueryParams)
 
 	// 使用统一查询接口
 	result, err := uc.UserUsecase.ListUsers(c, filter)

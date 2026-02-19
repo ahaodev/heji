@@ -33,7 +33,7 @@ func create() *logrus.Logger {
 	Log.Out = os.Stdout
 	//控制台输出的格式
 	Log.SetFormatter(&consoleFormatter{})
-	os.Mkdir(logPath, os.ModePerm) //在运行程序的目录下创建logs目录
+	_ = os.Mkdir(logPath, os.ModePerm) //在运行程序的目录下创建logs目录
 	writer, _ := rotatelogs.New(
 		logPath+todayFileName(),
 		rotatelogs.WithLinkName(logPath),

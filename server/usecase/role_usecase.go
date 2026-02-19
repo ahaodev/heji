@@ -154,7 +154,7 @@ func (ru *roleUsecase) Delete(c context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	// 删除角色记录
 	if err := ru.roleRepository.Delete(ctx, id); err != nil {

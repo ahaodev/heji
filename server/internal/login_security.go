@@ -128,11 +128,8 @@ func (lsm *LoginSecurityManager) startCleanup() {
 	ticker := time.NewTicker(lsm.CleanInterval)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			lsm.cleanupExpiredRecords()
-		}
+	for range ticker.C {
+		lsm.cleanupExpiredRecords()
 	}
 }
 

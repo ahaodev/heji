@@ -74,7 +74,7 @@ func (du *dictUsecase) ListDictTypes(ctx context.Context, params domain.DictType
 	defer cancel()
 
 	// 验证和设置默认分页参数
-	domain.ValidateQueryParams(&params.QueryParams)
+	_ = domain.ValidateQueryParams(&params.QueryParams)
 
 	return du.dictRepository.FetchTypes(ctx, params)
 }
@@ -158,13 +158,7 @@ func (du *dictUsecase) ListDictItems(ctx context.Context, params domain.DictItem
 	defer cancel()
 
 	// 验证和设置默认分页参数
-	domain.ValidateQueryParams(&params.QueryParams)
-
-	// 验证查询参数：TypeID和TypeCode至少提供一个（对于一般查询）
-	if params.TypeID == "" && params.TypeCode == "" {
-		// 如果都没提供，允许查询所有项目，但这可能不是最佳实践
-		// 可以根据业务需求决定是否允许
-	}
+	_ = domain.ValidateQueryParams(&params.QueryParams)
 
 	return du.dictRepository.FetchItems(ctx, params)
 }

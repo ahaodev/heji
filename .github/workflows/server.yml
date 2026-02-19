@@ -51,9 +51,6 @@ jobs:
       - name: Generate code (ent & swagger)
         run: go generate ./...
 
-      - name: Vet
-        run: go vet ./...
-
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:

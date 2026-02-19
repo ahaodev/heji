@@ -264,11 +264,7 @@ func (mr *entMenuRepository) UpdateMenu(ctx context.Context, id string, req *dom
 		updateQuery = updateQuery.ClearAPIResources()
 
 		// Add new API resource associations
-		var apiResourceIDs []string
-		for _, apiResourceID := range req.ApiResources {
-			apiResourceIDs = append(apiResourceIDs, apiResourceID)
-		}
-		updateQuery = updateQuery.AddAPIResourceIDs(apiResourceIDs...)
+		updateQuery = updateQuery.AddAPIResourceIDs(req.ApiResources...)
 	} else {
 		// If no API resources provided, clear all associations
 		updateQuery = updateQuery.ClearAPIResources()

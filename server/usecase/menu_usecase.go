@@ -35,7 +35,7 @@ func (mu *menuUsecase) GetMenus(ctx context.Context, params domain.MenuQueryPara
 	defer cancel()
 
 	// Validate query parameters
-	domain.ValidateMenuQueryParams(&params)
+	_ = domain.ValidateMenuQueryParams(&params)
 
 	return mu.menuRepository.GetMenus(ctx, params)
 }
@@ -140,7 +140,7 @@ func (mu *menuUsecase) DeleteMenu(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	// 递归删除菜单及其所有子菜单
 	if err := mu.deleteMenuRecursively(ctx, id); err != nil {

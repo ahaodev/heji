@@ -230,8 +230,8 @@ func (bc *BillController) ExportBills(c *gin.Context) {
 	c.Header("Content-Type", "text/csv; charset=utf-8")
 	c.Header("Content-Disposition", "attachment; filename=bills.csv")
 	// BOM for Excel UTF-8
-	c.Writer.Write([]byte{0xEF, 0xBB, 0xBF})
-	c.Writer.WriteString("日期,类型,分类,金额,备注\n")
+	_, _ = c.Writer.Write([]byte{0xEF, 0xBB, 0xBF})
+	_, _ = c.Writer.WriteString("日期,类型,分类,金额,备注\n")
 	for _, bill := range result.List {
 		typeName := "支出"
 		if bill.Type == 1 {
@@ -239,6 +239,6 @@ func (bc *BillController) ExportBills(c *gin.Context) {
 		}
 		line := fmt.Sprintf("%s,%s,%s,%.2f,%s\n",
 			bill.Time, typeName, bill.Category, float64(bill.Money)/100, bill.Remark)
-		c.Writer.WriteString(line)
+		_, _ = c.Writer.WriteString(line)
 	}
 }

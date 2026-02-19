@@ -319,7 +319,7 @@ func loadPolicyLine(line *ent.CasbinRule, model model.Model) {
 		lineText = strings.Join(p[:2], ", ")
 	}
 
-	persist.LoadPolicyLine(lineText, model)
+	_ = persist.LoadPolicyLine(lineText, model)
 }
 
 func (a *Adapter) toInstance(ptype string, rule []string) *ent.CasbinRule {
