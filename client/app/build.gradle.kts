@@ -55,6 +55,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            resValue("string", "app_name", "合記开发版")
+            buildConfigField("String", "HTTP_URL", properties["LOCALHOST"] as String)
         }
         release {
             signingConfig = signingConfigs.getByName("single")
@@ -64,6 +66,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            resValue("string", "app_name", "合記")
+            buildConfigField("String", "HTTP_URL", properties["HJSERVER"] as String)
         }
     }
 
@@ -82,23 +86,6 @@ android {
         buildConfig = true
     }
 
-    flavorDimensions += "network"
-
-    productFlavors {
-        create("local") {
-            dimension = "network"
-            applicationId = "com.hao.heji_test"
-            buildConfigField("String", "HTTP_URL", properties["LOCALHOST"] as String)
-            resValue("string", "app_name", "合記开发版")
-        }
-        create("cloud") {
-            dimension = "network"
-            applicationId = "com.hao.heji"
-            buildConfigField("String", "HTTP_URL", properties["HJSERVER"] as String)
-            resValue("string", "app_name", "合記")
-        }
-    }
-
     applicationVariants.all {
         val variant = this
         outputs.all {
@@ -106,11 +93,10 @@ android {
             val dateFormat = SimpleDateFormat("yyyyMMddHHmm")
             dateFormat.timeZone = TimeZone.getTimeZone("GMT+08:00")
             val time = dateFormat.format(Date())
-            val productFlavors = variant.productFlavors[0].name
             val buildTypes = variant.buildType.name
             val versionName = variant.versionName
             val gitVersion = "git rev-parse --short HEAD".runCommand() ?: "unknown"
-            output.outputFileName = "$productFlavors-$buildTypes-$versionName-$gitVersion-$time.apk"
+            output.outputFileName = "$buildTypes-$versionName-$gitVersion-$time.apk"
             println(output.outputFileName)
         }
     }
