@@ -304,7 +304,7 @@ class CreateBillFragment : BaseFragment() {
 
 
     private fun keyboardListener() {
-        binding.keyboard.setKeyboardListener(object : OnKeyboardListener {
+        binding.keyboard.keyboardListener = object : OnKeyboardListener {
             override fun save(result: String) {
                 ToastUtils.showLong(result)
                 mBill.images = popupSelectImage.getImagesPath()
@@ -319,7 +319,7 @@ class CreateBillFragment : BaseFragment() {
                 ToastUtils.showLong(result)
                 this@CreateBillFragment.save(true)
             }
-        })
+        }
     }
 
     override fun onResume() {

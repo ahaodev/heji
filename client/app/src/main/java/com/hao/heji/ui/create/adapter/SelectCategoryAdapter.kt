@@ -30,7 +30,7 @@ internal class SelectCategoryAdapter(data: MutableList<Category>) :
             itemBinding.roundImageView.setImageDrawable(
                 TextDrawable.builder().buildRound(
                     SETTING,
-                    ColorGenerator.MATERIAL.randomColor
+                    ColorGenerator.MATERIAL.getRandomColor()
                 )
             )
             itemBinding.tvLabel.text = SETTING

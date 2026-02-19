@@ -1,164 +1,101 @@
-package com.hao.heji.widget;
+package com.hao.heji.widget
 
-import android.content.Context;
-import android.graphics.BlurMaskFilter;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.view.View;
+import android.content.Context
+import android.graphics.BlurMaskFilter
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RectF
+import android.view.View
+import com.haibin.calendarview.Calendar
+import com.haibin.calendarview.MonthView
+import com.hao.heji.R
 
-import com.haibin.calendarview.Calendar;
-import com.haibin.calendarview.MonthView;
-import com.hao.heji.R;
+class MyMonthView(context: Context) : MonthView(context) {
 
-public class MyMonthView extends MonthView {
-    private final Paint mRectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);//抗锯齿设置
-    /**
-     * 收入画笔
-     */
-    private final Paint incomePaint = new Paint();
+    private val mRectPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val incomePaint = Paint()
 
-    public MyMonthView(Context context) {
-        super(context);
+    init {
+        mRectPaint.style = Paint.Style.STROKE
+        mRectPaint.strokeWidth = dipToPx(context, 0.5f).toFloat()
+        mRectPaint.color = 0x88efefef.toInt()
 
-        mRectPaint.setStyle(Paint.Style.STROKE);
-        mRectPaint.setStrokeWidth(dipToPx(context, 0.5f));
-        mRectPaint.setColor(0x88efefef);
+        incomePaint.isAntiAlias = true
+        incomePaint.style = Paint.Style.FILL
+        incomePaint.textAlign = Paint.Align.CENTER
+        incomePaint.isFakeBoldText = true
+        incomePaint.textSize = dipToPx(getContext(), 9f).toFloat()
+        incomePaint.color = context.getColor(R.color.income)
 
-        incomePaint.setAntiAlias(true);
-        incomePaint.setStyle(Paint.Style.FILL);
-        incomePaint.setTextAlign(Paint.Align.CENTER);
-        incomePaint.setFakeBoldText(true);
-        incomePaint.setTextSize(dipToPx(getContext(), 9));
-        incomePaint.setColor(context.getColor(R.color.income));
-
-        //兼容硬件加速无效的代码
-        setLayerType(View.LAYER_TYPE_SOFTWARE, incomePaint);
-        //4.0以上硬件加速会导致无效
-        mSelectedPaint.setMaskFilter(new BlurMaskFilter(50, BlurMaskFilter.Blur.SOLID));
-
+        setLayerType(View.LAYER_TYPE_SOFTWARE, incomePaint)
+        mSelectedPaint.maskFilter = BlurMaskFilter(50f, BlurMaskFilter.Blur.SOLID)
     }
 
-    /**
-     * 绘制选中的日子
-     *
-     * @param canvas    canvas
-     * @param calendar  日历日历calendar
-     * @param x         日历Card x起点坐标
-     * @param y         日历Card y起点坐标
-     * @param hasScheme hasScheme 非标记的日期
-     * @return true 则绘制onDrawScheme，因为这里背景色不是是互斥的
-     */
-    @Override
-    protected boolean onDrawSelected(Canvas canvas, Calendar calendar, int x, int y, boolean hasScheme) {
-        RectF oval = new RectF(x, y, x + mItemWidth, y + mItemHeight);// 设置个新的长方形
-        canvas.drawRoundRect(oval, 20, 20, mSelectedPaint);//第二个参数是x半径，第三个参数是y半径
-
-        //canvas.drawRect(x, y , x + mItemWidth, y + mItemHeight, mSelectedPaint);//方形背景
-        return true;
+    override fun onDrawSelected(canvas: Canvas, calendar: Calendar, x: Int, y: Int, hasScheme: Boolean): Boolean {
+        val oval = RectF(x.toFloat(), y.toFloat(), (x + mItemWidth).toFloat(), (y + mItemHeight).toFloat())
+        canvas.drawRoundRect(oval, 20f, 20f, mSelectedPaint)
+        return true
     }
 
-    /**
-     * 绘制标记的事件日子
-     *
-     * @param canvas   canvas
-     * @param calendar 日历calendar
-     * @param x        日历Card x起点坐标
-     * @param y        日历Card y起点坐标
-     */
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    @Override
-    protected void onDrawScheme(Canvas canvas, Calendar calendar, int x, int y) {
-        //mSchemeBasicPaint.setColor(calendar.getSchemeColor());
-//        List<Calendar.Scheme> schemes = calendar.getSchemes();
-//        if (schemes == null || schemes.size() == 0) {
-//            return;
-//        }
-//        int space = dipToPx(getContext(), 2);
-//        int indexY = y + mItemHeight - 2 * space;
-//        int sw = dipToPx(getContext(), mItemWidth / 10);
-//        int sh = dipToPx(getContext(), 4);
-//        for (Calendar.Scheme scheme : schemes) {
-//            mSchemePaint.setColor(scheme.getShcemeColor());
-//            canvas.drawRect(x + mItemWidth - sw - 2 * space, indexY - sh, x + mItemWidth - 2 * space, indexY, mSchemePaint);
-//            indexY = indexY - space - sh;
-//        }
-        //drawScheme(canvas,calendar,x,y,false);
+    @Suppress("IntegerDivisionInFloatingPointContext")
+    override fun onDrawScheme(canvas: Canvas, calendar: Calendar, x: Int, y: Int) {
+        // no-op
     }
 
-    /**
-     * 绘制文本
-     *
-     * @param canvas     canvas
-     * @param calendar   日历calendar
-     * @param x          日历Card x起点坐标
-     * @param y          日历Card y起点坐标
-     * @param hasScheme  是否是标记的日期
-     * @param isSelected 是否选中
-     */
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    @Override
-    protected void onDrawText(Canvas canvas, Calendar calendar, int x, int y, boolean hasScheme, boolean isSelected) {
-        canvas.drawRect(x, y, x + mItemWidth, y + mItemHeight, mRectPaint);
-        int cx = x + mItemWidth / 2;
-        int top = y - mItemHeight / 6;
+    @Suppress("IntegerDivisionInFloatingPointContext")
+    override fun onDrawText(canvas: Canvas, calendar: Calendar, x: Int, y: Int, hasScheme: Boolean, isSelected: Boolean) {
+        canvas.drawRect(x.toFloat(), y.toFloat(), (x + mItemWidth).toFloat(), (y + mItemHeight).toFloat(), mRectPaint)
+        val cx = x + mItemWidth / 2
+        val top = y - mItemHeight / 6
 
-        boolean isInRange = isInRange(calendar);
+        val isInRange = isInRange(calendar)
 
-        mCurDayTextPaint.setColor(getContext().getColor(R.color.colorPrimary));
-        //日期
-        canvas.drawText(String.valueOf(calendar.getDay()), cx, mTextBaseLine + top, calendar.isCurrentDay() ? mCurDayTextPaint :
-                calendar.isCurrentMonth() && isInRange ? mCurMonthTextPaint : mOtherMonthTextPaint);
+        mCurDayTextPaint.color = context.getColor(R.color.colorPrimary)
+        canvas.drawText(
+            calendar.day.toString(), cx.toFloat(), mTextBaseLine + top,
+            if (calendar.isCurrentDay) mCurDayTextPaint
+            else if (calendar.isCurrentMonth && isInRange) mCurMonthTextPaint
+            else mOtherMonthTextPaint
+        )
 
         if (isSelected) {
-            //选中时的字体
-            //canvas.drawText(String.valueOf(calendar.getDay()), cx, mTextBaseLine + top, mSelectTextPaint);
-            if (hasScheme) {//收支
-                drawScheme(canvas, calendar, y, cx, isSelected);
-            } else {//农历
-                canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + y + mItemHeight / 10, mSelectedLunarTextPaint);
-            }
-        } else if (hasScheme) { //有收支的日子
-            //日期
-            //canvas.drawText(String.valueOf(calendar.getDay()), cx, mTextBaseLine + top, calendar.isCurrentMonth() && isInRange ? mSchemeTextPaint : mOtherMonthTextPaint);
-            //收入
-            drawScheme(canvas, calendar, y, cx, isSelected);
-        } else {
-            //农历
-            canvas.drawText(calendar.getLunar(), cx, mTextBaseLine + y + mItemHeight / 10,
-                    calendar.isCurrentDay() && isInRange ? mCurDayLunarTextPaint :
-                            calendar.isCurrentMonth() ? mCurMonthLunarTextPaint : mOtherMonthLunarTextPaint);
-        }
-
-    }
-
-    private void drawScheme(Canvas canvas, Calendar calendar, int y, int cx, boolean isSelected) {
-        int space = dipToPx(getContext(), 2);//间距
-        int indexY = (int) (mTextBaseLine + y + mItemHeight / 10);
-        //特定日期
-        for (int i = 0; i < calendar.getSchemes().size(); i++) {
-            Calendar.Scheme scheme = calendar.getSchemes().get(i);
-            if (null == scheme.getObj()) return;
-            if (isSelected) {
-                incomePaint.setColor(mSelectTextPaint.getColor());
+            if (hasScheme) {
+                drawScheme(canvas, calendar, y, cx, isSelected)
             } else {
-                incomePaint.setColor(scheme.getShcemeColor());
+                canvas.drawText(calendar.lunar, cx.toFloat(), mTextBaseLine + y + mItemHeight / 10, mSelectedLunarTextPaint)
             }
-            canvas.drawText(String.valueOf(scheme.getObj()), cx, indexY, incomePaint);
-            indexY = (int) (indexY + incomePaint.getTextSize());
+        } else if (hasScheme) {
+            drawScheme(canvas, calendar, y, cx, isSelected)
+        } else {
+            canvas.drawText(
+                calendar.lunar, cx.toFloat(), mTextBaseLine + y + mItemHeight / 10,
+                if (calendar.isCurrentDay && isInRange) mCurDayLunarTextPaint
+                else if (calendar.isCurrentMonth) mCurMonthLunarTextPaint
+                else mOtherMonthLunarTextPaint
+            )
         }
     }
 
+    private fun drawScheme(canvas: Canvas, calendar: Calendar, y: Int, cx: Int, isSelected: Boolean) {
+        val space = dipToPx(context, 2f)
+        var indexY = (mTextBaseLine + y + mItemHeight / 10).toInt()
+        for (i in calendar.schemes.indices) {
+            val scheme = calendar.schemes[i]
+            if (scheme.obj == null) return
+            if (isSelected) {
+                incomePaint.color = mSelectTextPaint.color
+            } else {
+                incomePaint.color = scheme.shcemeColor
+            }
+            canvas.drawText(scheme.obj.toString(), cx.toFloat(), indexY.toFloat(), incomePaint)
+            indexY = (indexY + incomePaint.textSize).toInt()
+        }
+    }
 
-    /**
-     * dp转px
-     *
-     * @param context context
-     * @param dpValue dp
-     * @return px
-     */
-    private static int dipToPx(Context context, float dpValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (dpValue * scale + 0.5f);
+    companion object {
+        private fun dipToPx(context: Context, dpValue: Float): Int {
+            val scale = context.resources.displayMetrics.density
+            return (dpValue * scale + 0.5f).toInt()
+        }
     }
 }

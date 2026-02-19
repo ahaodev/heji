@@ -1,348 +1,244 @@
-package com.hao.heji.widget;
+package com.hao.heji.widget
 
-import static java.math.BigDecimal.ZERO;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.ToastUtils
+import com.hao.heji.R
+import com.hao.heji.data.BillType
+import com.hao.heji.databinding.LayoutKeyboardBinding
+import java.math.BigDecimal
+import java.util.Stack
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.View;
+class KeyBoardView(context: Context, attrs: AttributeSet?) : ConstraintLayout(context, attrs) {
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-
-import com.blankj.utilcode.util.ClickUtils;
-import com.blankj.utilcode.util.ToastUtils;
-import com.hao.heji.R;
-import com.hao.heji.data.BillType;
-import com.hao.heji.databinding.LayoutKeyboardBinding;
-
-import java.math.BigDecimal;
-import java.util.Stack;
-
-/**
- * @date: 2020/11/19
- * @author: 锅得铁
- * #
- */
-public class KeyBoardView extends ConstraintLayout {
-    public static final String TAG = "KeyBoardView";
-    public static final int INPUT_MAXSIZE = 12;//输入值最大限制
-    String defValue = "0";
-    private final Context context;
-    LayoutKeyboardBinding binding;
-    private Stack<String> stack = new Stack<>();
-    private OnKeyboardListener keyboardListener;
-
-    public void setKeyboardListener(OnKeyboardListener keyboardListener) {
-        this.keyboardListener = keyboardListener;
+    companion object {
+        const val TAG = "KeyBoardView"
+        const val INPUT_MAXSIZE = 12
     }
 
+    var defValue = "0"
+        private set
 
-    public KeyBoardView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        this.context = context;
-        init();
-    }
-
-    private void init() {
-        View view = LayoutInflater.from(context).inflate(R.layout.layout_keyboard, this);
-        binding = LayoutKeyboardBinding.bind(view);
-        initKeyboardListener(view);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    private void initKeyboardListener(View view) {
-        binding.k0.setOnClickListener(k0 -> {
-            input("0");
-        });
-        binding.k1.setOnClickListener(k1 -> {
-            input("1");
-        });
-        binding.k2.setOnClickListener(k2 -> {
-            input("2");
-        });
-        binding.k3.setOnClickListener(k3 -> {
-            input("3");
-        });
-        binding.k4.setOnClickListener(k4 -> {
-            input("4");
-        });
-        binding.k5.setOnClickListener(k5 -> {
-            input("5");
-        });
-        binding.k6.setOnClickListener(k6 -> {
-            input("6");
-        });
-        binding.k7.setOnClickListener(k7 -> {
-            input("7");
-        });
-        binding.k8.setOnClickListener(k8 -> {
-            input("8");
-        });
-        binding.k9.setOnClickListener(k9 -> {
-            input("9");
-        });
-        binding.kPoint.setOnClickListener(point -> {
-            input(".");
-        });
-        binding.ksub.setOnClickListener(minus -> {//减
-            input("-");
-        });
-        binding.ksum.setOnClickListener(plus -> {//加
-            input("+");
-        });
-
-        binding.kDelete.setOnClickListener(delete -> {
-            delete();
-        });
-
-        binding.kSaveAgain.setOnClickListener(new ClickUtils.OnDebouncingClickListener(500) {
-            @Override
-            public void onDebouncingClick(View v) {
-                if (keyboardListener != null)
-                    keyboardListener.saveAgain(finalCompute());
-            }
-        });
-        binding.kSave.setOnClickListener(new ClickUtils.OnDebouncingClickListener() {
-            @Override
-            public void onDebouncingClick(View v) {
-                if (keyboardListener != null)
-                    keyboardListener.save(finalCompute());
-            }
-        });
-    }
-
-    public String getValue() {
-        return defValue;
-    }
-
-
-    public void setType(BillType billType) {
-        int color = (billType == BillType.EXPENDITURE) ? R.color.expenditure : R.color.income;
-        int drawable = (billType == BillType.EXPENDITURE) ? R.drawable.keyboard_save_bg_red : R.drawable.keyboard_save_bg_green;
-        binding.kSave.setBackground(context.getDrawable(drawable));
-        binding.kSave.setTextColor(context.getColor(R.color.white));
-        invalidate();
-    }
-
-    public interface OnKeyboardListener {
-        void save(String result);
-
-        void calculation(String result);
-
-        void saveAgain(String result);
-    }
-
-    public void input(String input) {
-        heardClear0(input);//头部抹0
-        heardPM();//头部抹去+-.
-        if (stack.isEmpty() && inputIsSymbol(input)) {//空值情况输入 + - .符号无效,可以输入0.00小数字
-            return;
+    private val binding: LayoutKeyboardBinding
+    var stack: Stack<String> = Stack()
+        set(value) {
+            field = value
+            request()
         }
 
-        if (!stack.isEmpty()) {//栈内存在输入
+    var keyboardListener: OnKeyboardListener? = null
 
-            if (!stack.isEmpty() && lastIsSymbol() && inputIsSymbol(input)) {//末尾为运算符||小数点
-                if (stack.lastElement().equals(input)) {//末尾和输入的符号一致
-                    return;
+    init {
+        val view = LayoutInflater.from(context).inflate(R.layout.layout_keyboard, this)
+        binding = LayoutKeyboardBinding.bind(view)
+        initKeyboardListener()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
+
+    private fun initKeyboardListener() {
+        binding.k0.setOnClickListener { input("0") }
+        binding.k1.setOnClickListener { input("1") }
+        binding.k2.setOnClickListener { input("2") }
+        binding.k3.setOnClickListener { input("3") }
+        binding.k4.setOnClickListener { input("4") }
+        binding.k5.setOnClickListener { input("5") }
+        binding.k6.setOnClickListener { input("6") }
+        binding.k7.setOnClickListener { input("7") }
+        binding.k8.setOnClickListener { input("8") }
+        binding.k9.setOnClickListener { input("9") }
+        binding.kPoint.setOnClickListener { input(".") }
+        binding.ksub.setOnClickListener { input("-") }
+        binding.ksum.setOnClickListener { input("+") }
+
+        binding.kDelete.setOnClickListener { delete() }
+
+        binding.kSaveAgain.setOnClickListener(object : ClickUtils.OnDebouncingClickListener(500) {
+            override fun onDebouncingClick(v: View) {
+                keyboardListener?.saveAgain(finalCompute())
+            }
+        })
+        binding.kSave.setOnClickListener(object : ClickUtils.OnDebouncingClickListener() {
+            override fun onDebouncingClick(v: View) {
+                keyboardListener?.save(finalCompute())
+            }
+        })
+    }
+
+    fun getValue(): String = defValue
+
+    fun setType(billType: BillType) {
+        val color = if (billType == BillType.EXPENDITURE) R.color.expenditure else R.color.income
+        val drawable = if (billType == BillType.EXPENDITURE) R.drawable.keyboard_save_bg_red else R.drawable.keyboard_save_bg_green
+        binding.kSave.background = context.getDrawable(drawable)
+        binding.kSave.setTextColor(context.getColor(R.color.white))
+        invalidate()
+    }
+
+    interface OnKeyboardListener {
+        fun save(result: String)
+        fun calculation(result: String)
+        fun saveAgain(result: String)
+    }
+
+    fun input(input: String) {
+        heardClear0(input)
+        heardPM()
+        if (stack.isEmpty() && inputIsSymbol(input)) {
+            return
+        }
+
+        if (stack.isNotEmpty()) {
+            if (lastIsSymbol() && inputIsSymbol(input)) {
+                if (stack.lastElement() == input) {
+                    return
                 }
-                stack.pop();//不一致，先pop 再push
+                stack.pop()
             }
 
-            if (input.equals(".")) {//输入为小数点
-                if (stack.size() == 1) {//运算结果包含.小数点
-                    String firstElement = stack.firstElement();
-                    if (firstElement.contains(".")) return;//禁止输入
+            if (input == ".") {
+                if (stack.size == 1) {
+                    val firstElement = stack.firstElement()
+                    if (firstElement.contains(".")) return
                 }
-                if (stack.contains(".")) {//栈内包含点
-                    int pointCount = (int) stack.stream().filter(s -> s.equals(".")).count();//遍历栈内小数点个数
-                    if (stack.firstElement().contains(".")) pointCount += 1;//栈的第一个可能为运算后的小数 小数点+1
-                    if (stack.contains("+") || stack.contains("-")) {//+ - 号前如果有点，最多允许后面再有一个点
-                        if (pointCount > 1) return;
+                if (stack.contains(".")) {
+                    var pointCount = stack.count { it == "." }
+                    if (stack.firstElement().contains(".")) pointCount += 1
+                    if (stack.contains("+") || stack.contains("-")) {
+                        if (pointCount > 1) return
                     } else {
-                        if (pointCount > 0) return;
+                        if (pointCount > 0) return
                     }
                 }
             }
 
-            if (inputIsOperator(input)) {//输入为运算符+ —
-                if (stack.contains("+") || stack.contains("-")) {//栈内已经包含了符号
-                    StringBuilder sb = new StringBuilder();
-                    stack.forEach(s -> {
-                        sb.append(s);
-                    });
-                    String value = sb.toString();
-                    String request = compute(value);//计算一次+ -结果
-                    stack.clear();//清空栈
-
-                    stack.push(request);//结果入栈
+            if (inputIsOperator(input)) {
+                if (stack.contains("+") || stack.contains("-")) {
+                    val sb = StringBuilder()
+                    stack.forEach { s -> sb.append(s) }
+                    val value = sb.toString()
+                    val result = compute(value)
+                    stack.clear()
+                    stack.push(result)
                 }
             }
-            if (!inputIsSymbol(input)) {//输入为正常数字
-                if (stack.size() > 3) {
-                    int index = stack.size() - 3;//避免输入3位小数
-                    if (stack.get(index).equals(".")) return;
+            if (!inputIsSymbol(input)) {
+                if (stack.size > 3) {
+                    val index = stack.size - 3
+                    if (stack[index] == ".") return
                 }
-                if (stack.size() == 1) {//避免运算结果直接在后面继续输入
-                    String firstElement = stack.firstElement();
-                    if (firstElement.length() > 2) return;//禁止输入
+                if (stack.size == 1) {
+                    val firstElement = stack.firstElement()
+                    if (firstElement.length > 2) return
                 }
             }
         }
 
-
-        if (stack.size() > INPUT_MAXSIZE) {
-            ToastUtils.showShort("输入数值太大了");
-            return;
+        if (stack.size > INPUT_MAXSIZE) {
+            ToastUtils.showShort("输入数值太大了")
+            return
         }
-        stack.push(input);
-        request();
+        stack.push(input)
+        request()
     }
 
-    /**
-     * 一开始输入0的情况直接抹掉
-     */
-    private void heardClear0(String input) {
-        if (input.equals(".")) return;//小数点
-        if (!stack.isEmpty() && stack.size() == 1) {
-            if (stack.firstElement().equals("0")) {
-                stack.remove(0);//抹去头部
-                heardClear0(input);
+    private fun heardClear0(input: String) {
+        if (input == ".") return
+        if (stack.isNotEmpty() && stack.size == 1) {
+            if (stack.firstElement() == "0") {
+                stack.removeAt(0)
+                heardClear0(input)
             }
         }
     }
 
-    /**
-     * 一开始输入+ —的情况直接抹掉
-     */
-    private void heardPM() {
-        if (!stack.isEmpty() && stack.size() > 0) {
-            if (stack.firstElement().equals("-") || stack.firstElement().equals("+")) {
-                stack.remove(0);//抹去头部
-                heardPM();
+    private fun heardPM() {
+        if (stack.isNotEmpty() && stack.size > 0) {
+            if (stack.firstElement() == "-" || stack.firstElement() == "+") {
+                stack.removeAt(0)
+                heardPM()
             }
         }
     }
 
-    /**
-     * 栈顶为符号
-     *
-     * @return
-     */
-    private boolean lastIsSymbol() {
-        String last = stack.lastElement();
-        boolean stackTopSymbol = last.equals("+") || last.equals("-") || last.equals(".");
-        return stackTopSymbol;
+    private fun lastIsSymbol(): Boolean {
+        val last = stack.lastElement()
+        return last == "+" || last == "-" || last == "."
     }
 
-    /**
-     * 输入为运算符
-     *
-     * @return
-     */
-    private boolean inputIsOperator(String input) {
-        boolean inputSymbol = input.equals("+") || input.equals("-");
-        return inputSymbol;
+    private fun inputIsOperator(input: String): Boolean {
+        return input == "+" || input == "-"
     }
 
-    /**
-     * 输入的是符号
-     *
-     * @param input
-     * @return
-     */
-    private boolean inputIsSymbol(String input) {
-        boolean inputSymbol = input.equals("+") || input.equals("-") || input.equals(".");
-        return inputSymbol;
+    private fun inputIsSymbol(input: String): Boolean {
+        return input == "+" || input == "-" || input == "."
     }
 
-    public void delete() {
-        if (!stack.isEmpty()) {
-            stack.pop();
+    fun delete() {
+        if (stack.isNotEmpty()) {
+            stack.pop()
         }
-        request();
+        request()
     }
 
-    private String request() {
+    private fun request(): String {
         if (stack.isEmpty()) {
-            if (keyboardListener != null)
-                keyboardListener.calculation(defValue);
-            return defValue;
+            keyboardListener?.calculation(defValue)
+            return defValue
         }
-        StringBuffer sb = new StringBuffer();
-        stack.forEach(s -> sb.append(s));
-        String request = sb.toString();
-        if (keyboardListener != null)
-            keyboardListener.calculation(request);
-        return request;
+        val sb = StringBuilder()
+        stack.forEach { s -> sb.append(s) }
+        val result = sb.toString()
+        keyboardListener?.calculation(result)
+        return result
     }
 
-    /**
-     * 计算栈内的值
-     *
-     * @param value
-     * @return 返回最终结果
-     */
-    private String compute(String value) {
-        BigDecimal request = null;
+    private fun compute(value: String): String {
+        var result: BigDecimal? = null
         if (value.contains("+")) {
-            String v1 = value.substring(0, value.indexOf("+"));
-            String v2 = value.substring(value.indexOf("+") + 1);
-            BigDecimal f1 = new BigDecimal(v1);
-            BigDecimal f2 = new BigDecimal(v2);
-            request = f1.add(f2);
+            val v1 = value.substring(0, value.indexOf("+"))
+            val v2 = value.substring(value.indexOf("+") + 1)
+            val f1 = BigDecimal(v1)
+            val f2 = BigDecimal(v2)
+            result = f1.add(f2)
         }
         if (value.contains("-")) {
-            String v1 = value.substring(0, value.indexOf("-"));
-            String v2 = value.substring(value.indexOf("-") + 1);
-            BigDecimal f1 = new BigDecimal(v1);
-            BigDecimal f2 = new BigDecimal(v2);
-            request = f1.subtract(f2);
+            val v1 = value.substring(0, value.indexOf("-"))
+            val v2 = value.substring(value.indexOf("-") + 1)
+            val f1 = BigDecimal(v1)
+            val f2 = BigDecimal(v2)
+            result = f1.subtract(f2)
         }
-        if (request.longValue() < 0) {
-            request = ZERO;//为负数时置0
+        if (result!!.toLong() < 0) {
+            result = BigDecimal.ZERO
         }
-        String lastCompute = request.stripTrailingZeros().toPlainString();//抹去.00
-        return lastCompute;
+        return result.stripTrailingZeros().toPlainString()
     }
 
-    /**
-     * 最终运算
-     */
-    private String finalCompute() {
-        if (stack.isEmpty()) return defValue;
-        if (lastIsSymbol()) stack.pop();
-        StringBuilder sb = new StringBuilder();
-        stack.forEach(s -> {
-            sb.append(s);
-        });
-        if (stack.contains("+") || stack.contains("-")) {//栈内已经包含了符号
-            String value = sb.toString();
-            String request = compute(value);
-            stack.clear();
-            stack.push(request);
-            return request();
+    private fun finalCompute(): String {
+        if (stack.isEmpty()) return defValue
+        if (lastIsSymbol()) stack.pop()
+        val sb = StringBuilder()
+        stack.forEach { s -> sb.append(s) }
+        return if (stack.contains("+") || stack.contains("-")) {
+            val value = sb.toString()
+            val result = compute(value)
+            stack.clear()
+            stack.push(result)
+            request()
         } else {
-            return new BigDecimal(sb.toString()).toString();
+            BigDecimal(sb.toString()).toString()
         }
     }
 
-    public Stack<String> getStack() {
-        return stack;
-    }
-
-    public void setStack(Stack<String> stack) {
-        this.stack = stack;
-        request();
-    }
-
-    public void clear() {
-        stack.clear();
-        defValue = "0";
+    fun clear() {
+        stack.clear()
+        defValue = "0"
     }
 }

@@ -1,125 +1,84 @@
-package com.hao.heji.ui.popup;
+package com.hao.heji.ui.popup
 
-import android.content.Context;
-import android.view.View;
+import android.content.Context
+import android.view.View
+import com.blankj.utilcode.util.LogUtils
+import com.blankj.utilcode.util.ToastUtils
+import com.google.android.material.tabs.TabLayout
+import com.lxj.xpopup.core.CenterPopupView
+import com.hao.heji.R
+import com.hao.heji.databinding.PopLayoutYearMonthBinding
+import java.util.Calendar
 
-import androidx.annotation.NonNull;
+class YearSelectPopup(
+    context: Context,
+    private val onTabSelected: OnTabSelected,
+    private val showAllYear: Boolean
+) : CenterPopupView(context), View.OnClickListener {
 
-import com.blankj.utilcode.util.LogUtils;
-import com.blankj.utilcode.util.ToastUtils;
-import com.google.android.material.tabs.TabLayout;
-import com.lxj.xpopup.core.CenterPopupView;
-import com.hao.heji.R;
-import com.hao.heji.databinding.PopLayoutYearMonthBinding;
+    val years: List<Int>
+    private var earliestYear = 2016
+    private lateinit var binding: PopLayoutYearMonthBinding
+    private var selectYear: Int = 0
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import static com.google.android.material.tabs.TabLayout.MODE_AUTO;
-
-/**
- * @date: 2020/11/3
- * @author: 锅得铁
- * #
- */
-public class YearSelectPopup extends CenterPopupView implements View.OnClickListener {
-
-    private final OnTabSelected onTabSelected;
-    final List<Integer> years;
-    int earliestYear = 2016;
-    private PopLayoutYearMonthBinding binding;
-    private int selectYear;
-    private final boolean showAllYear;
-
-    public YearSelectPopup(@NonNull Context context, OnTabSelected onTabSelected, boolean showAllYear) {
-        super(context);
-        this.onTabSelected = onTabSelected;
-        Calendar calendar = Calendar.getInstance();
-        years = new ArrayList<>();
-        for (int i = calendar.get(Calendar.YEAR); i >= earliestYear; i--) {
-            years.add(i);
-        }
-        this.showAllYear = showAllYear;
-        LogUtils.d(years);
+    init {
+        val calendar = Calendar.getInstance()
+        years = (calendar.get(Calendar.YEAR) downTo earliestYear).toList()
+        LogUtils.d(years)
     }
 
-
-    @Override
-    protected void onCreate() {
-        super.onCreate();
-        //root CardView id binding
-        binding = PopLayoutYearMonthBinding.bind(getPopupContentView().findViewById(R.id.pop_card_year_month));
-        binding.y1.setOnClickListener(this);
-        binding.y2.setOnClickListener(this);
-        binding.y3.setOnClickListener(this);
-        binding.y4.setOnClickListener(this);
-        binding.y5.setOnClickListener(this);
-        binding.y6.setOnClickListener(this);
-        binding.y7.setOnClickListener(this);
-        binding.y8.setOnClickListener(this);
-        binding.y9.setOnClickListener(this);
-        binding.y10.setOnClickListener(this);
-        binding.y11.setOnClickListener(this);
-        binding.y12.setOnClickListener(this);
-        binding.btnYearAll.setOnClickListener(v -> {
-            onTabSelected.selected(selectYear, 0);
-            dismiss();
-        });
-        if (showAllYear) {
-            binding.btnYearAll.setVisibility(View.VISIBLE);
-        } else {
-            binding.btnYearAll.setVisibility(View.GONE);
+    override fun onCreate() {
+        super.onCreate()
+        binding = PopLayoutYearMonthBinding.bind(popupContentView.findViewById(R.id.pop_card_year_month))
+        binding.y1.setOnClickListener(this)
+        binding.y2.setOnClickListener(this)
+        binding.y3.setOnClickListener(this)
+        binding.y4.setOnClickListener(this)
+        binding.y5.setOnClickListener(this)
+        binding.y6.setOnClickListener(this)
+        binding.y7.setOnClickListener(this)
+        binding.y8.setOnClickListener(this)
+        binding.y9.setOnClickListener(this)
+        binding.y10.setOnClickListener(this)
+        binding.y11.setOnClickListener(this)
+        binding.y12.setOnClickListener(this)
+        binding.btnYearAll.setOnClickListener {
+            onTabSelected.selected(selectYear, 0)
+            dismiss()
         }
-        initYearsTab();
+        binding.btnYearAll.visibility = if (showAllYear) View.VISIBLE else View.GONE
+        initYearsTab()
     }
 
-    private void initYearsTab() {
-        years.forEach(s -> {
-            TabLayout.Tab yearTab = binding.tabYears.newTab();
-            yearTab.setText(String.valueOf(s));
-            binding.tabYears.addTab(yearTab);
-        });
-        binding.tabYears.getTabAt(0).select();
-        selectYear = Integer.parseInt(binding.tabYears.getTabAt(0).getText().toString());
-        binding.tabYears.setTabMode(MODE_AUTO);
-        binding.tabYears.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                ToastUtils.showLong(tab.getText());
-                selectYear = Integer.parseInt(tab.getText().toString());
-//                if (null != onTabSelected) {
-//                    onTabSelected.selected(selectYear, 0);
-//                }
+    private fun initYearsTab() {
+        years.forEach { s ->
+            val yearTab = binding.tabYears.newTab()
+            yearTab.setText(s.toString())
+            binding.tabYears.addTab(yearTab)
+        }
+        binding.tabYears.getTabAt(0)?.select()
+        selectYear = binding.tabYears.getTabAt(0)?.text.toString().toInt()
+        binding.tabYears.tabMode = TabLayout.MODE_AUTO
+        binding.tabYears.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                ToastUtils.showLong(tab.text)
+                selectYear = tab.text.toString().toInt()
             }
 
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
 
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
     }
 
-
-    @Override
-    public void onClick(View v) {
-        if (null != onTabSelected) {
-            onTabSelected.selected(selectYear, Integer.valueOf((String) v.getTag()));
-            dismiss();
-        }
+    override fun onClick(v: View) {
+        onTabSelected.selected(selectYear, (v.tag as String).toInt())
+        dismiss()
     }
 
-    public interface OnTabSelected {
-        void selected(int year, int month);
+    fun interface OnTabSelected {
+        fun selected(year: Int, month: Int)
     }
 
-    @Override
-    protected int getImplLayoutId() {
-        return R.layout.pop_layout_year_month;
-    }
+    override fun getImplLayoutId(): Int = R.layout.pop_layout_year_month
 }

@@ -1,82 +1,47 @@
-package com.hao.heji.utils;
+package com.hao.heji.utils
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-/**
- * @date: 2020/11/19
- * @author: 锅得铁
- * #
- */
-public class MyTimeUtils {
-    //millisecond
-    public static final String PATTERN_MILLISECOND = "yyy-MM-dd HH:mm:ss:SSS";
-    //second
-    public static final String PATTERN_SECOND = "yyy-MM-dd HH:mm:ss";
-    //day
-    public static final String PATTERN_DAY = "yyy-MM-dd";
+object MyTimeUtils {
+    const val PATTERN_MILLISECOND = "yyy-MM-dd HH:mm:ss:SSS"
+    const val PATTERN_SECOND = "yyy-MM-dd HH:mm:ss"
+    const val PATTERN_DAY = "yyy-MM-dd"
 
-    /**
-     * 获取当前月第一天
-     * date(timestring, modifier, modifier, ...)
-     * 以 YYYY-MM-DD 格式返回日期。
-     *
-     * @param month
-     * @return
-     */
-    public static String firstDayOfMonth(int year, int month) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, year);
-        // 设置月份
-        calendar.set(Calendar.MONTH, month - 1);
-        // 获取某月最小天数
-        int firstDay = calendar.getActualMinimum(Calendar.DAY_OF_MONTH);
-        // 设置日历中月份的最小天数
-        calendar.set(Calendar.DAY_OF_MONTH, firstDay);
-        // 格式化日期
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String strFirstDay = sdf.format(calendar.getTime());
-        return strFirstDay;
+    @JvmStatic
+    fun firstDayOfMonth(year: Int, month: Int): String {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.YEAR, year)
+        calendar.set(Calendar.MONTH, month - 1)
+        val firstDay = calendar.getActualMinimum(Calendar.DAY_OF_MONTH)
+        calendar.set(Calendar.DAY_OF_MONTH, firstDay)
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return sdf.format(calendar.time)
     }
 
-    /**
-     * date(timestring, modifier, modifier, ...)
-     * 以 YYYY-MM-DD 格式返回日期。
-     *
-     * @param year
-     * @param month
-     * @return
-     */
-    public static String lastDayOfMonth(int year, int month) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, year);
-        // 设置月份
-        calendar.set(Calendar.MONTH, month - 1);
-        // 获取某月最大天数
-        int lastDay = 0;
-        //2月的平年瑞年天数
-        if (month == 2) {
-            lastDay = calendar.getLeastMaximum(Calendar.DAY_OF_MONTH);
+    @JvmStatic
+    fun lastDayOfMonth(year: Int, month: Int): String {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.YEAR, year)
+        calendar.set(Calendar.MONTH, month - 1)
+        val lastDay = if (month == 2) {
+            calendar.getLeastMaximum(Calendar.DAY_OF_MONTH)
         } else {
-            lastDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+            calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
         }
-        // 设置日历中月份的最大天数
-        calendar.set(Calendar.DAY_OF_MONTH, lastDay);
-        // 格式化日期
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String strLastDay = sdf.format(calendar.getTime());
-        return strLastDay;
+        calendar.set(Calendar.DAY_OF_MONTH, lastDay)
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return sdf.format(calendar.time)
     }
 
-    public static int getMonthLastDay(int year, int month)
-    {
-        Calendar a = Calendar.getInstance();
-        a.set(Calendar.YEAR, year);
-        a.set(Calendar.MONTH, month - 1);
-        a.set(Calendar.DATE, 1);//把日期设置为当月第一天
-        a.roll(Calendar.DATE, -1);//日期回滚一天，也就是最后一天
-        int maxDate = a.get(Calendar.DATE);
-        return maxDate;
+    @JvmStatic
+    fun getMonthLastDay(year: Int, month: Int): Int {
+        val a = Calendar.getInstance()
+        a.set(Calendar.YEAR, year)
+        a.set(Calendar.MONTH, month - 1)
+        a.set(Calendar.DATE, 1)
+        a.roll(Calendar.DATE, -1)
+        return a.get(Calendar.DATE)
     }
-
 }
