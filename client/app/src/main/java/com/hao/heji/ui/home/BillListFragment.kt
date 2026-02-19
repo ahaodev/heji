@@ -1,5 +1,6 @@
 package com.hao.heji.ui.home
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.ViewStub
@@ -194,9 +195,10 @@ class BillListFragment : BaseFragment() {
         binding.homeRecycler.addItemDecoration(CardDecoration(8))
         adapter.setDiffCallback(object : ItemCallback<BaseNode>() {
             override fun areItemsTheSame(oldItem: BaseNode, newItem: BaseNode): Boolean {
-                return oldItem == newItem
+                return oldItem === newItem
             }
 
+            @SuppressLint("DiffUtilEquals")
             override fun areContentsTheSame(oldItem: BaseNode, newItem: BaseNode): Boolean {
                 return newItem == oldItem
             }

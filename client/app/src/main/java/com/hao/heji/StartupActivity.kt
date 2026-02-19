@@ -1,8 +1,6 @@
 package com.hao.heji
 
-import android.os.Build
 import android.os.Bundle
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.gyf.immersionbar.ktx.immersionBar
 import com.hao.heji.config.Config
@@ -15,7 +13,6 @@ import com.hao.heji.ui.user.login.LoginActivity
  * app start page
  */
 class StartupActivity : AppCompatActivity() {
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -1,7 +1,5 @@
 package com.hao.heji.ui.user.login
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.LogUtils
 import com.hao.heji.App
@@ -21,7 +19,6 @@ internal class LoginViewModel(
 ) : BaseViewModel<LoginUiState>() {
 
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun login(tel: String, password: String) {
         viewModelScope.launch {
             try {

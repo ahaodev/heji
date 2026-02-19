@@ -1,7 +1,5 @@
 package com.hao.heji.config
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.hao.heji.App
 import com.hao.heji.config.store.DataStoreManager
 import com.hao.heji.data.db.Book
@@ -21,7 +19,6 @@ object Config {
         ?: error("No book selected. Ensure switchModelAndBook() is called before accessing Config.book.")
     val bookOrNull: Book? get() = DataStoreManager.getBook()
     val user: JWTParse.User
-        @RequiresApi(Build.VERSION_CODES.O)
         get() = DataStoreManager.getToken()
             .takeIf { it.isNotEmpty() }
             ?.let { JWTParse.getUser(jwt = it) }
@@ -32,7 +29,6 @@ object Config {
         get() = DataStoreManager.getLastSyncTime()
         set(value) = DataStoreManager.saveLastSyncTime(value)
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun isInitUser() = (user == LocalUser)
 
     fun setBook(book: Book) {

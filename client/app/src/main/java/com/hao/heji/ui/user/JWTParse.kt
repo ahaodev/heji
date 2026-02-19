@@ -1,26 +1,23 @@
 package com.hao.heji.ui.user
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.util.Base64
 import com.blankj.utilcode.util.StringUtils
 import com.hao.heji.config.LocalUser
 import org.json.JSONObject
-import java.util.Base64
 
 object JWTParse {
     //JWT User
     data class User(val name: String, val id: String, val token: String)
 
     //解析JWT用户信息
-    @RequiresApi(Build.VERSION_CODES.O)
     fun getUser(jwt: String): User {
         if (jwt == "") return LocalUser
         val token = resolveToken(jwt)
         val splits = token.split(".")
 //        val header = splits[0]
         val payload = splits[1]
-        var userJsonInfo =payload.replace('_', '/').replace('-', '+');
-        userJsonInfo = String(Base64.getDecoder().decode(userJsonInfo))
+        var userJsonInfo = payload.replace('_', '/').replace('-', '+')
+        userJsonInfo = String(Base64.decode(userJsonInfo, Base64.DEFAULT))
         val jsonObject = JSONObject(userJsonInfo)
         val name = jsonObject.opt("name") as String
         val id: String = jsonObject.opt("id") as String
