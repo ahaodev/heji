@@ -19,7 +19,7 @@ type ImageController struct {
 // @Summary 上传账单图片
 // @Tags image
 // @Security BearerAuth
-// @Param file formance file true "图片文件"
+// @Param file formData file true "图片文件"
 // @Param billId query string true "账单ID"
 // @Success 201 {object} domain.Response
 // @Router /image/upload [post]
