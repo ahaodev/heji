@@ -38,9 +38,9 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Frontend lint & build # 暂时不 lint 检查 && pnpm run lint
+      - name: Frontend build
         working-directory: server/web
-        run: pnpm install  && pnpm run build
+        run: pnpm install && pnpm run build
 
       - name: Download dependencies
         run: go mod download
