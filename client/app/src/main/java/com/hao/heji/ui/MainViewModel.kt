@@ -12,7 +12,8 @@ import com.hao.heji.data.db.Book
 import com.hao.heji.data.db.Category
 import com.hao.heji.data.repository.BookRepository
 import com.hao.heji.utils.YearMonth
-import com.hao.heji.utils.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 /**
@@ -32,7 +33,7 @@ class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
      * 选择账本
      */
     fun switchModelAndBook() {
-        launch({
+        viewModelScope.launch(Dispatchers.IO) {
             val bookDao = App.dataBase.bookDao()
             if (!Config.enableOfflineMode) {
                 try {
@@ -56,7 +57,6 @@ class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
                 createDefaultBook(bookDao)
                 return@launch
             }
-
             // 优先使用上次保存的账本（如果仍存在）
             val savedBook = Config.bookOrNull
             if (savedBook != null && books.contains(savedBook.id)) {
@@ -73,7 +73,7 @@ class MainViewModel(private val bookRepository: BookRepository) : ViewModel() {
                     Config.setBook(it)
                 }
             }
-        })
+        }
     }
 
     private fun createDefaultBook(bookDao: com.hao.heji.data.db.BookDao) {

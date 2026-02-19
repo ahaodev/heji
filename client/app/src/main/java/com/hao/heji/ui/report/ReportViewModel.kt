@@ -9,7 +9,9 @@ import com.hao.heji.data.BillType
 import com.hao.heji.data.db.Bill
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.utils.YearMonth
-import com.hao.heji.utils.launchIO
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 /**
@@ -47,28 +49,27 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
     }
 
      fun getReportBillInfoList(ymd: String) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             var data: List<Bill>
-            if (yearMonth.day == 0) {//按月查
-                //TODO 目前暂未实现按年统计
+            if (yearMonth.day == 0) {
                 data = App.dataBase.billDao().findByMonth(ymd, type = null, bookId)
                     .filter { bill ->
                         bill.images = App.dataBase.imageDao().findImagesId(bill.id)
                         return@filter true
                     }
                 send(ReportUiState.ReportBillInfoList(yearMonth.yearMonthString(), data))
-            } else {//按天查
+            } else {
                 data = App.dataBase.billDao().findByDay(ymd, bookId).filter {
                     it.images = App.dataBase.imageDao().findImagesId(it.id)
                     return@filter true
                 }
                 send(ReportUiState.ReportBillInfoList(yearMonth.monthDayString(), data))
             }
-        })
+        }
     }
 
     fun getCategoryBills(category: String, type: Int) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val bills = App.dataBase.billDao().findByCategoryAndMonth(
                 category, yearMonth.yearMonthString(), type, bookId
             ).filter {
@@ -76,40 +77,39 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
                 return@filter true
             }
             send(ReportUiState.CategoryList(category, bills))
-        })
+        }
     }
 
     fun getImages(imagesIDs: MutableList<String>) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val data = App.dataBase.imageDao().findImage(imagesIDs)
             send(ReportUiState.Images(data))
-        })
+        }
     }
 
     fun getReportList() {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val data =
                 App.dataBase.billDao().listIncomeExpSurplusByMonth(yearMonth.yearMonthString(), bookId)
             send(ReportUiState.ReportList(data))
-        })
+        }
     }
 
     fun getProportionChart(type: Int = pieDataType) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val list =
                 App.dataBase.billDao().reportCategory(type, yearMonth.yearMonthString(), bookId).map {
-                    // 支出为负数，收入为正数  money * -1 or money * 1
                     val data = it.money!!.multiply(BigDecimal(type))
                     return@map PieEntry(
                         it.percentage, it.category, data
                     )
                 }
             send(ReportUiState.ProportionChart(type, list))
-        })
+        }
     }
 
     fun getLinChartData(type: Int = lineDataType) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             if (type == BillType.ALL.value) {
                 val uiStateData = with(ReportUiState.LinChart(type)) {
                     all = arrayListOf(
@@ -126,14 +126,14 @@ class ReportViewModel : BaseViewModel<ReportUiState>() {
                 val data = App.dataBase.billDao().sumByMonth(yearMonth.yearMonthString(), type, bookId)
                 send(ReportUiState.LinChart(type, data))
             }
-        })
+        }
     }
 
     private fun total() {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val monthIncomeExpenditureData =
                 App.dataBase.billDao().sumMonthIncome(yearMonth.yearMonthString(), bookId)
             send(ReportUiState.Total(monthIncomeExpenditureData))
-        })
+        }
     }
 }

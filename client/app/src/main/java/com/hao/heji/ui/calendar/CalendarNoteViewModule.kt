@@ -13,7 +13,9 @@ import com.hao.heji.ui.adapter.DayBillsNode
 import com.hao.heji.ui.adapter.DayIncome
 import com.hao.heji.ui.adapter.DayIncomeNode
 import com.hao.heji.ui.base.BaseViewModel
-import com.hao.heji.utils.launchIO
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
@@ -21,10 +23,10 @@ internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
     var selectYearMonth = currentYearMonth
 
     fun getImages(bid: String) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val images = App.dataBase.imageDao().findByBillId(billId = bid)
             send(CalenderUiState.Images(images))
-        })
+        }
     }
 
     /**
@@ -33,7 +35,7 @@ internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
      * @param month 月
      */
     fun updateYearMonth(year: Int, month: Int) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             var map = mutableMapOf<String, Calendar>()
             billDao.findEveryDayIncomeByMonth(Config.book.id, selectYearMonth.yearMonthString())
                 .filter {
@@ -47,12 +49,11 @@ internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
                     expenditure = dayIncome.expenditure.toString(),
                     income = dayIncome.income.toString()
                 )
-                //map["${dayIncome.time}-${dayIncome.income }${dayIncome.expenditure}"] = calender
-                map[calender.toString()] = calender// Key需是calendar string
+                map[calender.toString()] = calender
             }
             send(CalenderUiState.Calender(map))
             LogUtils.d(year, month, "$map")
-        }, {})
+        }
     }
 
     /**
@@ -61,7 +62,7 @@ internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
      */
     fun getDayBills(calendar: Calendar) {
         LogUtils.d(calendar.toString())
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val dateTime = TimeUtils.millis2String(calendar.timeInMillis, "yyyy-MM-dd")
             val dayBills = billDao.findByDay(dateTime, Config.book.id)
             var expenditure = "0"
@@ -81,10 +82,10 @@ internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
                 monthDay = calendar.day,
                 weekday = calendar.week
             )
-            var parentNode = mutableListOf<BaseNode>()//天节点
-            var childNodes = emptyList<BaseNode>().toMutableList()//天收支节点
+            var parentNode = mutableListOf<BaseNode>()
+            var childNodes = emptyList<BaseNode>().toMutableList()
             dayBills.forEach {
-                it.images = App.dataBase.imageDao().findImagesId(it.id)//查询账单下照片ID
+                it.images = App.dataBase.imageDao().findImagesId(it.id)
                 var billsNode = DayBillsNode(it)
                 childNodes.add(billsNode)
             }
@@ -93,7 +94,7 @@ internal class CalendarNoteViewModule : BaseViewModel< CalenderUiState>() {
             }
             send(CalenderUiState.DayBills(parentNode))
             LogUtils.d(dayIncome.toString())
-        }, {})
+        }
     }
 
     /**

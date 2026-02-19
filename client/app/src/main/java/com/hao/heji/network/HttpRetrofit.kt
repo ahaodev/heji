@@ -3,6 +3,7 @@ package com.hao.heji.network
 import com.hao.heji.BuildConfig
 import com.hao.heji.json
 import com.hao.heji.network.interceptor.AuthorizedInterceptor
+import com.hao.heji.network.interceptor.ErrorInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -43,6 +44,7 @@ object HttpRetrofit {
             .writeTimeout(writeTimeout, TimeUnit.SECONDS)
             .readTimeout(readTimeout, TimeUnit.SECONDS)
             .addInterceptor(authorizedInterceptor)
+            .addInterceptor(ErrorInterceptor())
             .addInterceptor(logging)
             .build()
     }

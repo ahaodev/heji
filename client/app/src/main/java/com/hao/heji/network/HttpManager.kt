@@ -7,14 +7,9 @@ import com.hao.heji.network.request.CategoryEntity
 import com.hao.heji.ui.user.register.RegisterUser
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.await
 import retrofit2.http.Part
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 class HttpManager {
     private var apiServer: ApiServer? = null
@@ -70,36 +65,6 @@ class HttpManager {
     suspend fun categoryPush(category: CategoryEntity) = server().addCategory(category).await()
     suspend fun categoryDelete(_id: String) = server().deleteCategoryById(_id).await()
     suspend fun categoryPull(_id: String = "0") = server().getCategories(_id).await()
-
-
-    suspend fun <T> Call<T>.await(): T {
-        //调用suspendCoroutine 挂起
-        return suspendCoroutine { continuation ->
-            enqueue(object : Callback<T> {
-                override fun onFailure(call: Call<T>, t: Throwable) {
-                    continuation.resumeWithException(t)//异常恢复
-                }
-
-                override fun onResponse(call: Call<T>, response: Response<T>) {
-                    val body = response.body()
-                    val errorBody = response.errorBody()
-                    when {
-                        body != null && response.isSuccessful -> {
-                            continuation.resume(body)//正常恢复
-                        }
-
-                        errorBody != null -> {//error body 仅仅适用于服务器统一返回的错误格式，在服务端错误信息同样返回{code,msg,data}格式
-                            continuation.resumeWithException(RuntimeException(errorBody.string()))
-                        }
-
-                        else -> {
-                            continuation.resumeWithException(RuntimeException("response body is null"))
-                        }
-                    }
-                }
-            })
-        }
-    }
 
     fun redirectServer() {
         apiServer = HttpRetrofit.create(Config.serverUrl, ApiServer::class.java)

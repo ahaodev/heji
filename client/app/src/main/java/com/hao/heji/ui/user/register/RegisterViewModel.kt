@@ -3,7 +3,8 @@ package com.hao.heji.ui.user.register
 import com.blankj.utilcode.util.ToastUtils
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.data.repository.UserRepository
-import com.hao.heji.utils.launch
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 internal class RegisterViewModel(private val userRepository: UserRepository) : BaseViewModel<RegisterUiState>() {
     fun register(
@@ -16,15 +17,16 @@ internal class RegisterViewModel(private val userRepository: UserRepository) : B
             tel = tel,
             password = password,
         )
-        launch({
-            val response = userRepository.register(user)
-            if (response.success()) {
-                send(RegisterUiState.Success(user))
+        viewModelScope.launch {
+            try {
+                val response = userRepository.register(user)
+                if (response.success()) {
+                    send(RegisterUiState.Success(user))
+                }
+            } catch (e: Throwable) {
+                ToastUtils.showLong(e.message)
             }
-        }, {
-            ToastUtils.showLong(it.message)
-        })
-
+        }
     }
 }
 

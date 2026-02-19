@@ -10,60 +10,64 @@ import com.hao.heji.ui.adapter.DayIncome
 import com.hao.heji.ui.adapter.DayIncomeNode
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.utils.MyTimeUtils
-import com.hao.heji.utils.launchIO
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 internal class BillListViewModel : BaseViewModel<BillListUiState>() {
 
     fun getImages(billId: String) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val data = App.dataBase.imageDao().findByBillId(billId = billId)
             send(BillListUiState.Images(data))
-        })
+        }
     }
 
     /**
      * yyyy-mm
      */
     fun getMonthBills(yearMonth: String) {
-        launchIO({
-            //根据月份查询收支的日子
-            val monthEveryDayIncome =
-                App.dataBase.billDao().findEveryDayIncomeByMonth(Config.book.id, yearMonth)
-            //日节点
-            val listDayNodes = mutableListOf<BaseNode>()
-            monthEveryDayIncome.forEach { dayIncome ->
-                val yymmdd = dayIncome.time!!.split("-")
-                val incomeNode = DayIncome(
-                    expected = dayIncome.expenditure.toString(),
-                    income = dayIncome.income.toString(),
-                    year = yymmdd[0].toInt(),
-                    month = yymmdd[1].toInt(),
-                    monthDay = yymmdd[2].toInt(),
-                    weekday = TimeUtils.getChineseWeek(
-                        dayIncome.time,
-                        TimeUtils.getSafeDateFormat(MyTimeUtils.PATTERN_DAY)
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                //根据月份查询收支的日子
+                val monthEveryDayIncome =
+                    App.dataBase.billDao().findEveryDayIncomeByMonth(Config.book.id, yearMonth)
+                //日节点
+                val listDayNodes = mutableListOf<BaseNode>()
+                monthEveryDayIncome.forEach { dayIncome ->
+                    val yymmdd = dayIncome.time!!.split("-")
+                    val incomeNode = DayIncome(
+                        expected = dayIncome.expenditure.toString(),
+                        income = dayIncome.income.toString(),
+                        year = yymmdd[0].toInt(),
+                        month = yymmdd[1].toInt(),
+                        monthDay = yymmdd[2].toInt(),
+                        weekday = TimeUtils.getChineseWeek(
+                            dayIncome.time,
+                            TimeUtils.getSafeDateFormat(MyTimeUtils.PATTERN_DAY)
+                        )
                     )
-                )
-                //日节点下子账单
-                val dayListNodes = mutableListOf<BaseNode>()
-                val dayBills = App.dataBase.billDao().findByDay(dayIncome.time!!, Config.book.id)
-                // 批量查询当日所有账单的图片ID
-                val billIds = dayBills.map { it.id }
-                val imageMap = App.dataBase.imageDao().findImagesIdByBillIds(billIds)
-                    .groupBy({ it.billId }, { it.imageId })
-                dayBills.forEach {
-                    it.images = (imageMap[it.id] ?: emptyList()).toMutableList()
-                    dayListNodes.add(DayBillsNode(it))
+                    //日节点下子账单
+                    val dayListNodes = mutableListOf<BaseNode>()
+                    val dayBills = App.dataBase.billDao().findByDay(dayIncome.time!!, Config.book.id)
+                    // 批量查询当日所有账单的图片ID
+                    val billIds = dayBills.map { it.id }
+                    val imageMap = App.dataBase.imageDao().findImagesIdByBillIds(billIds)
+                        .groupBy({ it.billId }, { it.imageId })
+                    dayBills.forEach {
+                        it.images = (imageMap[it.id] ?: emptyList()).toMutableList()
+                        dayListNodes.add(DayBillsNode(it))
+                    }
+                    val dayItemNode = DayIncomeNode(dayListNodes, incomeNode)
+                    listDayNodes.add(dayItemNode)
                 }
-                val dayItemNode = DayIncomeNode(dayListNodes, incomeNode)
-                listDayNodes.add(dayItemNode)
+                LogUtils.d("Select YearMonth:${yearMonth} ${listDayNodes.size}")
+                send(BillListUiState.Bills(listDayNodes))
+            } catch (e: Throwable) {
+                send(BillListUiState.Error(e))
             }
-            LogUtils.d("Select YearMonth:${yearMonth} ${listDayNodes.size}")
-            send(BillListUiState.Bills(listDayNodes))
-        }, {
-            send(BillListUiState.Error(it))
-        })
+        }
     }
 
     /**
@@ -71,15 +75,16 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
      * @param yearMonth yyyy:mm
      */
     fun getSummary(yearMonth: String) {
-        launchIO({
-            LogUtils.d("Between by time:$yearMonth")
-            App.dataBase.billDao().sumIncome(yearMonth, Config.book.id).distinctUntilChanged().collect {
-                LogUtils.d(it)
-                send(BillListUiState.Summary(it))
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                LogUtils.d("Between by time:$yearMonth")
+                App.dataBase.billDao().sumIncome(yearMonth, Config.book.id).distinctUntilChanged().collect {
+                    LogUtils.d(it)
+                    send(BillListUiState.Summary(it))
+                }
+            } catch (e: Throwable) {
+                send(BillListUiState.Error(e))
             }
-        }, {
-            send(BillListUiState.Error(it))
-        })
-
+        }
     }
 }

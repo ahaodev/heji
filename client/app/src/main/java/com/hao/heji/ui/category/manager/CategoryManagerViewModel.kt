@@ -7,7 +7,9 @@ import com.hao.heji.config.Config
 import com.hao.heji.data.Status
 import com.hao.heji.data.db.Category
 import com.hao.heji.ui.base.BaseViewModel
-import com.hao.heji.utils.launchIO
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * @date: 2020/10/11
@@ -19,32 +21,32 @@ internal class CategoryManagerViewModel :
     private val categoryDao = App.dataBase.categoryDao()
 
     fun getCategories(type: Int) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             categoryDao.observeIncomeOrExpenditure(
                 Config.book.id,
                 type
             ).collect {
                 send(CategoryManagerUiState.Categories(it))
             }
-        })
+        }
     }
 
     fun getParentCategories(type: Int) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             categoryDao.observeParentCategories(
                 Config.book.id,
                 type
             ).collect {
                 send(CategoryManagerUiState.ParentCategories(it))
             }
-        })
+        }
     }
 
     fun getChildCategories(parentId: String) {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val children = categoryDao.findChildCategories(parentId)
             send(CategoryManagerUiState.ChildCategories(parentId, children))
-        })
+        }
     }
 
     fun saveCategory(name: String, type: Int, parentId: String? = null) {
@@ -52,23 +54,25 @@ internal class CategoryManagerViewModel :
             ToastUtils.showShort("您必须填写分类名称")
             return
         }
-        launchIO({
-            val category = Category(name = name, bookId = Config.book.id).apply {
-                this.type = type
-                this.parentId = parentId
-                level = if (parentId.isNullOrEmpty()) 0 else 1
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val category = Category(name = name, bookId = Config.book.id).apply {
+                    this.type = type
+                    this.parentId = parentId
+                    level = if (parentId.isNullOrEmpty()) 0 else 1
+                }
+                val exist = categoryDao.exist(category.hashCode())
+                if (exist > 0) {
+                    ToastUtils.showShort("标签已经存在")
+                } else {
+                    categoryDao.insert(category)
+                    send(CategoryManagerUiState.SaveSuccess("保存成功", parentId))
+                    ToastUtils.showShort("保存成功")
+                }
+            } catch (e: Throwable) {
+                ToastUtils.showLong(e.message)
             }
-            val exist = categoryDao.exist(category.hashCode())
-            if (exist > 0) {
-                ToastUtils.showShort("标签已经存在")
-            } else {
-                categoryDao.insert(category)
-                send(CategoryManagerUiState.SaveSuccess("保存成功", parentId))
-                ToastUtils.showShort("保存成功")
-            }
-        }, {
-            ToastUtils.showLong(it.message)
-        })
+        }
     }
 
     /**
@@ -77,21 +81,25 @@ internal class CategoryManagerViewModel :
      * @param category
      */
     fun deleteCategory(category: Category) {
-        launchIO({
-            category.deleted = Status.DELETED
-            categoryDao.update(category)
-        }, {
-            ToastUtils.showLong(it.message)
-        })
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                category.deleted = Status.DELETED
+                categoryDao.update(category)
+            } catch (e: Throwable) {
+                ToastUtils.showLong(e.message)
+            }
+        }
     }
 
     fun updateCategory(category: Category) {
-        launchIO({
-            categoryDao.update(category)
-            ToastUtils.showShort("修改成功")
-        }, {
-            ToastUtils.showLong(it.message)
-        })
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                categoryDao.update(category)
+                ToastUtils.showShort("修改成功")
+            } catch (e: Throwable) {
+                ToastUtils.showLong(e.message)
+            }
+        }
     }
 
 }

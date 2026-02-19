@@ -15,9 +15,10 @@ import com.github.shamil.Xid
 import com.hao.heji.data.BookType
 import com.hao.heji.data.BillType
 import com.hao.heji.data.repository.BookRepository
-import com.hao.heji.utils.launch
-import com.hao.heji.utils.launchIO
-import com.hao.heji.utils.runMainThread
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.*
 
 class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
@@ -29,12 +30,11 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
     private val booksFlow = App.dataBase.bookDao().allBooks()
 
     init {
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             booksFlow.filterNotNull().collect {
                 _bookListLiveData.postValue(it)
             }
-        })
-
+        }
     }
 
 
@@ -43,8 +43,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
     }
 
     fun createNewBook(name: String, type: String) {
-
-        launchIO({
+        viewModelScope.launch(Dispatchers.IO) {
             val count = bookDao.countByName(name)
             if (count > 0) {
                 ToastUtils.showLong("账本名已经存在")
@@ -59,9 +58,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
                 insertDefaultCategories(book.id, type)
                 _bookLiveData.postValue(book)
             }
-        })
-
-        //network create
+        }
     }
 
     fun insertDefaultCategories(bookId: String, type: String) {
@@ -87,7 +84,7 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
     }
 
     fun getBookList() {
-        launch({
+        viewModelScope.launch {
             val response = bookRepository.bookList()
             response.data?.let {
                 if (it.isNullOrEmpty()) {
@@ -103,57 +100,67 @@ class BookViewModel(private val bookRepository: BookRepository) : ViewModel() {
                     }
                 }
             }
-
-        })
+        }
     }
 
     fun clearBook(id: String, call: (Result<String>) -> Unit) {
-        launchIO({
-            App.dataBase.billDao().deleteByBookId(id)
-            call(Result.Success("清除账单成功"))
-        }, { call(Result.Error(it)) })
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                App.dataBase.billDao().deleteByBookId(id)
+                call(Result.Success("清除账单成功"))
+            } catch (e: Throwable) {
+                call(Result.Error(e))
+            }
+        }
     }
 
     fun deleteBook(id: String, call: (Result<String>) -> Unit) {
-        launchIO({
-            val billsCount = App.dataBase.billDao().countByBookId(id)
-            if (billsCount > 0) {
-                ToastUtils.showLong("该账本下存在账单，无法直接删除")
-            } else {
-                App.dataBase.bookDao().preDelete(id)
-                runMainThread {
-                    call(Result.Success("删除成功"))
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val billsCount = App.dataBase.billDao().countByBookId(id)
+                if (billsCount > 0) {
+                    ToastUtils.showLong("该账本下存在账单，无法直接删除")
+                } else {
+                    App.dataBase.bookDao().preDelete(id)
+                    withContext(Dispatchers.Main) {
+                        call(Result.Success("删除成功"))
+                    }
                 }
+            } catch (e: Throwable) {
+                call(Result.Error(e))
             }
-        }, {
-            call(Result.Error(it))
-        })
+        }
     }
 
     fun sharedBook(bookId: String, @MainThread call: (Result<String>) -> Unit) {
-        launchIO({
-            val response = bookRepository.sharedBook(bid = bookId)
-            response.data?.let {
-                val shareCode = response.data as String
-                runMainThread {
-                    call(Result.Success(shareCode))
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val response = bookRepository.sharedBook(bid = bookId)
+                response.data?.let {
+                    val shareCode = response.data as String
+                    withContext(Dispatchers.Main) {
+                        call(Result.Success(shareCode))
+                    }
                 }
+            } catch (e: Throwable) {
+                call(Result.Error(e))
             }
-        }, {
-            call(Result.Error(it))
-        })
+        }
     }
 
     fun joinBook(code: String, call: (Result<String>) -> Unit) {
-        launch({
-            call(Result.Loading)
-            val response = bookRepository.joinBook(code)
-            if (response.success()) {
-                call(Result.Success(response.msg ?: "OK"))
-            } else {
-                call(Result.Error(RuntimeException(response.msg ?: "加入账本失败")))
+        viewModelScope.launch {
+            try {
+                call(Result.Loading)
+                val response = bookRepository.joinBook(code)
+                if (response.success()) {
+                    call(Result.Success(response.msg ?: "OK"))
+                } else {
+                    call(Result.Error(RuntimeException(response.msg ?: "加入账本失败")))
+                }
+            } catch (e: Throwable) {
+                call(Result.Error(e))
             }
-        }, { call(Result.Error(it)) })
-
+        }
     }
 }

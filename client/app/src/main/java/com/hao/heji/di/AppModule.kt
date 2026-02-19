@@ -21,7 +21,7 @@ import com.hao.heji.ui.user.info.UserInfoViewModel
 import com.hao.heji.ui.user.login.LoginViewModel
 import com.hao.heji.ui.user.register.RegisterViewModel
 import org.koin.android.ext.koin.androidApplication
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val networkModule = module {

@@ -10,7 +10,8 @@ import com.hao.heji.data.repository.UserRepository
 import com.hao.heji.network.HttpManager
 import com.hao.heji.ui.base.BaseViewModel
 import com.hao.heji.ui.user.JWTParse
-import com.hao.heji.utils.launch
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 
 internal class LoginViewModel(
@@ -21,23 +22,24 @@ internal class LoginViewModel(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun login(tel: String, password: String) {
-        launch({
-            var resp = userRepository.login(
-                tel,
-                password
-            )
-            resp.data?.let {
-                val newUser = JWTParse.getUser(it)
-                Config.setUser(newUser)
-                Config.enableOfflineMode(false)
-                App.switchDataBase(newUser.id)
-                fetchMqttBroker()
-                send(LoginUiState.LoginSuccess(it))
+        viewModelScope.launch {
+            try {
+                val resp = userRepository.login(
+                    tel,
+                    password
+                )
+                resp.data?.let {
+                    val newUser = JWTParse.getUser(it)
+                    Config.setUser(newUser)
+                    Config.enableOfflineMode(false)
+                    App.switchDataBase(newUser.id)
+                    fetchMqttBroker()
+                    send(LoginUiState.LoginSuccess(it))
+                }
+            } catch (e: Throwable) {
+                send(LoginUiState.LoginError(e))
             }
-        }, {
-            send(LoginUiState.LoginError(it))
-        })
-
+        }
     }
 
     private suspend fun fetchMqttBroker() {
@@ -52,9 +54,7 @@ internal class LoginViewModel(
     }
 
    fun getServerUrl() {
-       launch({
            send(LoginUiState.ShowServerSetting(DataStoreManager.getServerUrl()))
-       })
     }
     fun saveServerUrl(address:String) {
         Config.setServerUrl(address)
@@ -67,9 +67,7 @@ internal class LoginViewModel(
     fun enableOfflineMode() {
         Config.enableOfflineMode(true)
         Config.setUser(LocalUser)
-        launch({
-            send(LoginUiState.OfflineRun)
-        })
+        send(LoginUiState.OfflineRun)
     }
 }
 
