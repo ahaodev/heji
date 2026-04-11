@@ -75,9 +75,7 @@ export function TasksImportDialog({
       <DialogContent className='gap-2 sm:max-w-sm'>
         <DialogHeader className='text-start'>
           <DialogTitle>导入任务</DialogTitle>
-          <DialogDescription>
-            从 CSV 文件快速导入任务。
-          </DialogDescription>
+          <DialogDescription>从 CSV 文件快速导入任务。</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form id='task-import-form' onSubmit={form.handleSubmit(onSubmit)}>

@@ -2,7 +2,7 @@ package controller
 
 import (
 	"net/http"
-	bootstrap "shadmin/bootstrap"
+	"shadmin/bootstrap"
 	"strconv"
 	"time"
 

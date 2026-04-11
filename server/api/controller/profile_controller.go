@@ -3,7 +3,7 @@ package controller
 import (
 	"errors"
 	"net/http"
-	bootstrap "shadmin/bootstrap"
+	"shadmin/bootstrap"
 	"shadmin/internal/constants"
 
 	"shadmin/domain"

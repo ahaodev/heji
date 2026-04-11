@@ -59,9 +59,7 @@ export function Dashboard() {
             <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    总收入
-                  </CardTitle>
+                  <CardTitle className='text-sm font-medium'>总收入</CardTitle>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
                     viewBox='0 0 24 24'
@@ -84,9 +82,7 @@ export function Dashboard() {
               </Card>
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    订阅数
-                  </CardTitle>
+                  <CardTitle className='text-sm font-medium'>订阅数</CardTitle>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
                     viewBox='0 0 24 24'
@@ -171,9 +167,7 @@ export function Dashboard() {
               <Card className='col-span-1 lg:col-span-3'>
                 <CardHeader>
                   <CardTitle>最近销售</CardTitle>
-                  <CardDescription>
-                    本月您完成了 265 笔销售。
-                  </CardDescription>
+                  <CardDescription>本月您完成了 265 笔销售。</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <RecentSales />

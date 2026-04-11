@@ -138,9 +138,7 @@ export function TasksMutateDrawer({
                         <FormControl>
                           <RadioGroupItem value='documentation' />
                         </FormControl>
-                        <FormLabel className='font-normal'>
-                          文档
-                        </FormLabel>
+                        <FormLabel className='font-normal'>文档</FormLabel>
                       </FormItem>
                       <FormItem className='flex items-center'>
                         <FormControl>

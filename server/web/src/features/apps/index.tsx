@@ -96,12 +96,8 @@ export function Apps() {
       {/* ===== Content ===== */}
       <Main fixed>
         <div>
-          <h1 className='text-2xl font-bold tracking-tight'>
-            应用集成
-          </h1>
-          <p className='text-muted-foreground'>
-            这里是您用于集成的应用列表！
-          </p>
+          <h1 className='text-2xl font-bold tracking-tight'>应用集成</h1>
+          <p className='text-muted-foreground'>这里是您用于集成的应用列表！</p>
         </div>
         <div className='my-4 flex items-end justify-between sm:my-0 sm:items-center'>
           <div className='flex flex-col gap-4 sm:my-4 sm:flex-row'>

@@ -1,7 +1,7 @@
+import { useAuthStore } from '@/stores/auth-store'
+import { BackendMenuAdapter } from '@/lib/backend-menu-adapter'
 import type { NavGroup } from '@/components/layout/types'
 import { getResourcesWithPermissions } from './resourceApi'
-import { BackendMenuAdapter } from '@/lib/backend-menu-adapter'
-import { useAuthStore } from '@/stores/auth-store'
 
 /**
  * Menu service for loading and caching menu data from backend API
@@ -52,16 +52,17 @@ export class MenuService {
       if (resourcesData.permissions) {
         const { setPermissions } = useAuthStore.getState().auth
         setPermissions({
-          permissions: resourcesData.permissions.map(p => [p]), // Convert string[] to string[][]
-          roles: [], // TODO: get roles from API if available
-          menus: resourcesData.menus.map(m => m.id), // Extract menu IDs
-          is_admin: false // TODO: determine admin status from API
+          permissions: resourcesData.permissions.map((p) => [p]), // Convert string[] to string[][]
+          roles: resourcesData.roles ?? [],
+          menus: resourcesData.menus.map((m) => m.id), // Extract menu IDs
+          is_admin: resourcesData.is_admin ?? false,
         })
-        console.log('Permissions set to auth store:', resourcesData.permissions)
       }
 
       // Transform the backend data using the backend adapter
-      const navGroups = this.backendAdapter.transformToNavGroups(resourcesData.menus)
+      const navGroups = this.backendAdapter.transformToNavGroups(
+        resourcesData.menus
+      )
 
       // Cache the transformed data
       this.cachedMenuData = navGroups
@@ -94,7 +95,12 @@ export class MenuService {
    */
   clearCache(): void {
     const hadCache = this.cachedMenuData !== null
-    console.log('Clearing menu cache - had cache:', hadCache, 'cached groups:', this.cachedMenuData?.length || 0)
+    console.log(
+      'Clearing menu cache - had cache:',
+      hadCache,
+      'cached groups:',
+      this.cachedMenuData?.length || 0
+    )
     this.cachedMenuData = null
     this.isLoading = false
     this.loadPromise = null

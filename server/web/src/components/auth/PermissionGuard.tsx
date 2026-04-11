@@ -9,25 +9,25 @@ interface PermissionGuardProps {
   children: React.ReactNode
 }
 
-export function PermissionGuard({ 
-  permission, 
-  permissions, 
+export function PermissionGuard({
+  permission,
+  permissions,
   requireAll = false,
   fallback = null,
-  children 
+  children,
 }: PermissionGuardProps) {
   const { hasPermission, hasAnyPermission, hasAllPermissions } = usePermission()
-  
+
   let hasAccess = false
-  
+
   if (permission) {
     hasAccess = hasPermission(permission)
   } else if (permissions) {
-    hasAccess = requireAll 
+    hasAccess = requireAll
       ? hasAllPermissions(permissions)
       : hasAnyPermission(permissions)
   }
-  
+
   return hasAccess ? <>{children}</> : <>{fallback}</>
 }
 
@@ -35,8 +35,8 @@ export function PermissionGuard({
 // <PermissionGuard permission="admin:user:list">
 //   <UserTable />
 // </PermissionGuard>
-// 
-// <PermissionGuard 
+//
+// <PermissionGuard
 //   permissions={["admin:user:create", "admin:user:edit"]}
 //   requireAll={false}
 // >

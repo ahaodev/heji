@@ -1,5 +1,5 @@
+import { type MenuTreeNode, type ResourcesResponse } from '@/types/menu'
 import { apiClient } from './config'
-import { type MenuTreeNode, type ResourcesResponse} from '@/types/menu'
 
 /**
  * Resource API service for fetching menu resources from backend
@@ -13,7 +13,10 @@ export const getResources = async (): Promise<MenuTreeNode[]> => {
 
     if (response.data && response.data.data) {
       const resourcesData: ResourcesResponse = response.data.data
-      console.log('API Response - Total menu items received:', resourcesData.menus?.length || 0)
+      console.log(
+        'API Response - Total menu items received:',
+        resourcesData.menus?.length || 0
+      )
       console.log('API Response - Permissions:', resourcesData.permissions)
       return resourcesData.menus || []
     } else {
@@ -27,20 +30,18 @@ export const getResources = async (): Promise<MenuTreeNode[]> => {
 }
 
 // GET /resources - Get complete resources with permissions
-export const getResourcesWithPermissions = async (): Promise<ResourcesResponse> => {
-  try {
-    const response = await apiClient.get(`/api/v1/resources`)
+export const getResourcesWithPermissions =
+  async (): Promise<ResourcesResponse> => {
+    try {
+      const response = await apiClient.get(`/api/v1/resources`)
 
-    if (response.data && response.data.data) {
-      const resourcesData: ResourcesResponse = response.data.data
-      console.log('API Response - Complete resources:', resourcesData)
-      return resourcesData
-    } else {
-      console.warn('No resources data returned from API')
-      return { menus: [], permissions: null }
+      if (response.data && response.data.data) {
+        return response.data.data
+      } else {
+        return { menus: [], permissions: null, roles: [], is_admin: false }
+      }
+    } catch (error) {
+      console.error('Failed to fetch resources:', error)
+      throw error
     }
-  } catch (error) {
-    console.error('Failed to fetch resources:', error)
-    throw error
   }
-}

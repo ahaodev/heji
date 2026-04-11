@@ -1,13 +1,13 @@
-import {Outlet} from '@tanstack/react-router'
-import {Palette, UserCog, Wrench} from 'lucide-react'
-import {Separator} from '@/components/ui/separator'
-import {ConfigDrawer} from '@/components/config-drawer'
-import {Header} from '@/components/layout/header'
-import {Main} from '@/components/layout/main'
-import {ProfileDropdown} from '@/components/profile-dropdown'
-import {Search} from '@/components/search'
-import {ThemeSwitch} from '@/components/theme-switch'
-import {SidebarNav} from './components/sidebar-nav'
+import { Outlet } from '@tanstack/react-router'
+import { Palette, UserCog, Wrench } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { SidebarNav } from './components/sidebar-nav'
 
 const sidebarNavItems = [
   {
@@ -24,7 +24,7 @@ const sidebarNavItems = [
     title: '外观设置',
     href: '/settings/appearance',
     icon: <Palette size={18} />,
-  }
+  },
 ]
 
 export function Settings() {

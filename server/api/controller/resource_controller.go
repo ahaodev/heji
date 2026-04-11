@@ -2,7 +2,7 @@ package controller
 
 import (
 	"net/http"
-	bootstrap "shadmin/bootstrap"
+	"shadmin/bootstrap"
 	"shadmin/domain"
 	"shadmin/internal/constants"
 	"shadmin/pkg"
@@ -42,9 +42,25 @@ func (rc *ResourceController) GetResources(c *gin.Context) {
 	// 管理员直接返回所有菜单和权限
 	if isAdmin {
 		allPermissions := rc.collectAllPermissions(menuTree)
+
+		// Resolve role names for admin (same format as non-admin path)
+		adminUser, err := rc.UserRepository.GetByID(c, userID)
+		if err != nil {
+			pkg.Log.WithField("userID", userID).WithError(err).Error("Failed to get admin user information")
+			c.JSON(http.StatusInternalServerError, domain.RespError("Failed to get user: "+err.Error()))
+			return
+		}
+		adminRoleObjects, _ := rc.getUserRoles(c, adminUser.Roles)
+		adminRoleNames := make([]string, 0, len(adminRoleObjects))
+		for _, r := range adminRoleObjects {
+			adminRoleNames = append(adminRoleNames, r.Name)
+		}
+
 		responseData := gin.H{
 			"menus":       menuTree,
 			"permissions": allPermissions,
+			"roles":       adminRoleNames,
+			"is_admin":    true,
 		}
 		c.JSON(http.StatusOK, domain.RespSuccess(responseData))
 		return
@@ -71,10 +87,18 @@ func (rc *ResourceController) GetResources(c *gin.Context) {
 	// 过滤菜单树
 	filteredMenuTree := rc.filterMenuTree(menuTree, userMenuIDs)
 
+	// 提取角色名称列表
+	roleNames := make([]string, 0, len(roles))
+	for _, r := range roles {
+		roleNames = append(roleNames, r.Name)
+	}
+
 	// 构建响应数据
 	responseData := gin.H{
 		"menus":       filteredMenuTree,
 		"permissions": userPermissions,
+		"roles":       roleNames,
+		"is_admin":    false,
 	}
 	c.JSON(http.StatusOK, domain.RespSuccess(responseData))
 }

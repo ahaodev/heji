@@ -2,13 +2,20 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"time"
+)
+
+var (
+	ErrCannotDeleteAdminRole = errors.New("不能删除系统管理员角色")
+	ErrCannotRenameAdminRole = errors.New("不能修改系统管理员角色名称")
 )
 
 // Role represents a custom role in the system
 type Role struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
+	IsSystem  bool      `json:"is_system"`
 	Sequence  int       `json:"sequence"`
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`

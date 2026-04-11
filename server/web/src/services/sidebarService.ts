@@ -1,9 +1,7 @@
+import { Command } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { type SidebarData } from '@/components/layout/types'
 import { menuService } from './menu-service'
-import { useAuthStore } from '@/stores/auth-store'
-import {
-  Command,
-} from 'lucide-react'
 
 /**
  * Sidebar service for fetching all sidebar data from APIs
@@ -18,17 +16,19 @@ export class SidebarService {
       // Load all data in parallel for better performance
       const [userProfile, menuData] = await Promise.all([
         this.getUserProfile(),
-        menuService.loadMenuData()
+        menuService.loadMenuData(),
       ])
-      
+
       return {
         user: userProfile,
-        teams: [{
-          name: 'Shadcn Admin',
-          logo: Command,
-          plan: 'Vite + ShadcnUI',
-        }],
-        navGroups: menuData || []
+        teams: [
+          {
+            name: 'shadmin',
+            logo: Command,
+            plan: 'Vite + ShadcnUI',
+          },
+        ],
+        navGroups: menuData || [],
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -36,14 +36,14 @@ export class SidebarService {
       throw error
     }
   }
-  
+
   /**
    * Get user profile data from auth store (avoid duplicate API calls)
    */
   private async getUserProfile() {
     try {
       const auth = useAuthStore.getState().auth
-      
+
       // Use profile from auth store if available
       if (auth.profile) {
         return {
@@ -52,7 +52,7 @@ export class SidebarService {
           avatar: auth.profile.avatar || '/avatars/shadcn.jpg',
         }
       }
-      
+
       // Fallback to basic user data from JWT token
       if (auth.user) {
         return {
@@ -61,7 +61,7 @@ export class SidebarService {
           avatar: '/avatars/shadcn.jpg',
         }
       }
-      
+
       // If no authenticated user, return default data
       console.warn('No authenticated user found, using default user data')
       return {
@@ -78,8 +78,7 @@ export class SidebarService {
       }
     }
   }
-  
-  
+
   /**
    * Refresh sidebar data (clears cache and reloads)
    */
@@ -88,7 +87,7 @@ export class SidebarService {
     await menuService.reloadMenuData()
     return this.getSidebarData()
   }
-  
+
   /**
    * Get cached sidebar data synchronously
    * Returns data from auth store and cached menu data
@@ -96,14 +95,14 @@ export class SidebarService {
   getCachedSidebarData(): Partial<SidebarData> {
     const auth = useAuthStore.getState().auth
     const cachedMenuData = menuService.getCachedMenuData()
-    
+
     // Get user data from auth store
     let userData = {
       name: 'User',
       email: 'user@example.com',
       avatar: '/avatars/shadcn.jpg',
     }
-    
+
     if (auth.user) {
       userData = {
         name: auth.user.email || 'User',
@@ -111,15 +110,17 @@ export class SidebarService {
         avatar: '/avatars/shadcn.jpg',
       }
     }
-    
+
     return {
       user: userData,
-      teams: [{
-        name: 'Shadcn Admin',
-        logo: Command,
-        plan: 'Vite + ShadcnUI',
-      }],
-      navGroups: cachedMenuData || undefined
+      teams: [
+        {
+          name: 'shadmin',
+          logo: Command,
+          plan: 'Vite + ShadcnUI',
+        },
+      ],
+      navGroups: cachedMenuData || undefined,
     }
   }
 }

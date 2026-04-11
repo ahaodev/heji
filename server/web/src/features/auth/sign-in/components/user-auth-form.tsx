@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { z } from 'zod'
+import { AxiosError } from 'axios'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { login } from '@/services/authApi'
 import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAuthStore } from '@/stores/auth-store'
+import { useAuthStore, type AuthUser } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
-import { login } from '@/services/authApi'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -21,12 +22,8 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
 
 const formSchema = z.object({
-  username: z
-    .string()
-    .min(1, '请输入用户名'),
-  password: z
-    .string()
-    .min(1, '请输入密码'),
+  username: z.string().min(1, '请输入用户名'),
+  password: z.string().min(1, '请输入密码'),
 })
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
@@ -54,15 +51,20 @@ export function UserAuthForm({
     setIsLoading(true)
 
     // Instrumentation: mark login start to help measure end-to-end time-to-dashboard
-    const start = typeof performance !== 'undefined' ? performance.now() : Date.now()
+    const start =
+      typeof performance !== 'undefined' ? performance.now() : Date.now()
     sessionStorage.setItem('loginStart', String(start))
 
     // Call backend and measure latency
-    const apiCallStart = typeof performance !== 'undefined' ? performance.now() : Date.now()
+    const apiCallStart =
+      typeof performance !== 'undefined' ? performance.now() : Date.now()
     try {
-      console.log('Login request:', data.username)
-      const resp = await login({ username: data.username, password: data.password })
-      const apiCallEnd = typeof performance !== 'undefined' ? performance.now() : Date.now()
+      const resp = await login({
+        username: data.username,
+        password: data.password,
+      })
+      const apiCallEnd =
+        typeof performance !== 'undefined' ? performance.now() : Date.now()
       console.log('login api latency (ms):', apiCallEnd - apiCallStart)
 
       if (!resp || resp.code !== 0) {
@@ -75,13 +77,12 @@ export function UserAuthForm({
       // accessToken 存在性检查
       const accessToken = payload?.accessToken
       if (!accessToken) {
-        console.error('Login response missing accessToken', payload)
         toast.error('未收到访问令牌，请重试')
         return
       }
 
       // Helper: decode base64url JWT payload
-      function decodeJwt(token: string): any | null {
+      function decodeJwt(token: string): Record<string, unknown> | null {
         try {
           const parts = token.split('.')
           if (parts.length < 2) return null
@@ -95,11 +96,12 @@ export function UserAuthForm({
             atob(padded)
               .split('')
               .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-              .join(''),
+              .join('')
           )
           return JSON.parse(json)
-        } catch (e) {
-          console.error('Failed to decode JWT', e)
+        } catch (_e) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to decode JWT', _e)
           return null
         }
       }
@@ -107,11 +109,16 @@ export function UserAuthForm({
       const tokenPayload = decodeJwt(accessToken) || {}
 
       // Build local user object from token payload (with fallbacks)
-      const user = {
-        accountNo: tokenPayload.name ?? tokenPayload.username ?? tokenPayload.id ?? '',
+      const user: AuthUser = {
+        accountNo: String(
+          tokenPayload.name ?? tokenPayload.username ?? tokenPayload.id ?? ''
+        ),
         email: '',
         role: [],
-        exp: typeof tokenPayload.exp === 'number' ? tokenPayload.exp : Date.now() + 24 * 60 * 60,
+        exp:
+          typeof tokenPayload.exp === 'number'
+            ? tokenPayload.exp
+            : Date.now() + 24 * 60 * 60,
       }
 
       // Persist token for both auth store and axios interceptor (localStorage)
@@ -119,7 +126,7 @@ export function UserAuthForm({
       auth.setAccessToken(accessToken)
       try {
         localStorage.setItem('access_token', accessToken)
-      } catch (e) {
+      } catch (_e) {
         // ignore localStorage errors
       }
 
@@ -138,18 +145,27 @@ export function UserAuthForm({
       try {
         const { menuService } = await import('@/services/menu-service')
         await menuService.reloadMenuData()
-        console.log('Menu data reloaded for new user')
       } catch (error) {
         console.warn('Failed to reload menu data after login:', error)
       }
 
-      toast.success(`欢迎回来，${tokenPayload.name ?? data.username ?? '用户'}！`)
+      toast.success(
+        `欢迎回来，${tokenPayload.name ?? data.username ?? '用户'}！`
+      )
 
       const targetPath = redirectTo || '/'
       navigate({ to: targetPath, replace: true })
-    } catch (error: any) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
       console.error('Login error', error)
-      toast.error(error?.message || '网络错误，请稍后重试')
+      let msg = '网络错误，请稍后重试'
+      if (error instanceof AxiosError) {
+        // Prefer backend response message (e.g. 423 lock message) over generic Axios message
+        msg = error.response?.data?.msg || error.message
+      } else if (error instanceof Error) {
+        msg = error.message
+      }
+      toast.error(msg)
     } finally {
       setIsLoading(false)
     }

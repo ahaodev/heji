@@ -15,9 +15,9 @@ export const formatDateTime = (dateTime: Date | string): string => {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     })
-  } catch (error) {
+  } catch (__error) {
     return '无效日期'
   }
 }
@@ -36,9 +36,9 @@ export const formatDate = (dateTime: Date | string): string => {
     return date.toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
     })
-  } catch (error) {
+  } catch (_error) {
     return '无效日期'
   }
 }
@@ -57,9 +57,9 @@ export const formatTime = (dateTime: Date | string): string => {
     return date.toLocaleTimeString('zh-CN', {
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     })
-  } catch (error) {
+  } catch (_error) {
     return '无效时间'
   }
 }
@@ -75,14 +75,14 @@ export const getRelativeTime = (dateTime: Date | string): string => {
     if (isNaN(date.getTime())) {
       return '无效日期'
     }
-    
+
     const now = new Date()
     const diff = now.getTime() - date.getTime()
     const seconds = Math.floor(diff / 1000)
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
     const days = Math.floor(hours / 24)
-    
+
     if (seconds < 60) {
       return '刚刚'
     } else if (minutes < 60) {
@@ -94,7 +94,7 @@ export const getRelativeTime = (dateTime: Date | string): string => {
     } else {
       return formatDate(date)
     }
-  } catch (error) {
+  } catch (_error) {
     return '无效日期'
   }
 }

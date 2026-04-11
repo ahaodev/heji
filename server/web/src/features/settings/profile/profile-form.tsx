@@ -1,9 +1,9 @@
+import { useEffect } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { showSubmittedData } from '@/lib/show-submitted-data'
 import { useAuthStore } from '@/stores/auth-store'
+import { showSubmittedData } from '@/lib/show-submitted-data'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -35,8 +35,10 @@ const defaultValues: Partial<ProfileFormValues> = {
 }
 
 export function ProfileForm() {
-  const { profile, fetchProfile, isLoadingProfile } = useAuthStore((state) => state.auth)
-  
+  const { profile, fetchProfile, isLoadingProfile } = useAuthStore(
+    (state) => state.auth
+  )
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
@@ -72,15 +74,9 @@ export function ProfileForm() {
             <FormItem>
               <FormLabel>用户名</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder='请输入用户名' 
-                  disabled
-                  {...field} 
-                />
+                <Input placeholder='请输入用户名' disabled {...field} />
               </FormControl>
-              <FormDescription>
-                这是您的公开显示名称。
-              </FormDescription>
+              <FormDescription>这是您的公开显示名称。</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -92,16 +88,14 @@ export function ProfileForm() {
             <FormItem>
               <FormLabel>邮箱</FormLabel>
               <FormControl>
-                <Input 
-                  type='email' 
-                  placeholder='请输入邮箱地址' 
+                <Input
+                  type='email'
+                  placeholder='请输入邮箱地址'
                   disabled
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
-              <FormDescription>
-                当前账户绑定的邮箱地址。
-              </FormDescription>
+              <FormDescription>当前账户绑定的邮箱地址。</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -119,9 +113,7 @@ export function ProfileForm() {
                   {...field}
                 />
               </FormControl>
-              <FormDescription>
-                个人简介最多160个字符。
-              </FormDescription>
+              <FormDescription>个人简介最多160个字符。</FormDescription>
               <FormMessage />
             </FormItem>
           )}

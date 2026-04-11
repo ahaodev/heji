@@ -34,29 +34,22 @@ func (mr *entMenuRepository) GetMenuTree(ctx context.Context) ([]domain.MenuTree
 	// Convert ent.Menu to domain.MenuTreeNode
 	var allNodes []domain.MenuTreeNode
 	for _, m := range menus {
-		// Extract API resource IDs
-		apiResourceIDs := make([]string, 0, len(m.Edges.APIResources))
-		for _, apiResource := range m.Edges.APIResources {
-			apiResourceIDs = append(apiResourceIDs, apiResource.ID)
-		}
-
 		node := domain.MenuTreeNode{
-			ID:           m.ID,
-			Name:         m.Name,
-			Sequence:     m.Sequence,
-			Type:         m.Type,
-			Path:         stringToPtr(m.Path),
-			Icon:         m.Icon,
-			Component:    stringToPtr(m.Component),
-			RouteName:    stringToPtr(m.RouteName),
-			Query:        stringToPtr(m.Query),
-			IsFrame:      m.IsFrame,
-			Visible:      m.Visible,
-			Permissions:  stringToPtr(m.Permissions),
-			Status:       m.Status,
-			ParentID:     m.ParentID,
-			Children:     []domain.MenuTreeNode{},
-			ApiResources: apiResourceIDs,
+			ID:          m.ID,
+			Name:        m.Name,
+			Sequence:    m.Sequence,
+			Type:        m.Type,
+			Path:        stringToPtr(m.Path),
+			Icon:        m.Icon,
+			Component:   stringToPtr(m.Component),
+			RouteName:   stringToPtr(m.RouteName),
+			Query:       stringToPtr(m.Query),
+			IsFrame:     m.IsFrame,
+			Visible:     m.Visible,
+			Permissions: stringToPtr(m.Permissions),
+			Status:      m.Status,
+			ParentID:    m.ParentID,
+			Children:    []domain.MenuTreeNode{},
 		}
 		allNodes = append(allNodes, node)
 	}
@@ -199,9 +192,7 @@ func (mr *entMenuRepository) CreateMenu(ctx context.Context, req *domain.CreateM
 	if err != nil {
 		return nil, err
 	}
-	defer func(tx *ent.Tx) {
-		_ = tx.Rollback()
-	}(tx)
+	defer tx.Rollback()
 
 	createQuery := tx.Menu.
 		Create().
@@ -243,9 +234,7 @@ func (mr *entMenuRepository) UpdateMenu(ctx context.Context, id string, req *dom
 	if err != nil {
 		return nil, err
 	}
-	defer func(tx *ent.Tx) {
-		_ = tx.Rollback()
-	}(tx)
+	defer tx.Rollback()
 
 	updateQuery := tx.Menu.
 		UpdateOneID(id).

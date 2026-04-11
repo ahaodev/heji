@@ -1,7 +1,7 @@
 package route
 
 import (
-	bootstrap "shadmin/bootstrap"
+	"shadmin/bootstrap"
 	"shadmin/web"
 	"time"
 

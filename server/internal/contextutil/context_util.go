@@ -46,7 +46,6 @@ func GetIsAdmin(c *gin.Context) bool {
 	return false
 }
 
-// GetCurrentUser 获取当前用户的所有信息
 type CurrentUser struct {
 	ID      string `json:"id"`
 	Name    string `json:"name"`
@@ -54,6 +53,7 @@ type CurrentUser struct {
 	IsAdmin bool   `json:"is_admin"`
 }
 
+// GetCurrentUser 获取当前用户的所有信息
 func GetCurrentUser(c *gin.Context) *CurrentUser {
 	return &CurrentUser{
 		ID:      GetUserID(c),

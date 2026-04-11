@@ -140,7 +140,7 @@ func (mu *menuUsecase) DeleteMenu(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer func() { _ = tx.Rollback() }()
+	defer tx.Rollback()
 
 	// 递归删除菜单及其所有子菜单
 	if err := mu.deleteMenuRecursively(ctx, id); err != nil {

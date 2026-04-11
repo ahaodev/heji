@@ -1,9 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useAuthStore } from '@/stores/auth-store'
-import { ConfirmDialog } from '@/components/confirm-dialog'
 import { logout } from '@/services/authApi'
-import { removeCookie } from '@/lib/cookies'
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/types/constants'
+import { useAuthStore } from '@/stores/auth-store'
+import { removeCookie } from '@/lib/cookies'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 
 interface SignOutDialogProps {
   open: boolean
@@ -21,22 +21,25 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
       console.log('Logout API called successfully')
     } catch (error) {
       // 即使API调用失败，也要继续清理本地状态
-      console.warn('Logout API failed, but continuing with local cleanup:', error)
+      console.warn(
+        'Logout API failed, but continuing with local cleanup:',
+        error
+      )
     } finally {
       // 清理认证状态和所有存储（auth.reset()已包含clearSidebarCache）
       auth.reset()
-      
+
       // 额外清理可能残留的token相关数据
       removeCookie(ACCESS_TOKEN)
       removeCookie(REFRESH_TOKEN)
       localStorage.removeItem(ACCESS_TOKEN)
       localStorage.removeItem(REFRESH_TOKEN)
-      
+
       // 清理其他可能的用户相关本地存储
       localStorage.removeItem('userProfile')
       localStorage.removeItem('userPermissions')
       localStorage.removeItem('lastLoginTime')
-      
+
       // After logout, redirect to sign-in without preserving current location
       // User should go to root directory after login, not back to the previous page
       navigate({

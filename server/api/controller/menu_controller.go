@@ -3,7 +3,7 @@ package controller
 import (
 	"errors"
 	"net/http"
-	bootstrap "shadmin/bootstrap"
+	"shadmin/bootstrap"
 	"shadmin/domain"
 
 	"github.com/gin-gonic/gin"
@@ -92,11 +92,11 @@ func (mc *MenuController) CreateMenu(c *gin.Context) {
 
 	menu, err := mc.MenuUseCase.CreateMenu(c.Request.Context(), &request)
 	if err != nil {
-		if err == domain.ErrInvalidMenuType {
+		if errors.Is(err, domain.ErrInvalidMenuType) {
 			c.JSON(http.StatusBadRequest, domain.RespError("Invalid menu type"))
 			return
 		}
-		if err == domain.ErrInvalidMenuStatus {
+		if errors.Is(err, domain.ErrInvalidMenuStatus) {
 			c.JSON(http.StatusBadRequest, domain.RespError("Invalid menu status"))
 			return
 		}
@@ -191,11 +191,11 @@ func (mc *MenuController) DeleteMenu(c *gin.Context) {
 
 	err := mc.MenuUseCase.DeleteMenu(c.Request.Context(), id)
 	if err != nil {
-		if err == domain.ErrMenuNotFound {
+		if errors.Is(err, domain.ErrMenuNotFound) {
 			c.JSON(http.StatusNotFound, domain.RespError("Menu not found"))
 			return
 		}
-		if err == domain.ErrMenuHasChildren {
+		if errors.Is(err, domain.ErrMenuHasChildren) {
 			c.JSON(http.StatusBadRequest, domain.RespError("Cannot delete menu with children"))
 			return
 		}

@@ -31,8 +31,7 @@ type ApiResourceController struct {
 // @Failure      500  {object}  domain.Response  "Internal server error"
 // @Router       /api-resources [get]
 func (arc *ApiResourceController) GetApiResources(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	qp := BindQueryParams(c)
 	method := c.Query("method")
 	module := c.Query("module")
 	status := c.Query("status")
@@ -47,16 +46,13 @@ func (arc *ApiResourceController) GetApiResources(c *gin.Context) {
 	}
 
 	params := domain.ApiResourceQueryParams{
-		QueryParams: domain.QueryParams{
-			Page:     page,
-			PageSize: pageSize,
-		},
-		Method:   method,
-		Module:   module,
-		Status:   status,
-		IsPublic: isPublic,
-		Keyword:  keyword,
-		Path:     path,
+		QueryParams: qp,
+		Method:      method,
+		Module:      module,
+		Status:      status,
+		IsPublic:    isPublic,
+		Keyword:     keyword,
+		Path:        path,
 	}
 
 	result, err := arc.ApiResourceUseCase.FetchPaged(c, params)

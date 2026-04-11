@@ -15,12 +15,9 @@ export function ForgotPassword() {
     <AuthLayout>
       <Card className='gap-4'>
         <CardHeader>
-          <CardTitle className='text-lg tracking-tight'>
-            忘记密码
-          </CardTitle>
+          <CardTitle className='text-lg tracking-tight'>忘记密码</CardTitle>
           <CardDescription>
-            输入您注册的邮箱， <br /> 我们将发送一个链接给您来
-            重置密码。
+            输入您注册的邮箱， <br /> 我们将发送一个链接给您来 重置密码。
           </CardDescription>
         </CardHeader>
         <CardContent>

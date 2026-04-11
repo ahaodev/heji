@@ -10,7 +10,6 @@ type Profile struct {
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
-	IsAdmin   bool      `json:"is_admin"`
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

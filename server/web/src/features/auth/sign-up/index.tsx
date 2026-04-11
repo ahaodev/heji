@@ -15,9 +15,7 @@ export function SignUp() {
     <AuthLayout>
       <Card className='gap-4'>
         <CardHeader>
-          <CardTitle className='text-lg tracking-tight'>
-            创建账户
-          </CardTitle>
+          <CardTitle className='text-lg tracking-tight'>创建账户</CardTitle>
           <CardDescription>
             输入您的邮箱和密码来创建账户。 <br />
             已经有账户？{' '}

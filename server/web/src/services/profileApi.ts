@@ -1,5 +1,9 @@
-import { type Profile, type ProfileUpdateRequest, type PasswordUpdateRequest } from '@/types/profile'
 import { apiClient } from '@/services/config'
+import {
+  type Profile,
+  type ProfileUpdateRequest,
+  type PasswordUpdateRequest,
+} from '@/types/profile'
 
 // ... existing code ...
 /**
@@ -15,7 +19,9 @@ export async function getProfile(): Promise<Profile> {
  * Update current user profile
  * PUT /api/v1/profile
  */
-export async function updateProfile(data: ProfileUpdateRequest): Promise<string> {
+export async function updateProfile(
+  data: ProfileUpdateRequest
+): Promise<string> {
   const response = await apiClient.put('/api/v1/profile', data)
   return response.data.data
 }
@@ -24,7 +30,9 @@ export async function updateProfile(data: ProfileUpdateRequest): Promise<string>
  * Update current user password
  * PUT /api/v1/profile/password
  */
-export async function updatePassword(data: PasswordUpdateRequest): Promise<string> {
+export async function updatePassword(
+  data: PasswordUpdateRequest
+): Promise<string> {
   const response = await apiClient.put('/api/v1/profile/password', data)
   return response.data.data
 }

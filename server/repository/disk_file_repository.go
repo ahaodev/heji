@@ -80,7 +80,7 @@ func (dfr *diskFileRepository) Upload(c context.Context, req *domain.UploadReque
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file: %v", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// 计算文件哈希和大小
 	hasher := md5.New()
@@ -89,13 +89,13 @@ func (dfr *diskFileRepository) Upload(c context.Context, req *domain.UploadReque
 	// 复制文件内容
 	size, err := io.Copy(writer, req.Reader)
 	if err != nil {
-		os.Remove(filePath) // 清理失败的文件
+		_ = os.Remove(filePath) // 清理失败的文件
 		return nil, fmt.Errorf("failed to write file: %v", err)
 	}
 
 	// 验证文件大小
 	if req.Size > 0 && size != req.Size {
-		os.Remove(filePath)
+		_ = os.Remove(filePath)
 		return nil, fmt.Errorf("file size mismatch: expected %d, got %d", req.Size, size)
 	}
 
@@ -289,7 +289,7 @@ func (dfr *diskFileRepository) calculateFileHash(filePath string) (string, error
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	hasher := md5.New()
 	if _, err := io.Copy(hasher, file); err != nil {
@@ -308,7 +308,7 @@ func (dfr *diskFileRepository) detectContentType(filePath string) string {
 	if err != nil {
 		return ""
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// 读取前512字节用于检测内容类型
 	buffer := make([]byte, 512)

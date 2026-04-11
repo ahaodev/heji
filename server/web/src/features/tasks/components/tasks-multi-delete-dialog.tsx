@@ -79,9 +79,7 @@ export function TasksMultiDeleteDialog<TData>({
 
           <Alert variant='destructive'>
             <AlertTitle>警告！</AlertTitle>
-            <AlertDescription>
-              请小心，此操作不可回滚。
-            </AlertDescription>
+            <AlertDescription>请小心，此操作不可回滚。</AlertDescription>
           </Alert>
         </div>
       }

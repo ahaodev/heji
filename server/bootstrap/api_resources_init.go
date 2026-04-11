@@ -107,9 +107,7 @@ func bulkCreateApiResources(ctx context.Context, client *ent.Client, apiResource
 	if err != nil {
 		return 0, fmt.Errorf("failed to start transaction: %w", err)
 	}
-	defer func(tx *ent.Tx) {
-		_ = tx.Rollback()
-	}(tx)
+	defer tx.Rollback()
 
 	now := time.Now()
 	createdCount := 0
@@ -237,9 +235,7 @@ func restoreMenuApiResourceAssociations(ctx context.Context, client *ent.Client,
 	if err != nil {
 		return 0, fmt.Errorf("failed to start transaction: %w", err)
 	}
-	defer func(tx *ent.Tx) {
-		_ = tx.Rollback()
-	}(tx)
+	defer tx.Rollback()
 
 	restoredCount := 0
 

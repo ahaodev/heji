@@ -36,6 +36,15 @@ func (qp *QueryParams) GetPageSize() int {
 	return qp.PageSize
 }
 
+// Paginate returns (offset, limit, true) when pagination should be applied,
+// or (0, 0, false) when all results should be returned.
+func (qp *QueryParams) Paginate() (offset, limit int, ok bool) {
+	if qp.Page > 0 && qp.PageSize > 0 {
+		return (qp.Page - 1) * qp.PageSize, qp.PageSize, true
+	}
+	return 0, 0, false
+}
+
 // ValidateQueryParams 验证和设置默认分页参数以及租户权限
 func ValidateQueryParams(params *QueryParams) error {
 	// 验证分页参数

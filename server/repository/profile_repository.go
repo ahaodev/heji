@@ -33,7 +33,6 @@ func (pr *entProfileRepository) GetByID(c context.Context, id string) (*domain.P
 		Username:  u.Username,
 		Email:     u.Email,
 		Phone:     u.Phone,
-		IsAdmin:   u.IsAdmin,
 		Status:    string(u.Status),
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,

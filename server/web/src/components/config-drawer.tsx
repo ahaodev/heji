@@ -308,4 +308,3 @@ function LayoutConfig() {
     </div>
   )
 }
-

@@ -19,8 +19,7 @@ export function Otp() {
             双因素身份验证
           </CardTitle>
           <CardDescription>
-            请输入验证码。 <br /> 我们已将
-            验证码发送到您的邮箱。
+            请输入验证码。 <br /> 我们已将 验证码发送到您的邮箱。
           </CardDescription>
         </CardHeader>
         <CardContent>

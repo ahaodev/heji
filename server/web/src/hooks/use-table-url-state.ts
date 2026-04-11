@@ -119,20 +119,25 @@ export function useTableUrlState(
     return { pageIndex: Math.max(0, pageNum - 1), pageSize: pageSizeNum }
   }, [search, pageKey, pageSizeKey, defaultPage, defaultPageSize])
 
-  const onPaginationChange: OnChangeFn<PaginationState> = useCallback((updater: PaginationState | ((prev: PaginationState) => PaginationState)) => {
-    const next = typeof updater === 'function' ? updater(pagination) : updater
-    const nextPage = next.pageIndex + 1
-    const nextPageSize = next.pageSize
-    navigate({
-      replace: true, // Use replace for pagination to reduce history pollution
-      search: (prev) => ({
-        ...(prev as SearchRecord),
-        [pageKey]: nextPage <= defaultPage ? undefined : nextPage,
-        [pageSizeKey]:
-          nextPageSize === defaultPageSize ? undefined : nextPageSize,
-      }),
-    })
-  }, [pagination, navigate, pageKey, pageSizeKey, defaultPage, defaultPageSize])
+  const onPaginationChange: OnChangeFn<PaginationState> = useCallback(
+    (
+      updater: PaginationState | ((prev: PaginationState) => PaginationState)
+    ) => {
+      const next = typeof updater === 'function' ? updater(pagination) : updater
+      const nextPage = next.pageIndex + 1
+      const nextPageSize = next.pageSize
+      navigate({
+        replace: true, // Use replace for pagination to reduce history pollution
+        search: (prev) => ({
+          ...(prev as SearchRecord),
+          [pageKey]: nextPage <= defaultPage ? undefined : nextPage,
+          [pageSizeKey]:
+            nextPageSize === defaultPageSize ? undefined : nextPageSize,
+        }),
+      })
+    },
+    [pagination, navigate, pageKey, pageSizeKey, defaultPage, defaultPageSize]
+  )
 
   const [globalFilter, setGlobalFilter] = useState<string | undefined>(() => {
     if (!globalFilterEnabled) return undefined
@@ -140,61 +145,67 @@ export function useTableUrlState(
     return typeof raw === 'string' ? raw : ''
   })
 
+  const onGlobalFilterChangeHandler = useCallback(
+    (updater: string | ((prev: string) => string)) => {
+      const next =
+        typeof updater === 'function' ? updater(globalFilter ?? '') : updater
+      const value = trimGlobal ? next.trim() : next
+      setGlobalFilter(value)
+      navigate({
+        replace: true,
+        search: (prev) => ({
+          ...(prev as SearchRecord),
+          [globalFilterKey]: value ? value : undefined,
+        }),
+      })
+    },
+    [globalFilter, trimGlobal, navigate, globalFilterKey]
+  )
+
   const onGlobalFilterChange: OnChangeFn<string> | undefined =
-    globalFilterEnabled
-      ? useCallback((updater: string | ((prev: string) => string)) => {
-          const next =
-            typeof updater === 'function'
-              ? updater(globalFilter ?? '')
-              : updater
-          const value = trimGlobal ? next.trim() : next
-          setGlobalFilter(value)
-          navigate({
-            replace: true, // Use replace for global filter to reduce history pollution
-            search: (prev) => ({
-              ...(prev as SearchRecord),
-              // Don't reset page when only updating global filter
-              // [pageKey]: undefined,
-              [globalFilterKey]: value ? value : undefined,
-            }),
-          })
-        }, [globalFilter, trimGlobal, navigate, pageKey, globalFilterKey])
-      : undefined
+    globalFilterEnabled ? onGlobalFilterChangeHandler : undefined
 
-  const onColumnFiltersChange: OnChangeFn<ColumnFiltersState> = useCallback((updater: ColumnFiltersState | ((prev: ColumnFiltersState) => ColumnFiltersState)) => {
-    const next =
-      typeof updater === 'function' ? updater(columnFilters) : updater
-    setColumnFilters(next)
+  const onColumnFiltersChange: OnChangeFn<ColumnFiltersState> = useCallback(
+    (
+      updater:
+        | ColumnFiltersState
+        | ((prev: ColumnFiltersState) => ColumnFiltersState)
+    ) => {
+      const next =
+        typeof updater === 'function' ? updater(columnFilters) : updater
+      setColumnFilters(next)
 
-    const patch: Record<string, unknown> = {}
+      const patch: Record<string, unknown> = {}
 
-    for (const cfg of columnFiltersCfg) {
-      const found = next.find((f) => f.id === cfg.columnId)
-      const serialize = cfg.serialize ?? ((v: unknown) => v)
-      if (cfg.type === 'string') {
-        const value =
-          typeof found?.value === 'string' ? (found.value as string) : ''
-        patch[cfg.searchKey] =
-          value.trim() !== '' ? serialize(value) : undefined
-      } else {
-        const value = Array.isArray(found?.value)
-          ? (found!.value as unknown[])
-          : []
-        patch[cfg.searchKey] = value.length > 0 ? serialize(value) : undefined
+      for (const cfg of columnFiltersCfg) {
+        const found = next.find((f) => f.id === cfg.columnId)
+        const serialize = cfg.serialize ?? ((v: unknown) => v)
+        if (cfg.type === 'string') {
+          const value =
+            typeof found?.value === 'string' ? (found.value as string) : ''
+          patch[cfg.searchKey] =
+            value.trim() !== '' ? serialize(value) : undefined
+        } else {
+          const value = Array.isArray(found?.value)
+            ? (found!.value as unknown[])
+            : []
+          patch[cfg.searchKey] = value.length > 0 ? serialize(value) : undefined
+        }
       }
-    }
 
-    // Use replace: true for filter changes to reduce history pollution
-    navigate({
-      replace: true,
-      search: (prev) => ({
-        ...(prev as SearchRecord),
-        // Don't reset page when only updating filters
-        // [pageKey]: undefined,
-        ...patch,
-      }),
-    })
-  }, [columnFilters, columnFiltersCfg, navigate, pageKey])
+      // Use replace: true for filter changes to reduce history pollution
+      navigate({
+        replace: true,
+        search: (prev) => ({
+          ...(prev as SearchRecord),
+          // Don't reset page when only updating filters
+          // [pageKey]: undefined,
+          ...patch,
+        }),
+      })
+    },
+    [columnFilters, columnFiltersCfg, navigate, pageKey]
+  )
 
   const ensurePageInRange = (
     pageCount: number,

@@ -92,7 +92,7 @@ if (!rootElement.innerHTML) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <FontProvider>
-              <RouterProvider router={router} />
+            <RouterProvider router={router} />
           </FontProvider>
         </ThemeProvider>
       </QueryClientProvider>

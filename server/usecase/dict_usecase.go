@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"shadmin/domain"
 	"shadmin/ent"
@@ -119,7 +120,7 @@ func (du *dictUsecase) CreateDictItem(ctx context.Context, request *domain.Creat
 	// 验证字典类型是否存在
 	_, err := du.dictRepository.GetTypeByID(ctx, request.TypeID)
 	if err != nil {
-		if err == domain.ErrDictTypeNotFound {
+		if errors.Is(err, domain.ErrDictTypeNotFound) {
 			return nil, fmt.Errorf("dictionary type not found")
 		}
 		return nil, err

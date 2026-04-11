@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"shadmin/domain"
 	"shadmin/ent"
 	"shadmin/ent/dictitem"
@@ -86,6 +87,50 @@ func (dr *entDictRepository) convertEntDictItemToDomain(entItem *ent.DictItem) *
 		CreatedAt: entItem.CreatedAt,
 		UpdatedAt: entItem.UpdatedAt,
 	}
+}
+
+func (dr *entDictRepository) listPagedDictTypes(ctx context.Context, query *ent.DictTypeQuery, page int, pageSize int) ([]*domain.DictType, error) {
+	var entTypes []*ent.DictType
+	var err error
+
+	if page > 0 && pageSize > 0 {
+		offset := (page - 1) * pageSize
+		entTypes, err = query.Offset(offset).Limit(pageSize).All(ctx)
+	} else {
+		entTypes, err = query.All(ctx)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*domain.DictType, 0, len(entTypes))
+	for _, entType := range entTypes {
+		result = append(result, dr.convertEntDictTypeToDomain(entType))
+	}
+
+	return result, nil
+}
+
+func (dr *entDictRepository) listPagedDictItems(ctx context.Context, query *ent.DictItemQuery, page int, pageSize int) ([]*domain.DictItem, error) {
+	var entItems []*ent.DictItem
+	var err error
+
+	if page > 0 && pageSize > 0 {
+		offset := (page - 1) * pageSize
+		entItems, err = query.Offset(offset).Limit(pageSize).All(ctx)
+	} else {
+		entItems, err = query.All(ctx)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*domain.DictItem, 0, len(entItems))
+	for _, entItem := range entItems {
+		result = append(result, dr.convertEntDictItemToDomain(entItem))
+	}
+
+	return result, nil
 }
 
 // 字典类型相关实现
@@ -186,46 +231,17 @@ func (dr *entDictRepository) FetchTypes(ctx context.Context, params domain.DictT
 
 	// 应用排序
 	if params.SortBy != "" {
-		switch params.SortBy {
-		case "code":
-			if params.Order == "desc" {
-				query = query.Order(ent.Desc(dicttype.FieldCode))
-			} else {
-				query = query.Order(ent.Asc(dicttype.FieldCode))
-			}
-		case "name":
-			if params.Order == "desc" {
-				query = query.Order(ent.Desc(dicttype.FieldName))
-			} else {
-				query = query.Order(ent.Asc(dicttype.FieldName))
-			}
-		default:
-			if params.Order == "desc" {
-				query = query.Order(ent.Desc(dicttype.FieldCreatedAt))
-			} else {
-				query = query.Order(ent.Asc(dicttype.FieldCreatedAt))
-			}
-		}
+		query = query.Order(ApplySorting(params.SortBy, params.Order, map[string]string{
+			"code": dicttype.FieldCode,
+			"name": dicttype.FieldName,
+		}, dicttype.FieldCreatedAt))
 	} else {
 		query = query.Order(ent.Desc(dicttype.FieldCreatedAt))
 	}
 
-	// 应用分页
-	var entTypes []*ent.DictType
-	if params.Page > 0 && params.PageSize > 0 {
-		offset := (params.Page - 1) * params.PageSize
-		entTypes, err = query.Offset(offset).Limit(params.PageSize).All(ctx)
-	} else {
-		entTypes, err = query.All(ctx)
-	}
+	result, err := dr.listPagedDictTypes(ctx, query, params.Page, params.PageSize)
 	if err != nil {
 		return nil, err
-	}
-
-	// 转换为domain对象
-	var result []*domain.DictType
-	for _, entType := range entTypes {
-		result = append(result, dr.convertEntDictTypeToDomain(entType))
 	}
 
 	return domain.NewPagedResult(result, total, params.Page, params.PageSize), nil
@@ -294,16 +310,16 @@ func (dr *entDictRepository) DeleteType(ctx context.Context, id string) error {
 
 // 字典项相关实现
 
-func (dr *entDictRepository) CreateItem(ctx context.Context, dictItem *domain.DictItem) error {
+func (dr *entDictRepository) CreateItem(ctx context.Context, dictItem *domain.DictItem) (err error) {
 	// 开启事务
-	tx, err := dr.client.Tx(ctx)
-	if err != nil {
-		return err
+	tx, txErr := dr.client.Tx(ctx)
+	if txErr != nil {
+		return txErr
 	}
 	defer func() {
 		if v := recover(); v != nil {
 			_ = tx.Rollback()
-			panic(v)
+			err = fmt.Errorf("panic recovered in CreateItem: %v", v)
 		}
 	}()
 
@@ -429,68 +445,34 @@ func (dr *entDictRepository) FetchItems(ctx context.Context, params domain.DictI
 
 	// 应用排序
 	if params.SortBy != "" {
-		switch params.SortBy {
-		case "label":
-			if params.Order == "desc" {
-				query = query.Order(ent.Desc(dictitem.FieldLabel))
-			} else {
-				query = query.Order(ent.Asc(dictitem.FieldLabel))
-			}
-		case "value":
-			if params.Order == "desc" {
-				query = query.Order(ent.Desc(dictitem.FieldValue))
-			} else {
-				query = query.Order(ent.Asc(dictitem.FieldValue))
-			}
-		case "sort":
-			if params.Order == "desc" {
-				query = query.Order(ent.Desc(dictitem.FieldSort))
-			} else {
-				query = query.Order(ent.Asc(dictitem.FieldSort))
-			}
-		default:
-			if params.Order == "desc" {
-				query = query.Order(ent.Desc(dictitem.FieldCreatedAt))
-			} else {
-				query = query.Order(ent.Asc(dictitem.FieldCreatedAt))
-			}
-		}
+		query = query.Order(ApplySorting(params.SortBy, params.Order, map[string]string{
+			"label": dictitem.FieldLabel,
+			"value": dictitem.FieldValue,
+			"sort":  dictitem.FieldSort,
+		}, dictitem.FieldCreatedAt))
 	} else {
 		// 默认按sort正序，然后按创建时间倒序
 		query = query.Order(ent.Asc(dictitem.FieldSort), ent.Desc(dictitem.FieldCreatedAt))
 	}
 
-	// 应用分页
-	var entItems []*ent.DictItem
-	if params.Page > 0 && params.PageSize > 0 {
-		offset := (params.Page - 1) * params.PageSize
-		entItems, err = query.Offset(offset).Limit(params.PageSize).All(ctx)
-	} else {
-		entItems, err = query.All(ctx)
-	}
+	result, err := dr.listPagedDictItems(ctx, query, params.Page, params.PageSize)
 	if err != nil {
 		return nil, err
-	}
-
-	// 转换为domain对象
-	var result []*domain.DictItem
-	for _, entItem := range entItems {
-		result = append(result, dr.convertEntDictItemToDomain(entItem))
 	}
 
 	return domain.NewPagedResult(result, total, params.Page, params.PageSize), nil
 }
 
-func (dr *entDictRepository) UpdateItem(ctx context.Context, id string, updates domain.UpdateDictItemRequest) error {
+func (dr *entDictRepository) UpdateItem(ctx context.Context, id string, updates domain.UpdateDictItemRequest) (err error) {
 	// 开启事务
-	tx, err := dr.client.Tx(ctx)
-	if err != nil {
-		return err
+	tx, txErr := dr.client.Tx(ctx)
+	if txErr != nil {
+		return txErr
 	}
 	defer func() {
 		if v := recover(); v != nil {
 			_ = tx.Rollback()
-			panic(v)
+			err = fmt.Errorf("panic recovered in UpdateItem: %v", v)
 		}
 	}()
 
@@ -498,7 +480,7 @@ func (dr *entDictRepository) UpdateItem(ctx context.Context, id string, updates 
 	currentItem, err := tx.DictItem.Query().Where(dictitem.ID(id)).First(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			_ = tx.Rollback()
+			tx.Rollback()
 			return domain.ErrDictItemNotFound
 		}
 		return tx.Rollback()
@@ -519,7 +501,7 @@ func (dr *entDictRepository) UpdateItem(ctx context.Context, id string, updates 
 			return tx.Rollback()
 		}
 		if valueExists {
-			_ = tx.Rollback()
+			tx.Rollback()
 			return domain.ErrDictItemValueExists
 		}
 		updateQuery = updateQuery.SetValue(*updates.Value)

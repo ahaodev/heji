@@ -1,16 +1,18 @@
-import { type UserPagedResult, type QueryParams } from '@/types/api'
-import { type User, type CreateUserRequest, type InviteUserRequest, type UserUpdateRequest } from '@/types/user'
 import { apiClient } from '@/services/config'
+import { type UserPagedResult, type QueryParams } from '@/types/api'
+import {
+  type User,
+  type CreateUserRequest,
+  type InviteUserRequest,
+  type UserUpdateRequest,
+} from '@/types/user'
+import { buildSearchParams } from '@/lib/query-params'
 
 // User Management API - Based on swagger.json /system/user endpoints
 
 // GET /system/user - Get all users
 export async function getUsers(params?: QueryParams): Promise<UserPagedResult> {
-  const searchParams = new URLSearchParams()
-  if (params?.page) searchParams.append('page', params.page.toString())
-  if (params?.page_size) searchParams.append('page_size', params.page_size.toString())
-  if (params?.search) searchParams.append('search', params.search)
-  if (params?.status) searchParams.append('status', params.status)
+  const searchParams = buildSearchParams(params)
 
   const response = await apiClient.get(`/api/v1/system/user?${searchParams}`)
   return response.data.data
@@ -35,7 +37,10 @@ export async function getUser(id: string): Promise<User> {
 }
 
 // PUT /system/user/{id} - Update user
-export async function updateUser(id: string, data: UserUpdateRequest): Promise<User> {
+export async function updateUser(
+  id: string,
+  data: UserUpdateRequest
+): Promise<User> {
   const response = await apiClient.put(`/api/v1/system/user/${id}`, data)
   return response.data.data
 }
@@ -51,4 +56,3 @@ export async function getUserRoleList(userId: string): Promise<string[]> {
   const response = await apiClient.get(`/api/v1/system/user/${userId}/roles`)
   return response.data.data
 }
-

@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
 import z from 'zod'
+import { createFileRoute } from '@tanstack/react-router'
 import { Dicts } from '@/features/system/dicts'
 
 const dictSearchSchema = z.object({

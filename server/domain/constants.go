@@ -8,7 +8,7 @@ const (
 	UserStatusSuspended = "suspended" // 已暂停
 )
 
-// 所有可用用户状态列表
+// AllUserStatuses 所有可用用户状态列表
 var AllUserStatuses = []string{
 	UserStatusActive,
 	UserStatusInactive,
@@ -16,7 +16,7 @@ var AllUserStatuses = []string{
 	UserStatusSuspended,
 }
 
-// 固定菜单定义
+// MenuItem 固定菜单定义
 type MenuItem struct {
 	ID            string `json:"id"`
 	Name          string `json:"name"`
