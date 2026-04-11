@@ -2,131 +2,105 @@
 
 ## 客户端
 
-App端使用 SQLite数据库
+App 端使用 SQLite 数据库（通过 Room ORM 访问）。
 
-App数据库使用ObjectId作为主键，同步到服务端后主键不变
+App 数据库使用客户端生成的 Xid 作为主键，同步到服务端后主键不变。
 
-App离线优先，服务仅作为多设备的同步备份。
+App 离线优先，服务端仅作为多设备的同步备份。
 
-App首先保存数据至SQLite然后在后台同步至服务端
+App 首先保存数据至 SQLite，然后在后台通过 HTTP 同步至服务端。
 
-App在未登陆情况下能够离线使用，默认创建一个本地用户和一个本地个人账本
+App 在未登录情况下能够离线使用，默认创建一个本地用户和一个本地个人账本。
 
-APP离线账本可以在账本设置页选择迁移同步到注册的用户下
+### 同步状态字段（所有同步实体通用）
+
+| 字段 | 类型 | 值 | 含义 |
+|------|------|----|------|
+| `synced` | Int | `0` | 未同步，待上传 |
+| `synced` | Int | `1` | 已同步，服务端已确认 |
+| `deleted` | Int | `0` | 未删除 |
+| `deleted` | Int | `1` | 已标记删除，待上传后硬删除 |
+
+---
 
 ## 服务端
 
-服务端使用MongoDB
+服务端使用关系型数据库（SQLite / PostgreSQL / MySQL，通过环境变量 `DB_TYPE` 配置）。
 
-#### 用户（MUser）
-| 列名        | 类型       | 说 明       |
-|-----------|----------|-----------|
-| _id       | ObjectID | 自增ID      |
-| name      | String   | 用户名       |
-| password  | String   | 密码        |
-| tel       | String   | 电话号码      |
-| authority | List     | 权限（关联权限集） |
+所有实体均使用客户端传入的 Xid 作为主键（`_id`），服务端不自行生成 ID。
 
-#### 权限（MAuthority）
+### 用户（User）
 
-| 列名        | 类型       | 说 明         |
-|-----------|----------|-------------|
-| _id       | ObjectID | 自增ID        |
-| authority | String   | 权限          |
-| book_id   | String   | 账本ID（关联账本集） |
+| 列名 | 类型 | 说明 |
+|------|------|------|
+| `_id` | String | Xid 主键 |
+| `name` | String | 用户名 |
+| `password` | String | 密码（加密存储） |
+| `email` | String | 邮箱 |
 
-#### 账本Client（Book）
+### 账本（Book）
 
-| 列名          | 类型       | 说 明                        |
-|-------------|----------|----------------------------|
-| _id         | ObjectID | 自增ID                       |
-| book_name   | String   | 账本名称                       |
-| create_user | String   | 创建人                        |
-| cover       | byte[]   | 封面图片                       |
-| sync_status | Integer  | 0本地新增，-1本地删除、1本地更新，2已同步到服务 |
-| anchor      | long     | 锚点用作记录服务最后修改时间             |
+| 列名 | 类型 | 说明 |
+|------|------|------|
+| `_id` | String | Xid 主键（客户端生成） |
+| `name` | String | 账本名称 |
+| `crt_user_id` | String | 创建人 ID |
+| `members` | Array | 账本成员 ID 列表（含创建人） |
+| `deleted` | Bool | 软删除标记 |
+| `created_at` | Long | 创建时间（毫秒时间戳） |
+| `updated_at` | Long | 最后修改时间（毫秒时间戳，用于增量拉取） |
 
-#### 账本Server（MBook）
+### 账单（Bill）
 
-| 列名          | 类型       | 说 明      |
-|-------------|----------|----------|
-| _id         | ObjectID | 自增ID     |
-| book_name   | String   | 账本名称     |
-| create_user | String   | 创建人      |
-| users       | array    | 该账本下的用户集 |
-| cover       | byte[]   | 二进制封面图片  |
-| modified    | long     | 最后修改时间   |
+| 列名 | 类型 | 说明 |
+|------|------|------|
+| `_id` | String | Xid 主键（客户端生成） |
+| `book_id` | String | 所属账本 ID |
+| `money` | Double | 金额 |
+| `category_id` | String | 所属账单类型 ID |
+| `type` | Int | 收支类型（1=支出，2=收入） |
+| `dealer` | String | 经手人 |
+| `crt_user` | String | 创建人 ID |
+| `remark` | String | 备注 |
+| `time` | String | 账单日期（用户选择的日期，yyyy-MM-dd） |
+| `deleted` | Bool | 软删除标记 |
+| `created_at` | Long | 创建时间（毫秒时间戳） |
+| `updated_at` | Long | 最后修改时间（毫秒时间戳，用于增量拉取） |
 
-客户端账本同步时根据anchor 和sync_status向服务器发起同步。	
+### 账单类型（Category）
 
-通过”Max(anchor)“=="Max(modified)"询问是否需要更新数据 。客户端更新已经同步的数据
+| 列名 | 类型 | 说明 |
+|------|------|------|
+| `_id` | String | Xid 主键（客户端生成） |
+| `book_id` | String | 所属账本 ID |
+| `type` | Int | 收支类型（1=支出，2=收入） |
+| `name` | String | 标签名 |
+| `level` | Int | 多级标签层级 |
+| `index` | Int | 排序顺序 |
+| `crt_user` | String | 创建人 ID |
+| `deleted` | Bool | 软删除标记 |
+| `created_at` | Long | 创建时间（毫秒时间戳） |
+| `updated_at` | Long | 最后修改时间（毫秒时间戳，用于增量拉取） |
 
+### 账单票据图片（BillImage）
 
+| 列名 | 类型 | 说明 |
+|------|------|------|
+| `_id` | String | Xid 主键（客户端生成） |
+| `bill_id` | String | 所属账单 ID |
+| `filename` | String | 文件名 |
+| `online_path` | String | 服务端文件路径（上传成功后写入） |
+| `length` | Long | 文件大小（字节） |
+| `md5` | String | 文件 MD5，用于去重校验 |
+| `ext` | String | 文件后缀名 |
+| `upload_time` | Long | 上传时间（毫秒时间戳） |
 
-#### 账单（MBill）
+> 图片不做软删除；服务端 DELETE 接口直接物理删除文件及记录。
 
-| 列名          | 类型       | 说 明           |
-|-------------|----------|---------------|
-| _id         | ObjectID | 自增ID          |
-| book_id     | String   | 所属账本ID        |
-| money       | Double   | 货币            |
-| category    | String   | 账单收支类型        |
-| type        | Integer  | 收入/支出         |
-| dealer      | String   | 经手人           |
-| createUser  | String   | 创建人           |
-| remark      | String   | 备注            |
-| images      | String[] | 图片集（关联账单图片）   |
-| time        | String   | 账单日期（用户选择的日期） |
-| create_time | long     | 创建时间          |
-| update_time | long     | 更新时间          |
+### 数据库索引
 
-账单作为账本的子集，更新账单时更新账本modified以供客户端询问更新与否
-
-#### 账单备份（MBillBackup）
-
-> 同账单
-
-#### 账单票据图片（MBillImage）
-
-| 列名          | 类型       | 说 明    |
-|-------------|----------|--------|
-| _id         | ObjectID | 自增ID   |
-| bill_id     | String   | 所属账单ID |
-| filename    | String   | 文件名    |
-| length      | Long     | 文件长度   |
-| md5         | String   | MD5    |
-| upload_time | Long     | 上传时间   |
-| ext         | String   | 后缀名    |
-| isGridFS    | Boolean  | 是否分片   |
-| data        | Binary   | 二进制图片  |
-
-#### 账单类型（MCategory）
-
-| 列名      | 类型       | 说 明      |
-|---------|----------|----------|
-| _id     | ObjectID | 自增ID     |
-| book_id | String   | 所属账本ID   |
-| type    | Integer  | 支出/收入    |
-| name    | String   | 标签名      |
-| level   | Integer  | 多级标签所属等级 |
-| index   | Integer  | 排序顺序     |
-
-#### 同步日志（MOperateLog）
-
-| 列名       | 类型       | 说 明               |
-|----------|----------|-------------------|
-| _id      | ObjectID | 自增ID              |
-| book_id  | String   | 根据book划分日志        |
-| opeID    | Integer  | 操作对象的ID           |
-| opeClass | String   | 操作对象类别 （操作了账本或账单） |
-| opeType  | Integer  | 操作类型（删除或更新）       |
-| opeDate  | String   | 操作时间（客户端操作时间）     |
-
-#### 客户端错误日志（MErrorLog）
-
-| 列名          | 类型       | 说 明  |
-|-------------|----------|------|
-| _id         | ObjectID | 自增ID |
-| deviceModel | String   | 设备型号 |
-| tel         | String   | 电话号  |
-| contents    | String   | 日志内容 |
+| 表 | 索引 | 用途 |
+|------|------|------|
+| `bill` | `(book_id, updated_at)` | 增量拉取按账本过滤 + 时间排序 |
+| `book` | `(updated_at)` | 增量拉取按时间排序 |
+| `category` | `(book_id, updated_at)` | 增量拉取按账本过滤 + 时间排序 |

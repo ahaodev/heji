@@ -15,6 +15,7 @@
 | 3 | **MQTT 推送** | 服务端向其他客户端推送变更通知，MQTT 仅做下行通知通道 |
 | 4 | **单写者模型** | 每条账单/账本只有创建人（`crt_user`）可修改/删除，天然无并发写冲突 |
 | 5 | **增量拉取兜底** | HTTP 拉取接口补偿 MQTT 推送丢失的消息，保证最终一致 |
+| 6 | **服务端优先** | 增量拉取时，服务端数据直接覆盖本地（含 `synced=0` 的记录） |
 
 ### 1.2 数据流总览
 
@@ -41,6 +42,7 @@
 |------|--------|---------|
 | **账本 (Book)** | 增、删、改 | 只读 + 在其下创建账单 |
 | **账单 (Bill)** | 增、删、改 | 只读 |
+| **账单类型 (Category)** | 增、删、改 | 只读 |
 | **图片 (Image)** | 跟随所属账单 | 跟随所属账单 |
 
 **规则**：
@@ -81,9 +83,11 @@
 | 删除 | → `deleted=1, synced=0` | 软删除，等待上传 |
 | HTTP 上传成功（增/改） | `synced=0` → `synced=1` | 服务端已持久化 |
 | HTTP 删除成功 | `deleted=1` → **硬删除** | 从 Room 物理删除 |
-| HTTP 失败 | 保持 `synced=0` | Flow 自动重试 |
+| HTTP 失败（网络错误） | 保持 `synced=0` | Flow 退避后自动重试 |
+| HTTP 返回 `409`（ID 冲突） | `synced=0` → `synced=1` | 服务端已有相同数据，视为幂等成功 |
+| HTTP 返回 `404` | → **硬删除** | 服务端无此记录，本地清除 |
 | MQTT 推送写入 | → `synced=1` | 来自其他用户的变更，直接标记已同步 |
-| 增量拉取写入 | → `synced=1` | 兜底拉取的数据，直接标记已同步 |
+| 增量拉取写入 | → `synced=1` | 兜底拉取的数据，直接标记已同步（服务端优先） |
 
 ---
 
@@ -107,7 +111,16 @@
 | 创建 | `POST` | `/api/v1/bills/` | 账本成员 | `201` |
 | 更新 | `PUT` | `/api/v1/bills/:id` | 仅创建人 | `200` |
 | 删除 | `DELETE` | `/api/v1/bills/:id` | 仅创建人 | `200` |
-| 查询 | `GET` | `/api/v1/bills/?book_id=xx` | 账本成员 | `200` |
+| 查询 | `GET` | `/api/v1/bills/?book_id=xx&limit=50&offset=0` | 账本成员 | `200` |
+
+#### 账单类型 (Category)
+
+| 操作 | 方法 | 路径 | 权限 | 成功码 |
+|------|------|------|------|--------|
+| 创建 | `POST` | `/api/v1/categories/` | 账本成员 | `201` |
+| 更新 | `PUT` | `/api/v1/categories/:id` | 仅创建人 | `200` |
+| 删除 | `DELETE` | `/api/v1/categories/:id` | 仅创建人 | `200` |
+| 查询 | `GET` | `/api/v1/categories/?book_id=xx` | 账本成员 | `200` |
 
 #### 图片 (Image)
 
@@ -119,13 +132,13 @@
 
 #### 错误码约定
 
-| HTTP 状态码 | 含义 |
-|------------|------|
-| `400` | 请求参数错误 |
-| `401` | 未登录 / Token 过期 |
-| `403` | 无权限（非创建人尝试修改/删除） |
-| `404` | 资源不存在 |
-| `409` | ID 冲突（客户端生成的 Xid 重复） |
+| HTTP 状态码 | 含义 | 客户端行为 |
+|------------|------|-----------|
+| `400` | 请求参数错误 | 记录日志，不重试 |
+| `401` | 未登录 / Token 过期 | 刷新 Token 后重试 |
+| `403` | 无权限（非创建人尝试修改/删除） | 记录日志，不重试 |
+| `404` | 资源不存在 | 硬删除本地记录 |
+| `409` | ID 冲突（客户端生成的 Xid 重复） | 视为幂等成功，标记 `synced=1` |
 
 ### 4.2 增量拉取接口
 
@@ -165,14 +178,14 @@ Authorization: Bearer {token}
 ```
 1. 从 JWT 提取 userId
 2. 查询该用户参与的所有账本 ID 列表
-3. 查询这些账本下 updated_at > since 的 book 和 bill
+3. 查询这些账本下 updated_at > since 的 book、bill、category
 4. 按 updated_at ASC 排序，最多返回 limit 条
 5. 已软删除的记录只返回 { _id, action: "delete" }
 6. 返回结果 + 服务端当前时间 + 分页标记
 ```
 
 ```sql
--- 伪 SQL
+-- 伪 SQL（bill 为例，category 同理）
 SELECT * FROM bill
 WHERE book_id IN ({用户参与的账本IDs})
   AND updated_at > {since}
@@ -191,7 +204,6 @@ LIMIT {limit}
         "_id": "book_xid_1",
         "action": "update",
         "name": "家庭账本",
-        "type": "daily",
         "crt_user_id": "user_a",
         "members": ["user_a", "user_b"],
         "upd_time": "2026-02-18T06:00:00Z"
@@ -208,13 +220,29 @@ LIMIT {limit}
         "book_id": "book_xid_1",
         "money": 50.0,
         "type": 1,
-        "category": "午餐",
+        "category_id": "cat_xid_1",
         "crt_user": "user_b",
         "time": "2026-02-18",
         "upd_time": "2026-02-18T05:30:00Z"
       },
       {
         "_id": "bill_xid_3",
+        "action": "delete"
+      }
+    ],
+    "categories": [
+      {
+        "_id": "cat_xid_1",
+        "action": "add",
+        "book_id": "book_xid_1",
+        "type": 1,
+        "name": "午餐",
+        "level": 1,
+        "index": 0,
+        "upd_time": "2026-02-18T05:00:00Z"
+      },
+      {
+        "_id": "cat_xid_2",
         "action": "delete"
       }
     ],
@@ -244,6 +272,9 @@ LIMIT {limit}
 
 #### 客户端处理
 
+**冲突策略（服务端优先）**：增量拉取时，服务端数据直接覆盖本地，包括本地 `synced=0` 的记录。
+基于单写者模型，同一条记录的创建人是唯一修改者，因此不会出现两台设备对同一条记录各自存在未同步修改的情况，服务端版本即权威版本。
+
 ```kotlin
 suspend fun pullAllChanges() {
     var since = dataStore.lastSyncTime  // 首次为 0（拉取全量）
@@ -263,6 +294,12 @@ suspend fun pullAllChanges() {
             when (bill.action) {
                 "delete" -> billDao.hardDelete(bill.id)
                 else     -> billDao.upsert(bill.toEntity().copy(synced = SYNCED))
+            }
+        }
+        for (category in data.categories) {
+            when (category.action) {
+                "delete" -> categoryDao.hardDelete(category.id)
+                else     -> categoryDao.upsert(category.toEntity().copy(synced = SYNCED))
             }
         }
 
@@ -307,13 +344,15 @@ suspend fun pullAllChanges() {
 MQTT **仅做下行通知通道**：
 - 客户端只 **subscribe**，不 publish
 - 上行全部走 HTTP
-- 推送携带完整实体数据，客户端收到后直接写入 Room
+- 推送携带完整实体元数据，客户端收到后直接写入 Room
+- **图片二进制文件不经过 MQTT**，通过 HTTP 单独传输（见第 8 节）
 
 ### 5.2 主题
 
 ```
 heji/notify/{userId}/book      # 账本变更通知
 heji/notify/{userId}/bill      # 账单变更通知
+heji/notify/{userId}/category  # 账单类型变更通知
 heji/notify/{userId}/image     # 图片变更通知
 ```
 
@@ -324,7 +363,7 @@ heji/notify/{userId}/image     # 图片变更通知
   "id": "bt0j9l2s5bo37fcla7q0",
   "type": "ADD_BILL",
   "book_id": "book_xid",
-  "content": "{...实体完整JSON...}",
+  "content": "{...实体元数据 JSON，不含二进制字段...}",
   "timestamp": 1708234567890
 }
 ```
@@ -335,6 +374,7 @@ heji/notify/{userId}/image     # 图片变更通知
 |------|---------|
 | `heji/notify/{userId}/book` | `ADD_BOOK`, `UPDATE_BOOK`, `DELETE_BOOK` |
 | `heji/notify/{userId}/bill` | `ADD_BILL`, `UPDATE_BILL`, `DELETE_BILL` |
+| `heji/notify/{userId}/category` | `ADD_CATEGORY`, `UPDATE_CATEGORY`, `DELETE_CATEGORY` |
 | `heji/notify/{userId}/image` | `IMAGE_UPLOADED`, `IMAGE_DELETED` |
 
 ### 5.5 ACL
@@ -380,24 +420,37 @@ user:server:
 
 ### 6.2 SyncTrigger — 本地变更 → HTTP 上传
 
-观察 Room 中 `synced != 1` 的数据，通过 HTTP 上传到服务端：
+观察 Room 中 `synced != 1` 的数据，通过 HTTP 上传到服务端。
+`debounce(300ms)` 避免快速连续操作触发高频 HTTP 请求：
 
 ```kotlin
 fun observeAndSync() {
-    billDao.flowNotSynced().distinctUntilChanged().collect { bills ->
-        for (bill in bills) {
-            val result = when {
-                bill.deleted == DELETED   -> apiServer.deleteBill(bill.id)
-                bill.synced == NOT_SYNCED -> apiServer.upsertBill(bill)
-            }
-            if (result.isSuccess) {
-                if (bill.deleted == DELETED) billDao.hardDelete(bill.id)
-                else billDao.updateSyncStatus(bill.id, SYNCED)
+    billDao.flowNotSynced()
+        .distinctUntilChanged()
+        .debounce(300)
+        .collect { bills ->
+            for (bill in bills) {
+                val result = when {
+                    bill.deleted == DELETED   -> apiServer.deleteBill(bill.id)
+                    bill.synced == NOT_SYNCED -> apiServer.upsertBill(bill)
+                    else -> continue  // 不应出现，跳过
+                }
+                when {
+                    result.isSuccess     -> {
+                        if (bill.deleted == DELETED) billDao.hardDelete(bill.id)
+                        else billDao.updateSyncStatus(bill.id, SYNCED)
+                    }
+                    result.isConflict    -> billDao.updateSyncStatus(bill.id, SYNCED)  // 409：幂等成功
+                    result.isNotFound    -> billDao.hardDelete(bill.id)               // 404：本地清除
+                    result.isClientError -> { /* 400/403：记录日志，不重试 */ }
+                    // 其他网络错误：保持 synced=0，Flow 下次自动重试
+                }
             }
         }
-    }
 }
 ```
+
+Category 同理，`categoryDao.flowNotSynced()` 观察并上传。
 
 #### flowNotSynced SQL
 
@@ -416,6 +469,13 @@ fun onNotification(topic: String, message: SyncMessage) {
         }
         "DELETE_BILL" -> {
             billDao.hardDelete(message.content)
+        }
+        "ADD_CATEGORY", "UPDATE_CATEGORY" -> {
+            val category = Json.decodeFromString<Category>(message.content)
+            categoryDao.upsert(category.copy(synced = SYNCED))
+        }
+        "DELETE_CATEGORY" -> {
+            categoryDao.hardDelete(message.content)
         }
         // book、image 同理
     }
@@ -448,7 +508,7 @@ var lastSyncTime: Long  // 毫秒时间戳，取自服务端 server_time
 
 ### 7.1 HTTP Controller — 持久化后推送
 
-以创建账单为例：
+以创建账单为例（Category Controller 遵循相同模式）：
 
 ```go
 func (c *BillController) CreateBill(ctx *gin.Context) {
@@ -505,6 +565,7 @@ func (s *SyncService) NotifyBookMembers(bookID, senderID string, msg NotifyMessa
 
 服务端 DELETE 接口改为**软删除**（设置 `deleted=true, updated_at=now()`），不做物理删除。
 增量拉取接口依赖 `deleted` 字段来发现已删除的记录。
+适用于：Book、Bill、Category（Image 由文件存储层管理，不做软删除）。
 
 ### 7.4 数据库索引
 
@@ -512,12 +573,14 @@ func (s *SyncService) NotifyBookMembers(bookID, senderID string, msg NotifyMessa
 |------|------|------|
 | `bill` | `(book_id, updated_at)` | 增量拉取按账本过滤+时间排序 |
 | `book` | `(updated_at)` | 增量拉取按时间排序 |
+| `category` | `(book_id, updated_at)` | 增量拉取按账本过滤+时间排序 |
 
 ---
 
 ## 8. 图片同步
 
 图片同步分两步：**文件传输走 HTTP，元数据通知走 MQTT**。
+MQTT 消息中 `content` 仅包含元数据（`image_id`、`bill_id`、`online_path` 等），不含二进制图片数据。
 
 ### 8.1 上传
 
@@ -526,7 +589,8 @@ func (s *SyncService) NotifyBookMembers(bookID, senderID string, msg NotifyMessa
 2. HTTP POST /api/v1/images/upload → 服务端返回 onlinePath
 3. 本地更新 onlinePath, synced=1
 4. 服务端推送 MQTT IMAGE_UPLOADED 通知给其他成员
-5. 其他成员收到通知 → HTTP GET 下载图片
+   content: { "image_id": "xx", "bill_id": "xx", "online_path": "xx" }
+5. 其他成员收到通知 → HTTP GET /api/v1/images/:id 下载图片
 ```
 
 ### 8.2 删除
@@ -545,7 +609,7 @@ func (s *SyncService) NotifyBookMembers(bookID, senderID string, msg NotifyMessa
 | 端 | 方式 | 说明 |
 |----|------|------|
 | 客户端 | [Xid](https://github.com/0xShamil/java-xid) | 20 字符 base32，基于时间戳+随机值，无需中心协调 |
-| 服务端 | 接受客户端 ID | 唯一性校验，冲突返回 `409` |
+| 服务端 | 接受客户端 ID | 唯一性校验，冲突返回 `409`，客户端视为幂等成功 |
 
 ---
 
@@ -554,21 +618,7 @@ func (s *SyncService) NotifyBookMembers(bookID, senderID string, msg NotifyMessa
 | 场景 | 行为 |
 |------|------|
 | 无网络时 CRUD | 正常操作本地 Room，数据标记 `synced=0` |
-| HTTP 上传失败 | 保持 `synced=0`，Flow 自动重试 |
+| HTTP 上传失败（网络错误） | 保持 `synced=0`，Flow + `debounce` 退避后自动重试 |
+| HTTP 返回 4xx（客户端错误） | 根据错误码决定是否重试（见 §4.1 错误码表） |
 | 网络不可用 | 跳过 HTTP 调用，避免无效请求 |
 | 网络恢复 | Flow 自动触发上传 + `pullAllChanges()` 拉取缺失变更 |
-
----
-
-## 附录：迁移要点（从 v1 纯 MQTT 方案）
-
-开发阶段，不考虑兼容性：
-
-| # | 变更 |
-|---|------|
-| 1 | 移除 MQTT 上行主题（`heji/up/{userId}/{entity}`）和 ACK 机制 |
-| 2 | SyncTrigger 从 MQTT publish 改为 HTTP API 调用 |
-| 3 | 状态机从 4 状态简化为 2 状态：移除 `UPDATED(2)` 和 `SYNCING(3)` |
-| 4 | MQTT 主题改为 `heji/notify/{userId}/{entity}`，客户端只订阅不发布 |
-| 5 | 服务端从 MQTT subscriber 改为 HTTP controller 中调用 `SyncService.NotifyBookMembers()` |
-| 6 | 服务端 DELETE 改为软删除，新增增量拉取接口 |
