@@ -11,24 +11,24 @@
 <table>
     <tr>
       <td>
-          <img src="./client/docs/img/home.png" alt="hello" style="zoom:67%;"/>       
+          <img src="./docs/img/home.png" alt="hello" style="zoom:67%;"/>       
       </td>
       <td>
-          <img src="./client/docs/img/booklist.png" alt="hello" alt="hello" style="zoom:67%;"/>
+          <img src="./docs/img/booklist.png" alt="hello" alt="hello" style="zoom:67%;"/>
       </td>
       <td>
-          <img src="./client/docs/img/save.png" alt="addBill" style="zoom:67%;"/>
+          <img src="./docs/img/save.png" alt="addBill" style="zoom:67%;"/>
       </td>
     </tr>
     <tr>
-        <td><img src="./client/docs/img/total1.png" alt="hello" style="zoom:67%;"/></td>
-        <td> <img src="./client/docs/img/total2.png" alt="hello" style="zoom:67%;"/></td>
-        <td><img src="./client/docs/img/total3.png" alt="hello" style="zoom:67%;"/></td>
+        <td><img src="./docs/img/total1.png" alt="hello" style="zoom:67%;"/></td>
+        <td> <img src="./docs/img/total2.png" alt="hello" style="zoom:67%;"/></td>
+        <td><img src="./docs/img/total3.png" alt="hello" style="zoom:67%;"/></td>
     </tr>
         <tr>
-        <td><img src="./client/docs/img/timeview.png" alt="hello" style="zoom:67%;"/></td>
-        <td> <img src="./client/docs/img/menu.png" alt="hello" style="zoom:67%;"/></td>
-        <td><img src="./client/docs/img/setting.png" alt="hello" style="zoom:67%;"/></td>
+        <td><img src="./docs/img/timeview.png" alt="hello" style="zoom:67%;"/></td>
+        <td> <img src="./docs/img/menu.png" alt="hello" style="zoom:67%;"/></td>
+        <td><img src="./docs/img/setting.png" alt="hello" style="zoom:67%;"/></td>
     </tr>
 </table>
 
