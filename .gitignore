@@ -1,7 +1,4 @@
-
-# =========================
 # IDE & Editor
-# =========================
 .idea/
 .vscode/
 *.iml
@@ -9,54 +6,38 @@
 *.swo
 *~
 
-# =========================
-# OS Generated Files
-# =========================
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
 Thumbs.db
-ehthumbs.db
 
-# =========================
-# Client (Android)
-# =========================
-client/.gradle/
-client/build/
-client/app/build/
-client/app/schemas/
-client/local.properties
-client/*.keystore
-!client/heji.keystore
+# Gradle / Android build outputs
+.gradle/
+.kotlin/
+build/
+.cxx/
+.externalNativeBuild/
+captures/
+app/schemas/
 
-# =========================
-# Server (Go)
-# =========================
-server/build/
-server/logs/
-server/cmd/logs/
-server/cmd/*.exe
-server/*.log
-server/*.log_symlink
+# Local machine / secrets
+local.properties
+*.jks
+*.keystore
+*.secret
+.env
+.env.local
+.env.*.local
 
-# =========================
-# Proto
-# =========================
-proto/.idea/
+# Build artifacts
+*.apk
+*.aab
+*.ap_
+*.hprof
 
-# =========================
-# Logs & Temporary Files
-# =========================
+# Logs & temporary files
 *.log
 logs/
 tmp/
 temp/
-
-# =========================
-# Environment & Secrets
-# =========================
-.env
-.env.local
-.env.*.local
-*.secret
-secrets/

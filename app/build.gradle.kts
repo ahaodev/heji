@@ -1,16 +1,50 @@
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Properties
 import java.util.TimeZone
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.ksp)
     alias(libs.plugins.sentry)
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    check(localPropertiesFile.exists()) {
+        "Missing local.properties at ${localPropertiesFile.path}"
+    }
+    localPropertiesFile.inputStream().use(::load)
+}
+
+fun requireLocalProperty(name: String): String =
+    localProperties.getProperty(name)
+        ?: error("Missing $name in local.properties")
+
+val gitVersion = providers.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+}.standardOutput.asText.get().trim()
+
+fun configureApkRename(versionName: String) {
+    tasks.withType(com.android.build.gradle.tasks.PackageApplication::class.java).configureEach {
+        doLast {
+            val dateFormat = SimpleDateFormat("yyyyMMddHHmm")
+            dateFormat.timeZone = TimeZone.getTimeZone("GMT+08:00")
+            val time = dateFormat.format(Date())
+            val outputDir = outputDirectory.get().asFile
+            outputDir.listFiles()
+                ?.filter { it.name.endsWith(".apk") }
+                ?.forEach { apk ->
+                    val buildTypeName = name.removePrefix("package")
+                        .replaceFirstChar { it.lowercase() }
+                    apk.renameTo(File(apk.parentFile, "$buildTypeName-$versionName-$gitVersion-$time.apk"))
+                }
+        }
+    }
 }
 
 android {
@@ -39,10 +73,10 @@ android {
 
     signingConfigs {
         create("single") {
-            storeFile = file("../heji.keystore")
-            storePassword = "password"
-            keyPassword = "password"
-            keyAlias = "heji"
+            storeFile = rootProject.file(requireLocalProperty("KEYSTORE_PATH"))
+            storePassword = requireLocalProperty("KEYSTORE_PASSWORD")
+            keyAlias = requireLocalProperty("KEY_ALIAS")
+            keyPassword = requireLocalProperty("KEY_PASSWORD")
         }
     }
 
@@ -84,22 +118,14 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        resValues = true
     }
 
-    applicationVariants.all {
-        val variant = this
-        outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            val dateFormat = SimpleDateFormat("yyyyMMddHHmm")
-            dateFormat.timeZone = TimeZone.getTimeZone("GMT+08:00")
-            val time = dateFormat.format(Date())
-            val buildTypes = variant.buildType.name
-            val versionName = variant.versionName
-            val gitVersion = "git rev-parse --short HEAD".runCommand() ?: "unknown"
-            output.outputFileName = "$buildTypes-$versionName-$gitVersion-$time.apk"
-            println(output.outputFileName)
-        }
-    }
+}
+
+afterEvaluate {
+    val apkVersionName = android.defaultConfig.versionName ?: "1.0"
+    configureApkRename(apkVersionName)
 }
 
 configurations.all {
@@ -188,19 +214,4 @@ dependencies {
 
     // Debug
     debugImplementation(libs.glance)
-}
-
-// Helper function to run shell commands
-fun String.runCommand(): String? {
-    return try {
-        val process = ProcessBuilder(*split(" ").toTypedArray())
-            .directory(projectDir)
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-        process.waitFor()
-        process.inputStream.bufferedReader().readText().trim()
-    } catch (e: Exception) {
-        null
-    }
 }
