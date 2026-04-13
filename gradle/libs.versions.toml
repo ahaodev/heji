@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "9.1.0"
 kotlin = "2.3.10"
 ksp = "2.3.2"
 
@@ -65,7 +65,7 @@ glance = "1.1.0"
 jexcelapi = "2.6.12"
 opencsv = "5.12.0"
 subsamplingScaleImageView = "3.10.0"
-sentry = "5.12.2"
+sentry = "6.4.0"
 mmkv = "2.3.0"
 koin = "4.1.1"
 zxingCore = "3.5.3"
@@ -147,7 +147,6 @@ zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxingCo
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
