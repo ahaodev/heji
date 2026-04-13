@@ -4,13 +4,13 @@ import android.app.Activity
 import android.content.Intent
 import android.view.View
 import org.koin.androidx.viewmodel.ext.android.viewModel as koinViewModel
-import androidx.navigation.fragment.findNavController
 import com.blankj.utilcode.util.LogUtils
 import com.lxj.xpopup.XPopup
-import com.hao.heji.R
 import com.hao.heji.databinding.FragmentSettingBinding
 import com.hao.heji.ui.base.render
 import com.hao.heji.ui.base.BaseFragment
+import androidx.navigation.fragment.findNavController
+import com.hao.heji.R
 
 class SettingFragment : BaseFragment() {
     private val REQ_CODE_ALIPAY = 90001
@@ -23,7 +23,6 @@ class SettingFragment : BaseFragment() {
     private val viewModel by koinViewModel<SettingViewModel>()
 
     override fun initView(rootView: View) {
-        binding.inputETC.setOnClickListener { findNavController().navigate(R.id.nav_input_etc) }
         binding.exportQianJi.setOnClickListener { findNavController().navigate(R.id.nav_export) }
         binding.inputAliPay.setOnClickListener {
             selectInputFile(REQ_CODE_ALIPAY)

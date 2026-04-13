@@ -16,7 +16,6 @@ import com.hao.heji.ui.report.ReportViewModel
 import com.hao.heji.ui.setting.SettingViewModel
 import com.hao.heji.ui.setting.banner.BannerViewModel
 import com.hao.heji.ui.setting.export.ExportViewModel
-import com.hao.heji.ui.setting.input.etc.ETCViewModel
 import com.hao.heji.ui.user.info.UserInfoViewModel
 import com.hao.heji.ui.user.login.LoginViewModel
 import com.hao.heji.ui.user.register.RegisterViewModel
@@ -47,7 +46,6 @@ val viewModelModule = module {
     viewModel { ReportViewModel() }
     viewModel { CalendarNoteViewModule() }
     viewModel { ExportViewModel(get()) }
-    viewModel { ETCViewModel() }
     viewModel { SettingViewModel() }
     viewModel { UserInfoViewModel() }
     viewModel { BannerViewModel() }

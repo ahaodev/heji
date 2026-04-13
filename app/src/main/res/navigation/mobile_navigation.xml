@@ -46,11 +46,6 @@
             app:argType="integer" />
     </fragment>
     <fragment
-        android:id="@+id/nav_input_etc"
-        android:name="com.hao.heji.ui.setting.input.etc.ETCFragment"
-        android:label="@string/etc_list_query"
-        tools:layout="@layout/fragment_etc" />
-    <fragment
         android:id="@+id/nav_export"
         android:name="com.hao.heji.ui.setting.export.ExportFragment"
         android:label="@string/export"
@@ -60,9 +55,6 @@
         android:name="com.hao.heji.ui.home.BillListFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_bills_home">
-        <action
-            android:id="@+id/action_nav_home_to_nav_etc"
-            app:destination="@id/nav_input_etc" />
         <action
             android:id="@+id/action_nav_home_to_nav_gallery"
             app:destination="@id/nav_report" />

@@ -35,7 +35,7 @@
 
 
         <TextView
-            android:id="@+id/inputETC"
+            android:id="@+id/inputAliPay"
             style="@style/TextSelectedBackground"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -44,24 +44,10 @@
             android:paddingLeft="16dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:text="导入ETC账单"
+            android:text="导入支付宝账单"
             android:textColor="@color/black"
             app:layout_constraintStart_toStartOf="@+id/tvTitleData"
             app:layout_constraintTop_toBottomOf="@+id/tvTitleData" />
-
-        <TextView
-            android:id="@+id/inputAliPay"
-            style="@style/TextSelectedBackground"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="40dp"
-            android:paddingLeft="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:text="导入支付宝账单"
-            android:textColor="@color/black"
-            app:layout_constraintStart_toStartOf="@+id/inputETC"
-            app:layout_constraintTop_toBottomOf="@+id/inputETC" />
 
         <TextView
             android:id="@+id/inputWeiXinPay"
