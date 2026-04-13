@@ -1,7 +1,6 @@
 package com.hao.heji.data.db
 
 import androidx.room.*
-import com.hao.heji.App
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -22,13 +21,6 @@ interface ImageDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun install(ticket: MutableList<Image>)
-
-    @Transaction
-    fun installBillAndImages(bill: Bill, image: MutableList<Image>): Long {
-        var count = App.dataBase.billDao().insert(bill)
-        install(image)
-        return count
-    }
 
     @Query("SELECT * FROM image WHERE image_id IN (:img_ids) AND synced !=1")
     fun findImage(img_ids: List<String>): MutableList<Image>

@@ -7,9 +7,16 @@ import com.hao.heji.App
  * @author: 锅得铁
  * #
  */
-class ImageRepository() {
+class ImageRepository {
     private val imgDao = App.dataBase.imageDao()
+
     fun preDelete(imageID: String) {
         imgDao.preDelete(imageID = imageID)
     }
+
+    fun findImages(ids: List<String>) = imgDao.findImage(ids)
+
+    fun findImagesIdByBillIds(billIds: List<String>) = imgDao.findImagesIdByBillIds(billIds)
+
+    fun findByBillId(billId: String) = imgDao.findByBillId(billId)
 }

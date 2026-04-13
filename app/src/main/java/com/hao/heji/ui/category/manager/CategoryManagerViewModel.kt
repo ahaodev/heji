@@ -1,13 +1,13 @@
 package com.hao.heji.ui.category.manager
 
 import android.text.TextUtils
+import androidx.lifecycle.viewModelScope
 import com.blankj.utilcode.util.ToastUtils
-import com.hao.heji.App
 import com.hao.heji.config.Config
 import com.hao.heji.data.Status
 import com.hao.heji.data.db.Category
+import com.hao.heji.data.repository.CategoryRepository
 import com.hao.heji.ui.base.BaseViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -16,27 +16,24 @@ import kotlinx.coroutines.launch
  * @author: 锅得铁
  * # 分类
  */
-internal class CategoryManagerViewModel :
+internal class CategoryManagerViewModel(
+    private val categoryRepository: CategoryRepository,
+) :
     BaseViewModel<CategoryManagerUiState>() {
-    private val categoryDao = App.dataBase.categoryDao()
 
     fun getCategories(type: Int) {
+        val book = Config.bookOrNull ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            categoryDao.observeIncomeOrExpenditure(
-                Config.book.id,
-                type
-            ).collect {
+            categoryRepository.observeIncomeOrExpenditure(book.id, type).collect {
                 send(CategoryManagerUiState.Categories(it))
             }
         }
     }
 
     fun getParentCategories(type: Int) {
+        val book = Config.bookOrNull ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            categoryDao.observeParentCategories(
-                Config.book.id,
-                type
-            ).collect {
+            categoryRepository.observeParentCategories(book.id, type).collect {
                 send(CategoryManagerUiState.ParentCategories(it))
             }
         }
@@ -44,7 +41,7 @@ internal class CategoryManagerViewModel :
 
     fun getChildCategories(parentId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val children = categoryDao.findChildCategories(parentId)
+            val children = categoryRepository.findChildCategories(parentId)
             send(CategoryManagerUiState.ChildCategories(parentId, children))
         }
     }
@@ -61,11 +58,10 @@ internal class CategoryManagerViewModel :
                     this.parentId = parentId
                     level = if (parentId.isNullOrEmpty()) 0 else 1
                 }
-                val exist = categoryDao.exist(category.hashCode())
-                if (exist > 0) {
+                if (categoryRepository.exists(category)) {
                     ToastUtils.showShort("标签已经存在")
                 } else {
-                    categoryDao.insert(category)
+                    categoryRepository.insert(category)
                     send(CategoryManagerUiState.SaveSuccess("保存成功", parentId))
                     ToastUtils.showShort("保存成功")
                 }
@@ -84,7 +80,7 @@ internal class CategoryManagerViewModel :
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 category.deleted = Status.DELETED
-                categoryDao.update(category)
+                categoryRepository.update(category)
             } catch (e: Throwable) {
                 ToastUtils.showLong(e.message)
             }
@@ -94,7 +90,7 @@ internal class CategoryManagerViewModel :
     fun updateCategory(category: Category) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                categoryDao.update(category)
+                categoryRepository.update(category)
                 ToastUtils.showShort("修改成功")
             } catch (e: Throwable) {
                 ToastUtils.showLong(e.message)

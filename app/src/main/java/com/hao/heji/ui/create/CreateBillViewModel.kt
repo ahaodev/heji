@@ -1,62 +1,50 @@
 package com.hao.heji.ui.create
 
-import androidx.lifecycle.*
-import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.TimeUtils
-import com.blankj.utilcode.util.ToastUtils
-import com.hao.heji.App
+import androidx.lifecycle.viewModelScope
 import com.hao.heji.config.Config
-import com.hao.heji.data.db.*
+import com.hao.heji.data.db.Bill
+import com.hao.heji.data.db.Image
+import com.hao.heji.data.repository.BillRepository
+import com.hao.heji.data.repository.CategoryRepository
+import com.hao.heji.data.repository.ImageRepository
 import com.github.shamil.Xid
 import com.hao.heji.ui.base.BaseViewModel
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Stack
 
 /**
  * 账单添加页ViewModel 不要在其他页面应用该ViewModel
  */
 @PublishedApi
-internal class CreateBillViewModel :
-    BaseViewModel<CreateBillUIState>() {
-
-    var keyBoardStack: Stack<String>? = null//用于保存栈
-    private fun error(it: Throwable) {
-        send(CreateBillUIState.Error(it))
-        ToastUtils.showLong(it.message)
-    }
+internal class CreateBillViewModel(
+    private val billRepository: BillRepository,
+    private val categoryRepository: CategoryRepository,
+    private val imageRepository: ImageRepository,
+) : BaseViewModel<CreateBillUIState>() {
+    var keyBoardStack: Stack<String>? = null
 
     fun getCategories(type: Int) {
         val book = Config.bookOrNull ?: return
-        LogUtils.d(
-            "TimeTest",
-            TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
-        )
-        val categories = App.dataBase.categoryDao()
-            .findParentCategories(book.id, type)
+        val categories = categoryRepository.findParentCategories(book.id, type)
         send(CreateBillUIState.Categories(type, categories))
-        LogUtils.d(
-            "TimeTest",
-            categories,
-            TimeUtils.millis2String(System.currentTimeMillis(), "yyyy/MM/dd HH:mm:ss")
-        )
     }
 
     fun getChildCategories(type: Int, parentId: String) {
-        val children = App.dataBase.categoryDao().findChildCategories(parentId)
+        val children = categoryRepository.findChildCategories(parentId)
         send(CreateBillUIState.SubCategories(type, parentId, children))
     }
 
     fun deleteImage(id: String) {
-        App.dataBase.imageDao().preDelete(id)
+        imageRepository.preDelete(id)
     }
 
     fun getImages(ids: MutableList<String>) {
-        val images = App.dataBase.imageDao().findImage(ids)
+        val images = imageRepository.findImages(ids)
         send(CreateBillUIState.Images(images))
     }
 
     suspend fun getBill(it: String) {
-        val bill = App.dataBase.billImageDao().findBillAndImage(it)
+        val bill = billRepository.findBillAndImage(it)
         send(CreateBillUIState.BillChange(bill = bill))
     }
 
@@ -77,11 +65,8 @@ internal class CreateBillViewModel :
                     image
                 }.toMutableList()
                 images.addAll(selectImages)
-                var count: Long =
-                    App.dataBase.billImageDao().installBillAndImage(bill, images)
-            } else {
-                App.dataBase.billDao().insert(bill)
             }
+            billRepository.saveBill(bill, images)
             if (again) {
                 send(CreateBillUIState.SaveAgain)
             } else {

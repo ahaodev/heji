@@ -6,20 +6,25 @@ on:
     tags:
       - 'v*'
     paths:
-      - 'client/**'
+      - 'app/**'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
       - '.github/workflows/client.yml'
   pull_request:
     branches: [ main ]
     paths:
-      - 'client/**'
+      - 'app/**'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'gradle.properties'
       - '.github/workflows/client.yml'
 
 jobs:
   check:
-    runs-on: self-hosted
-    defaults:
-      run:
-        working-directory: client
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +38,25 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Prepare local config
+        env:
+          LOCALHOST: ${{ vars.LOCALHOST }}
+          HJSERVER: ${{ vars.HJSERVER }}
+        run: |
+          keytool -genkeypair -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android -keystore debug.keystore \
+            -dname "CN=Android Debug,O=Android,C=US"
+          {
+            echo "KEYSTORE_PATH=debug.keystore"
+            echo "KEYSTORE_PASSWORD=android"
+            echo "KEY_ALIAS=androiddebugkey"
+            echo "KEY_PASSWORD=android"
+          } > local.properties
+          {
+            echo "LOCALHOST=${LOCALHOST:-http://127.0.0.1}"
+            echo "HJSERVER=${HJSERVER:-https://example.invalid}"
+          } >> gradle.properties
 
       - name: Lint
         run: ./gradlew lintDebug --no-daemon
@@ -44,9 +68,6 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [check]
-    defaults:
-      run:
-        working-directory: client
 
     steps:
       - uses: actions/checkout@v4
@@ -61,19 +82,35 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
+      - name: Prepare release config
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          LOCALHOST: ${{ vars.LOCALHOST }}
+          HJSERVER: ${{ vars.HJSERVER }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+          {
+            echo "KEYSTORE_PATH=release.keystore"
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "KEY_ALIAS=$KEY_ALIAS"
+            echo "KEY_PASSWORD=$KEY_PASSWORD"
+          } > local.properties
+          {
+            echo "LOCALHOST=${LOCALHOST:-http://127.0.0.1}"
+            echo "HJSERVER=${HJSERVER:-https://example.invalid}"
+          } >> gradle.properties
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: client/app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Get version from tag
@@ -83,7 +120,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: client/app/build/outputs/apk/release/*.apk
+          files: app/build/outputs/apk/release/*.apk
           tag_name: ${{ steps.version.outputs.VERSION }}
           generate_release_notes: true
         env:

@@ -48,7 +48,7 @@ abstract class BaseFragment : Fragment() {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         if (!this::rootView.isInitialized) {
             rootView = layout()
-            initView(layout())
+            initView(rootView)
             enableDrawer = true
             setHasOptionsMenu(true)
             LogUtils.d("Fragment onCreateView : ${this.javaClass.name} ")

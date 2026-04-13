@@ -40,6 +40,7 @@ class App : Application() {
         }
 
         viewModel = get()
+        Config.onChanged = viewModel::notifyConfigChanged
     }
 
     companion object {

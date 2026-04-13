@@ -1,6 +1,5 @@
 package com.hao.heji.config
 
-import com.hao.heji.App
 import com.hao.heji.config.store.DataStoreManager
 import com.hao.heji.data.db.Book
 import com.hao.heji.ui.user.JWTParse
@@ -13,6 +12,7 @@ import com.hao.heji.ui.user.JWTParse
 internal val LocalUser = JWTParse.User("LocalUser", "user0", "")
 
 object Config {
+    internal var onChanged: ((Config) -> Unit)? = null
 
     val serverUrl: String get() = DataStoreManager.getServerUrl()
     val book: Book get() = DataStoreManager.getBook()
@@ -33,12 +33,12 @@ object Config {
 
     fun setBook(book: Book) {
         DataStoreManager.saveBook(book)
-        App.viewModel.notifyConfigChanged(this)
+        notifyChanged()
     }
 
     fun setUser(user: JWTParse.User) {
         DataStoreManager.saveToken(user.token)
-        App.viewModel.notifyConfigChanged(this)
+        notifyChanged()
     }
 
     fun setServerUrl(url: String) {
@@ -47,7 +47,7 @@ object Config {
 
     fun enableOfflineMode(enable: Boolean) {
         DataStoreManager.saveUseMode(enable)
-        App.viewModel.notifyConfigChanged(this)
+        notifyChanged()
     }
 
     fun setMqttBrokerUrl(url: String) {
@@ -62,6 +62,10 @@ object Config {
             removeMqttBrokerUrl()
             removeLastSyncTime()
         }
-        App.viewModel.notifyConfigChanged(this)
+        notifyChanged()
+    }
+
+    private fun notifyChanged() {
+        onChanged?.invoke(this)
     }
 }

@@ -2,6 +2,7 @@ package com.hao.heji.di
 
 import com.hao.heji.AppViewModel
 import com.hao.heji.data.repository.BookRepository
+import com.hao.heji.data.repository.BillRepository
 import com.hao.heji.data.repository.CategoryRepository
 import com.hao.heji.data.repository.ImageRepository
 import com.hao.heji.data.repository.UserRepository
@@ -29,6 +30,7 @@ val networkModule = module {
 
 val repositoryModule = module {
     factory { BookRepository(get()) }
+    factory { BillRepository() }
     factory { UserRepository(get()) }
     factory { CategoryRepository(get()) }
     factory { ImageRepository() }
@@ -37,12 +39,12 @@ val repositoryModule = module {
 val viewModelModule = module {
     single { AppViewModel(androidApplication()) }
     viewModel { MainViewModel(get()) }
-    viewModel { BillListViewModel() }
+    viewModel { BillListViewModel(get(), get()) }
     viewModel { BookViewModel(get()) }
     viewModel { LoginViewModel(get(), get()) }
     viewModel { RegisterViewModel(get()) }
-    viewModel { CategoryManagerViewModel() }
-    viewModel { CreateBillViewModel() }
+    viewModel { CategoryManagerViewModel(get()) }
+    viewModel { CreateBillViewModel(get(), get(), get()) }
     viewModel { ReportViewModel() }
     viewModel { CalendarNoteViewModule() }
     viewModel { ExportViewModel(get()) }

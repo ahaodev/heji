@@ -1,6 +1,5 @@
 package com.hao.heji.ui
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
@@ -55,8 +54,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navHeaderMainBinding: HeaderMainNavBinding//侧拉头像
     private lateinit var navigationView: NavigationView
 
-    lateinit var mService: SyncService
-    lateinit var mServiceBinder: SyncService.SyncBinder
     private var mIsBound: Boolean = false
 
     companion object {
@@ -71,14 +68,22 @@ class MainActivity : AppCompatActivity() {
      * Connection service
      */
     private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) = Unit
 
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            mServiceBinder = service as SyncService.SyncBinder
-            mService = mServiceBinder.getService()
-        }
+        override fun onServiceDisconnected(arg0: ComponentName) = Unit
+    }
 
-        override fun onServiceDisconnected(arg0: ComponentName) {
-
+    private val backPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            if (drawerLayout.isDrawerOpen(Gravity.START)) {
+                drawerLayout.closeDrawer(Gravity.START)
+                return
+            }
+            if (navController.currentDestination?.id == R.id.nav_home) {
+                finish()
+            } else {
+                navController.popBackStack()
+            }
         }
     }
 
@@ -91,7 +96,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun doBindService() {
-        if (Config.user != LocalUser) {
+        if (!mIsBound && Config.user != LocalUser) {
             Intent(this, SyncService::class.java).also {
                 startService(it)
                 mIsBound = bindService(it, connection, BIND_AUTO_CREATE)
@@ -102,9 +107,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun doUnbindService() {
         if (mIsBound) {
-            Intent(this, SyncService::class.java).also {
-                unbindService(connection)
-            }
+            unbindService(connection)
+            mIsBound = false
         }
     }
 
@@ -116,14 +120,7 @@ class MainActivity : AppCompatActivity() {
         checkLogin()
         setDrawerLayout(Config.user)
         observeConfigChange()
-    }
-
-    private fun observeConfigChange() {
-        lifecycleScope.launch {
-            App.viewModel.configChange.collect {
-                Config.bookOrNull?.let { book -> setCurrentBook(book.name) }
-            }
-        }
+        onBackPressedDispatcher.addCallback(this, backPressedCallback)
     }
 
     private fun checkLogin() {
@@ -146,26 +143,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            @SuppressLint("WrongConstant")
-            override fun handleOnBackPressed() {
-                if (navController.currentDestination?.id == R.id.nav_home) { //主页
-                    if (drawerLayout.isDrawerOpen(Gravity.START)) {
-                        drawerLayout.closeDrawer(Gravity.START)
-                    } else {
-                        finish()
-                    }
-                } else {
-                    if (drawerLayout.isDrawerOpen(Gravity.START)) {
-                        drawerLayout.closeDrawer(Gravity.START)
-                    } else {
-                        navController.popBackStack()
-                    }
-                }
+    private fun observeConfigChange() {
+        lifecycleScope.launch {
+            App.viewModel.configChange.collect {
+                Config.bookOrNull?.let { book -> setCurrentBook(book.name) }
             }
-        })
+        }
     }
 
     /**
@@ -197,7 +180,6 @@ class MainActivity : AppCompatActivity() {
         val navHeaderView = navigationView.getHeaderView(0)
         navHeaderMainBinding = HeaderMainNavBinding.bind(navHeaderView)
         navHeaderView.setOnClickListener {
-            ToastUtils.showLong("")
             navController.navigate(R.id.nav_user_info)
             drawerLayout.closeDrawers()
         }
@@ -365,7 +347,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (Config.enableOfflineMode) {
+        if (mIsBound) {
             doUnbindService()
         }
     }

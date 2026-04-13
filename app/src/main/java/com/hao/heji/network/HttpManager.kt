@@ -13,12 +13,17 @@ import retrofit2.http.Part
 
 class HttpManager {
     private var apiServer: ApiServer? = null
+    private var serverUrl: String? = null
 
     fun server(): ApiServer {
-        if (apiServer != null) {
+        val currentServerUrl = Config.serverUrl
+        if (apiServer != null && serverUrl == currentServerUrl) {
             return apiServer as ApiServer
         }
-        return HttpRetrofit.create(Config.serverUrl, ApiServer::class.java)
+        return HttpRetrofit.create(currentServerUrl, ApiServer::class.java).also {
+            apiServer = it
+            serverUrl = currentServerUrl
+        }
     }
 
     suspend fun register(registerUser: RegisterUser) =
@@ -67,6 +72,7 @@ class HttpManager {
     suspend fun categoryPull(_id: String = "0") = server().getCategories(_id).await()
 
     fun redirectServer() {
-        apiServer = HttpRetrofit.create(Config.serverUrl, ApiServer::class.java)
+        apiServer = null
+        serverUrl = null
     }
 }

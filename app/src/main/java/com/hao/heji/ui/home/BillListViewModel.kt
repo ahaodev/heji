@@ -3,8 +3,9 @@ package com.hao.heji.ui.home
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.TimeUtils
 import com.chad.library.adapter.base.entity.node.BaseNode
-import com.hao.heji.App
 import com.hao.heji.config.Config
+import com.hao.heji.data.repository.BillRepository
+import com.hao.heji.data.repository.ImageRepository
 import com.hao.heji.ui.adapter.DayBillsNode
 import com.hao.heji.ui.adapter.DayIncome
 import com.hao.heji.ui.adapter.DayIncomeNode
@@ -15,11 +16,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-internal class BillListViewModel : BaseViewModel<BillListUiState>() {
+internal class BillListViewModel(
+    private val billRepository: BillRepository,
+    private val imageRepository: ImageRepository,
+) : BaseViewModel<BillListUiState>() {
 
     fun getImages(billId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val data = App.dataBase.imageDao().findByBillId(billId = billId)
+            val data = imageRepository.findByBillId(billId)
             send(BillListUiState.Images(data))
         }
     }
@@ -32,7 +36,7 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
             try {
                 //根据月份查询收支的日子
                 val monthEveryDayIncome =
-                    App.dataBase.billDao().findEveryDayIncomeByMonth(Config.book.id, yearMonth)
+                    billRepository.findEveryDayIncomeByMonth(Config.book.id, yearMonth)
                 //日节点
                 val listDayNodes = mutableListOf<BaseNode>()
                 monthEveryDayIncome.forEach { dayIncome ->
@@ -50,10 +54,10 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
                     )
                     //日节点下子账单
                     val dayListNodes = mutableListOf<BaseNode>()
-                    val dayBills = App.dataBase.billDao().findByDay(dayIncome.time!!, Config.book.id)
+                    val dayBills = billRepository.findByDay(dayIncome.time!!, Config.book.id)
                     // 批量查询当日所有账单的图片ID
                     val billIds = dayBills.map { it.id }
-                    val imageMap = App.dataBase.imageDao().findImagesIdByBillIds(billIds)
+                    val imageMap = imageRepository.findImagesIdByBillIds(billIds)
                         .groupBy({ it.billId }, { it.imageId })
                     dayBills.forEach {
                         it.images = (imageMap[it.id] ?: emptyList()).toMutableList()
@@ -78,7 +82,7 @@ internal class BillListViewModel : BaseViewModel<BillListUiState>() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 LogUtils.d("Between by time:$yearMonth")
-                App.dataBase.billDao().sumIncome(yearMonth, Config.book.id).distinctUntilChanged().collect {
+                billRepository.sumIncome(yearMonth, Config.book.id).distinctUntilChanged().collect {
                     LogUtils.d(it)
                     send(BillListUiState.Summary(it))
                 }
