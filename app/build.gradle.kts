@@ -2,7 +2,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
-import java.util.TimeZone
 
 plugins {
     alias(libs.plugins.android.application)
@@ -25,27 +24,9 @@ fun requireLocalProperty(name: String): String =
     localProperties.getProperty(name)
         ?: error("Missing $name in local.properties")
 
-val gitVersion = providers.exec {
-    commandLine("git", "rev-parse", "--short", "HEAD")
-}.standardOutput.asText.get().trim()
-
-fun configureApkRename(versionName: String) {
-    tasks.withType(com.android.build.gradle.tasks.PackageApplication::class.java).configureEach {
-        doLast {
-            val dateFormat = SimpleDateFormat("yyyyMMddHHmm")
-            dateFormat.timeZone = TimeZone.getTimeZone("GMT+08:00")
-            val time = dateFormat.format(Date())
-            val outputDir = outputDirectory.get().asFile
-            outputDir.listFiles()
-                ?.filter { it.name.endsWith(".apk") }
-                ?.forEach { apk ->
-                    val buildTypeName = name.removePrefix("package")
-                        .replaceFirstChar { it.lowercase() }
-                    apk.renameTo(File(apk.parentFile, "$buildTypeName-$versionName-$gitVersion-$time.apk"))
-                }
-        }
-    }
-}
+fun requireGradleProperty(name: String): String =
+    providers.gradleProperty(name).orNull
+        ?: error("Missing $name in gradle.properties")
 
 android {
     namespace = "com.hao.heji"
@@ -63,7 +44,7 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += mapOf(
-                    "room.schemaLocation" to "$projectDir/schemas",
+                    "room.schemaLocation" to layout.projectDirectory.dir("schemas").asFile.path,
                     "room.incremental" to "true",
                     "room.expandProjection" to "true"
                 )
@@ -90,7 +71,7 @@ android {
                 "proguard-rules.pro"
             )
             resValue("string", "app_name", "合記开发版")
-            buildConfigField("String", "HTTP_URL", properties["LOCALHOST"] as String)
+            buildConfigField("String", "HTTP_URL", requireGradleProperty("LOCALHOST"))
         }
         release {
             signingConfig = signingConfigs.getByName("single")
@@ -101,7 +82,7 @@ android {
                 "proguard-rules.pro"
             )
             resValue("string", "app_name", "合記")
-            buildConfigField("String", "HTTP_URL", properties["HJSERVER"] as String)
+            buildConfigField("String", "HTTP_URL", requireGradleProperty("HJSERVER"))
         }
     }
 
@@ -109,12 +90,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-        }
-    }
-
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -124,12 +99,17 @@ android {
 }
 
 afterEvaluate {
-    val apkVersionName = android.defaultConfig.versionName ?: "1.0"
-    configureApkRename(apkVersionName)
-}
-
-configurations.all {
-    exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+    val versionName = android.defaultConfig.versionName ?: "1.0"
+    tasks.named("packageRelease", com.android.build.gradle.tasks.PackageApplication::class.java) {
+        doLast {
+            val date = SimpleDateFormat("yyyyMMddHHmm").format(Date())
+            outputDirectory.get().asFile.listFiles()
+                ?.filter { it.name.endsWith(".apk") }
+                ?.forEach { apk ->
+                    apk.renameTo(File(apk.parentFile, "$versionName-$date.apk"))
+                }
+        }
+    }
 }
 
 dependencies {
@@ -202,8 +182,12 @@ dependencies {
     implementation(libs.brvah)
     implementation(libs.permissionx)
 
-    implementation(libs.utilcodex)
-    implementation(libs.xpopup)
+    implementation(libs.utilcodex) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+    }
+    implementation(libs.xpopup) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+    }
     implementation(libs.calendarview)
     implementation(libs.mpandroidchart)
     implementation(libs.immersionbar)
