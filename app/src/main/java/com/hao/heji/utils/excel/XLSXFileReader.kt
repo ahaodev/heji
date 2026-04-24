@@ -13,6 +13,8 @@ import org.xmlpull.v1.XmlPullParserFactory
 import java.io.IOException
 import java.io.InputStream
 import java.math.BigDecimal
+import java.util.Date
+import java.util.TimeZone
 import java.util.zip.ZipInputStream
 
 /**
@@ -87,7 +89,7 @@ internal class XLSXFileReader : IReader {
                         crtUser = Config.user.id
                         money = moneyStr.toBigDecimal()
                         type = weiPayType
-                        time = TimeUtils.string2Date(weiPay.transactionTime, "yyyy-MM-dd HH:mm:ss")
+                        time = parseWeixinTime(weiPay.transactionTime)
                         category = weiPay.transactionType.ifEmpty { "微信" }
                         remark = "${weiPay.counterparty} ${weiPay.commodity}".trim()
                     }.also {
@@ -125,6 +127,24 @@ internal class XLSXFileReader : IReader {
     }
 
     override fun readQianJi(inputStream: InputStream, result: (Boolean, msg: String) -> Unit) {
+    }
+
+    /**
+     * 解析微信账单的交易时间字段。
+     * 正常格式为 "yyyy-MM-dd HH:mm:ss"，但通过 XLSX 解析时 Excel 可能将日期存储为
+     * OLE Automation 序列号（自 1899-12-30 起的天数，小数部分为当天时间比例）。
+     */
+    private fun parseWeixinTime(timeStr: String): Date {
+        // If the value is numeric it's an OLE Automation date serial (days since Dec 30, 1899).
+        // Check this first to avoid the spurious ParseException that TimeUtils prints internally.
+        val oleDate = timeStr.toDoubleOrNull()
+        if (oleDate != null) {
+            val utcMillis = ((oleDate - 25569.0) * 86400000L).toLong()
+            val localOffset = TimeZone.getDefault().getOffset(utcMillis)
+            return Date(utcMillis - localOffset)
+        }
+        return TimeUtils.string2Date(timeStr, "yyyy-MM-dd HH:mm:ss")
+            ?: throw IllegalArgumentException("Unparseable date: \"$timeStr\"")
     }
 
     /**
